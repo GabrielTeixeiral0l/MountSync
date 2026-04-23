@@ -28,10 +28,10 @@ DEFAULT_MOUNT="${HOME}/GoogleDrive"
 # 1. Dependency Check: rclone
 if ! command -v rclone &> /dev/null; then
     echo "rclone not found."
-    read -p "Install rclone now? (y/n): " install_rclone
+    read -p "Install rclone now? (y/n): " install_rclone < /dev/tty
     if [[ $install_rclone =~ ^[Yy]$ ]]; then
         echo "Installing rclone..."
-        sudo -v 
+        sudo -v < /dev/tty
         curl https://rclone.org/install.sh | sudo bash
     else
         echo "Error: rclone is required for ConfigSync."
@@ -41,10 +41,10 @@ fi
 
 # 2. Configuration Wizard
 echo "--- ConfigSync Setup ---"
-read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME
+read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME < /dev/tty
 REMOTE_NAME="${REMOTE_NAME:-$DEFAULT_REMOTE}"
 
-read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
+read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT < /dev/tty
 MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"
 MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}" 
 
