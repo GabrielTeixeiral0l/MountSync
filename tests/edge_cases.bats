@@ -13,7 +13,7 @@ setup() {
     export PATH="$PROJECT_ROOT/tests/mock_bin:$PROJECT_ROOT:$PATH"
     
     export CSYNC_MOUNT_POINT="$HOME/Cloud"
-    export CSYNC_CLOUD_DIR="$CSYNC_MOUNT_POINT/config_sync"
+    export CSYNC_CLOUD_DIR="$CSYNC_MOUNT_POINT/csync_vault"
     mkdir -p "$CSYNC_CLOUD_DIR"
 }
 

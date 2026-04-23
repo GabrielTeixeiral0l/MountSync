@@ -21,11 +21,11 @@ load 'test_helper.bash'
 
 @test "Core: Defaults to GoogleDrive fallback" {
   run bash -c "source src/core.sh && echo \$SYNC_DIR \$MOUNT_POINT"
-  assert_output --partial "$HOME/GoogleDrive/config_sync $HOME/GoogleDrive"
+  assert_output --partial "$HOME/GoogleDrive/csync_vault $HOME/GoogleDrive"
 }
 
 @test "Core: foreach_mapping iteration works" {
-  export CSYNC_CLOUD_DIR="$HOME/Cloud/config_sync"
+  export CSYNC_CLOUD_DIR="$HOME/Cloud/csync_vault"
   mkdir -p "$CSYNC_CLOUD_DIR"
   echo "local1|cloud1" > "$CSYNC_CLOUD_DIR/sync-map.conf"
   echo "local2|cloud2" >> "$CSYNC_CLOUD_DIR/sync-map.conf"
