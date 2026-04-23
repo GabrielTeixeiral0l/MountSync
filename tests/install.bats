@@ -24,7 +24,7 @@ EOF
 }
 
 @test "Install: Successfully creates config and systemd service" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
   run bash -c "printf 'MyRemote\n$HOME/MyCloud\n' | bash install.sh"
@@ -34,7 +34,7 @@ EOF
 }
 
 @test "Install: Skips rclone installation if already present" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
   run bash -c "printf '\n\n' | bash install.sh"
@@ -44,26 +44,19 @@ EOF
 }
 
 @test "Install: Aborts if rclone missing and user says no" {
-  # Hide system rclone by shadowing with a DIRECTORY
-  mkdir -p "$MOCK_BIN/rclone"
-  
-  run bash -c "printf 'n\n' | bash install.sh"
+  run bash -c "command() { if [[ \"\$2\" == \"rclone\" ]]; then return 1; else builtin command \"\$@\"; fi; }; export -f command; printf 'n\n' | bash install.sh"
   
   assert_failure
   assert_output --partial "rclone not found"
 }
 
 @test "Install: Triggers rclone installation via sudo if missing" {
-  # Hide system rclone
-  mkdir -p "$MOCK_BIN/rclone"
-
   # Mock sudo and curl
   cat <<EOF > "$MOCK_BIN/sudo"
 #!/bin/bash
 if [[ "\$*" == "-v" ]]; then exit 0; fi
-# Simulate installation by removing the directory shadow and creating an executable
-rm -rf "$MOCK_BIN/rclone"
-touch "$MOCK_BIN/rclone"
+# Simulate installation by creating an executable mock
+echo -e '#!/bin/bash\nif [[ "\$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
 chmod +x "$MOCK_BIN/rclone"
 echo "SUDO CALLED"
 EOF
@@ -73,7 +66,7 @@ echo "echo 'RCLONE INSTALLED'"
 EOF
   chmod +x "$MOCK_BIN/sudo" "$MOCK_BIN/curl"
 
-  run bash -c "printf 'y\nMyRemote\n$HOME/MyCloud\n' | bash install.sh"
+  run bash -c "command() { if [[ \"\$2\" == \"rclone\" ]]; then if [ -x \"$MOCK_BIN/rclone\" ]; then return 0; else return 1; fi; else builtin command \"\$@\"; fi; }; export -f command; printf 'y\nMyRemote\n$HOME/MyCloud\n' | bash install.sh"
   
   assert_success
   assert_output --partial "Installing rclone..."
@@ -81,7 +74,7 @@ EOF
 }
 
 @test "Install: Creates ~/.local/bin if missing" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
   
   run bash -c "printf '\n\n' | bash install.sh"
@@ -92,18 +85,18 @@ EOF
 }
 
 @test "Install: Warns if ~/.local/bin is not in PATH" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
   
   # Ensure the subshell has a path that definitely doesn't include the new bin
-  run bash -c "export PATH='/usr/bin:/bin:$MOCK_BIN:$PROJECT_ROOT'; printf '\n\n' | bash install.sh"
+  run bash -c "export PATH='$MOCK_BIN:$PROJECT_ROOT:/usr/bin:/bin'; printf '\n\n' | bash install.sh"
   
   assert_success
   assert_output --partial "Warning: $HOME/.local/bin is not in your PATH"
 }
 
 @test "Install: Expands tilde (~) in mount point" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
   run bash -c "printf 'TestRemote\n~/TildeCloud\n' | bash install.sh"
@@ -114,7 +107,7 @@ EOF
 }
 
 @test "Install: Uses default values on empty input" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
   run bash -c "printf '\n\n' | bash install.sh"
@@ -125,7 +118,7 @@ EOF
 }
 
 @test "Install: Overwrites existing configuration" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
   mkdir -p "$HOME/.config/csync"
@@ -141,7 +134,7 @@ EOF
 }
 
 @test "Install: Handles mkdir permission errors gracefully" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
   mkdir -p "$HOME"
@@ -153,7 +146,7 @@ EOF
 }
 
 @test "Install: Auto-downloads repo when piped via curl" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
   # Create a mock git command
@@ -183,7 +176,7 @@ EOF
 }
 
 @test "Install: Auto-updates existing repo when piped via curl" {
-  touch "$MOCK_BIN/rclone"
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
   # Mock git command
