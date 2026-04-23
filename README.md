@@ -14,10 +14,10 @@ ConfigSync is a minimalist, cloud-agnostic dotfile and directory orchestrator. I
 
 ## Quick Start
 
-Get up and running by executing the interactive installer:
+Get up and running by executing the interactive installer directly from your terminal:
 
 ```bash
-bash install.sh
+curl -sL https://raw.githubusercontent.com/GabrielTeixeiral0l/configsync/main/install.sh | bash
 ```
 
 The installer handles the entire setup process:

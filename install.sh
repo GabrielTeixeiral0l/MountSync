@@ -5,6 +5,22 @@
 
 set -e # Exit on error
 
+# Auto-download if piped from curl
+if [ ! -f "csync" ] || [ ! -d "src" ]; then
+    echo "--- Downloading ConfigSync ---"
+    if [ -d "$HOME/.configsync" ]; then
+        echo "Updating existing repository at $HOME/.configsync..."
+        cd "$HOME/.configsync"
+        git pull origin main
+    else
+        echo "Cloning repository to $HOME/.configsync..."
+        git clone https://github.com/GabrielTeixeiral0l/configsync.git "$HOME/.configsync"
+        cd "$HOME/.configsync"
+    fi
+    exec bash install.sh
+    exit 0
+fi
+
 # Default values
 DEFAULT_REMOTE="GoogleDrive"
 DEFAULT_MOUNT="${HOME}/GoogleDrive"

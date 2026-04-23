@@ -151,3 +151,65 @@ EOF
   
   assert_failure
 }
+
+@test "Install: Auto-downloads repo when piped via curl" {
+  touch "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # Create a mock git command
+  cat <<EOF > "$MOCK_BIN/git"
+#!/bin/bash
+if [[ "\$1" == "clone" ]]; then
+  mkdir -p "\$3/src"
+  touch "\$3/csync"
+  # Mock install.sh in the cloned dir so exec bash install.sh doesn't fail
+  cat <<SCRIPT > "\$3/install.sh"
+echo "MOCKED INSTALLER RAN"
+SCRIPT
+  exit 0
+fi
+EOF
+  chmod +x "$MOCK_BIN/git"
+
+  # Run install.sh from an empty directory to trigger auto-download
+  EMPTY_DIR=$(mktemp -d)
+  cd "$EMPTY_DIR"
+  run bash "$PROJECT_ROOT/install.sh"
+
+  assert_success
+  assert_output --partial "--- Downloading ConfigSync ---"
+  assert_output --partial "Cloning repository to $HOME/.configsync..."
+  assert_output --partial "MOCKED INSTALLER RAN"
+}
+
+@test "Install: Auto-updates existing repo when piped via curl" {
+  touch "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # Mock git command
+  cat <<EOF > "$MOCK_BIN/git"
+#!/bin/bash
+if [[ "\$1" == "pull" ]]; then
+  echo "MOCKED PULL RAN"
+  cat <<SCRIPT > "install.sh"
+echo "MOCKED INSTALLER RAN"
+SCRIPT
+  exit 0
+fi
+EOF
+  chmod +x "$MOCK_BIN/git"
+
+  # Create dummy existing configsync dir
+  mkdir -p "$HOME/.configsync/src"
+  touch "$HOME/.configsync/csync"
+
+  EMPTY_DIR=$(mktemp -d)
+  cd "$EMPTY_DIR"
+  run bash "$PROJECT_ROOT/install.sh"
+
+  assert_success
+  assert_output --partial "--- Downloading ConfigSync ---"
+  assert_output --partial "Updating existing repository at $HOME/.configsync..."
+  assert_output --partial "MOCKED PULL RAN"
+  assert_output --partial "MOCKED INSTALLER RAN"
+}
