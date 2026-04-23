@@ -1,70 +1,85 @@
 # ConfigSync
 
-ConfigSync is a minimalist, cloud-agnostic dotfile and directory orchestrator that uses `rclone` to synchronize your environment across multiple machines using symbolic links.
+ConfigSync is a minimalist, cloud-agnostic dotfile and directory orchestrator. It leverages `rclone` to synchronize your environment across multiple machines using symbolic links.
 
-## 🧠 How it Works
+> [!NOTE]
+> ConfigSync operates on a simple philosophy: files are moved to a central "Cloud Vault" and replaced locally by symbolic links. A central registry (`sync-map.conf`) tracks these items, allowing instant replication of your environment on any machine.
 
-ConfigSync follows a simple and robust philosophy:
-1. **Cloud Vault**: Your files and directories are moved to a central "Cloud Vault" (e.g., inside your Google Drive, Dropbox, or S3 bucket).
-2. **Symbolic Links**: The original location of each item is replaced by a symbolic link pointing to the version in the vault.
-3. **Sync Map**: A central registry file (`sync-map.conf`) is stored in your cloud, tracking every synced item. This allows other machines to recreate your entire environment instantly.
+## Features
 
-## 🚀 Quick Start
+- **Cloud Agnostic:** Works seamlessly with any provider supported by `rclone` (Google Drive, Dropbox, S3, WebDAV).
+- **Background Persistence:** Includes an automated Systemd service to keep your cloud drive mounted across reboots.
+- **Incremental Synchronization:** Safely bring in new configurations from other machines without overwriting existing local files.
+- **Minimalist Design:** Written in modular, efficient Bash with zero heavy dependencies.
+
+## Quick Start
 
 Get up and running by executing the interactive installer:
+
 ```bash
 bash install.sh
 ```
 
-The installer will:
-- Verify or install `rclone`.
-- Guide you through configuring your cloud remote and mount point.
-- Set up a **Systemd user service** for background mounting and persistence.
-- Integrate the `csync` command into your local environment.
+The installer handles the entire setup process:
+- Verifies or installs `rclone`.
+- Guides you through configuring your cloud remote and mount point.
+- Sets up a Systemd user service for background mounting.
+- Integrates the `csync` command into your local environment (`PATH`).
 
-## 🛠 Features
+## Usage
 
-- **Cloud Agnostic**: Works with any provider supported by `rclone` (Google Drive, Dropbox, S3, WebDAV, etc.).
-- **Background Persistence**: Includes an automated Systemd service to keep your cloud drive mounted across reboots.
-- **Incremental Synchronization**: The `pull` command allows you to bring in new configurations from other machines without overwriting existing local files.
-- **Minimalist Design**: Written in modular, efficient Bash with zero heavy dependencies.
+Once installed, use the `csync` CLI to manage your dotfiles.
 
-## 💻 Usage
+### 1. Sync a New Item
 
-### 1. Sync a new item: `csync add <path>`
-Moves a file or directory to the cloud vault and replaces the local version with a symbolic link.
+Move a file or directory to the cloud vault and replace the local version with a symbolic link.
+
 ```bash
 csync add ~/.bashrc
 ```
 
-### 2. Pull updates: `csync pull`
-Scans the sync map in your cloud and creates symbolic links for any items that exist in the cloud but are missing on the current machine.
+### 2. Pull Updates
+
+Scan the sync map in your cloud and create symbolic links for any items that exist in the vault but are missing on your current machine.
+
 ```bash
 csync pull
 ```
-*Note: This command is non-destructive and will never touch existing local files.*
 
-### 3. Initialize a new machine: `csync init`
-Used when setting up a fresh machine. It recreates all symbolic links defined in the sync map and sets up a bridge to your cloud shell configurations.
+> [!IMPORTANT]
+> The `pull` command is non-destructive. It will never overwrite or touch existing local files.
+
+### 3. Initialize a New Machine
+
+When setting up a fresh machine, this command recreates all symbolic links defined in the sync map and sets up a bridge to your cloud shell configurations.
+
 ```bash
 csync init
 ```
 
-## ⚙️ Configuration
+> [!WARNING]
+> Running `init` on an existing machine will back up local files before replacing them with symlinks from the vault to prevent data loss.
 
-ConfigSync looks for configuration in the following order:
-1. **Environment Variables**: `CSYNC_CLOUD_DIR` and `CSYNC_MOUNT_POINT`.
-2. **Configuration File**: `~/.config/csync/config`.
-3. **Default Fallback**: `~/GoogleDrive/config_sync`.
+## Configuration
 
-### Configuration File Example (`~/.config/csync/config`)
+ConfigSync resolves its configuration in the following order of precedence:
+
+1. **Environment Variables:** `CSYNC_CLOUD_DIR` and `CSYNC_MOUNT_POINT`.
+2. **Configuration File:** `~/.config/csync/config`.
+3. **Default Fallback:** `~/GoogleDrive/csync_vault`.
+
+### Example Configuration
+
+`~/.config/csync/config`
+
 ```bash
 CSYNC_REMOTE_NAME="MyGoogleDrive"
 CSYNC_MOUNT_POINT="/home/user/Cloud"
-CSYNC_CLOUD_DIR="/home/user/Cloud/config_sync"
+CSYNC_CLOUD_DIR="/home/user/Cloud/csync_vault"
 ```
 
-## 📁 Structure
+## Structure
+
 - `csync`: Unified CLI entrypoint.
 - `src/`: Modular source files containing the core logic.
 - `install.sh`: Interactive installation and setup wizard.
