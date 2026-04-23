@@ -17,7 +17,7 @@ if [ ! -f "csync" ] || [ ! -d "src" ]; then
         git clone https://github.com/GabrielTeixeiral0l/configsync.git "$HOME/.configsync"
         cd "$HOME/.configsync"
     fi
-    exec bash install.sh
+    exec bash install.sh < /dev/tty
     exit 0
 fi
 
@@ -28,7 +28,7 @@ DEFAULT_MOUNT="${HOME}/GoogleDrive"
 # 1. Dependency Check: rclone
 if ! command -v rclone &> /dev/null; then
     echo "rclone not found."
-    read -p "Install rclone now? (y/n): " install_rclone < /dev/tty
+    read -p "Install rclone now? (y/n): " install_rclone
     if [[ $install_rclone =~ ^[Yy]$ ]]; then
         echo "Installing rclone..."
         sudo -v < /dev/tty
@@ -39,12 +39,24 @@ if ! command -v rclone &> /dev/null; then
     fi
 fi
 
+# 1.5. Remote Configuration Check
+if ! rclone listremotes | grep -q .; then
+    echo "--- rclone Configuration ---"
+    echo "No cloud remotes detected in rclone."
+    read -p "Would you like to configure one now? (y/n): " run_config
+    if [[ $run_config =~ ^[Yy]$ ]]; then
+        rclone config
+    else
+        echo "Warning: You need at least one configured rclone remote for ConfigSync to work."
+    fi
+fi
+
 # 2. Configuration Wizard
 echo "--- ConfigSync Setup ---"
-read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME < /dev/tty
+read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME
 REMOTE_NAME="${REMOTE_NAME:-$DEFAULT_REMOTE}"
 
-read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT < /dev/tty
+read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
 MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"
 MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}" 
 
