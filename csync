@@ -1,21 +1,22 @@
 #!/bin/bash
 
 # Load core logic
-source "${BASH_SOURCE%/*}/src/core.sh"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+source "${SCRIPT_DIR}/src/core.sh"
 
 case "$1" in
     add)
-        source "${BASH_SOURCE%/*}/src/commands/add.sh"
+        source "${SCRIPT_DIR}/src/commands/add.sh"
         shift
         cmd_add "$@"
         ;;
     init)
-        source "${BASH_SOURCE%/*}/src/commands/init.sh"
+        source "${SCRIPT_DIR}/src/commands/init.sh"
         shift
         cmd_init "$@"
         ;;
     pull)
-        source "${BASH_SOURCE%/*}/src/commands/pull.sh"
+        source "${SCRIPT_DIR}/src/commands/pull.sh"
         shift
         cmd_pull "$@"
         ;;
