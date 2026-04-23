@@ -1,7 +1,7 @@
 # Load configuration
 [ -f "${HOME}/.config/csync/config" ] && . "${HOME}/.config/csync/config"
 
-SYNC_DIR="${CSYNC_CLOUD_DIR:-${HOME}/GoogleDrive/config_sync}"
+SYNC_DIR="${CSYNC_CLOUD_DIR:-${HOME}/GoogleDrive/csync_vault}"
 MOUNT_POINT="${CSYNC_MOUNT_POINT:-${HOME}/GoogleDrive}"
 MAP_FILE="$SYNC_DIR/sync-map.conf"
 

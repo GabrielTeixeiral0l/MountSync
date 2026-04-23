@@ -40,7 +40,7 @@ CONFIG_FILE="$CONFIG_DIR/config"
 cat <<EOF > "$CONFIG_FILE" || { echo "Error: Could not write to $CONFIG_FILE"; exit 1; }
 CSYNC_REMOTE_NAME="$REMOTE_NAME"
 CSYNC_MOUNT_POINT="$MOUNT_POINT"
-CSYNC_CLOUD_DIR="$MOUNT_POINT/config_sync"
+CSYNC_CLOUD_DIR="$MOUNT_POINT/csync_vault"
 EOF
 
 # 4. Persistence with Systemd
