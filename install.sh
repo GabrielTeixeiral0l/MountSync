@@ -14,10 +14,14 @@ if [ ! -f "mosy" ] || [ ! -d "src" ]; then
         git pull origin main
     else
         echo "Cloning repository to $HOME/.mountsync..."
-        git clone https://github.com/GabrielTeixeiral0l/mountsync.git "$HOME/.mountsync"
+        git clone https://github.com/GabrielTeixeiral0l/MountSync.git "$HOME/.mountsync"
         cd "$HOME/.mountsync"
     fi
-    exec bash install.sh < /dev/tty
+    if [ -c /dev/tty ]; then
+        exec bash install.sh < /dev/tty
+    else
+        exec bash install.sh
+    fi
     exit 0
 fi
 
@@ -31,7 +35,7 @@ if ! command -v rclone &> /dev/null; then
     read -p "Install rclone now? (y/n): " install_rclone
     if [[ $install_rclone =~ ^[Yy]$ ]]; then
         echo "Installing rclone..."
-        sudo -v < /dev/tty
+        sudo -v
         curl https://rclone.org/install.sh | sudo bash
     else
         echo "Error: rclone is required for MountSync."
