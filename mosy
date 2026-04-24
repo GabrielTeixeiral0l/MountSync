@@ -30,6 +30,16 @@ case "$1" in
         shift
         cmd_status "$@"
         ;;
+    remove)
+        source "${SCRIPT_DIR}/src/commands/remove.sh"
+        shift
+        cmd_remove "$@"
+        ;;
+    uninstall)
+        source "${SCRIPT_DIR}/src/commands/uninstall.sh"
+        shift
+        cmd_uninstall "$@"
+        ;;
     *)
         echo "Usage: mosy <command> [args]"
         echo "Commands:"
@@ -38,6 +48,8 @@ case "$1" in
         echo "  pull                    Link missing items from cloud vault"
         echo "  list                    List all managed items"
         echo "  status                  Show system and file integrity status"
+        echo "  remove <path>           Stop syncing an item and make it local"
+        echo "  uninstall               Remove MountSync from your system"
         exit 1
         ;;
 esac
