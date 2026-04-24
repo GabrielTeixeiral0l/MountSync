@@ -20,12 +20,24 @@ case "$1" in
         shift
         cmd_pull "$@"
         ;;
+    list)
+        source "${SCRIPT_DIR}/src/commands/list.sh"
+        shift
+        cmd_list "$@"
+        ;;
+    status)
+        source "${SCRIPT_DIR}/src/commands/status.sh"
+        shift
+        cmd_status "$@"
+        ;;
     *)
         echo "Usage: mosy <command> [args]"
         echo "Commands:"
         echo "  add <file_or_directory>  Add an item to the cloud vault"
         echo "  init                    Configure PC from sync map"
         echo "  pull                    Link missing items from cloud vault"
+        echo "  list                    List all managed items"
+        echo "  status                  Show system and file integrity status"
         exit 1
         ;;
 esac
