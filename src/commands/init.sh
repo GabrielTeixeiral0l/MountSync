@@ -37,7 +37,7 @@ cmd_init() {
 
     if ! grep -q "$BRIDGE_CMD" "$BASHRC" 2>/dev/null; then
         echo "Adding bridge to your local .bashrc..."
-        echo -e "\n# ConfigSync - Bridge to cloud settings\nif [ -f \"$SYNC_DIR/.bashrc_cloud\" ]; then\n    $BRIDGE_CMD\nfi" >> "$BASHRC"
+        echo -e "\n# MountSync - Bridge to cloud settings\nif [ -f \"$SYNC_DIR/.bashrc_cloud\" ]; then\n    $BRIDGE_CMD\nfi" >> "$BASHRC"
     fi
 
     echo "PC configured successfully! Restart your terminal or run 'source ~/.bashrc'."

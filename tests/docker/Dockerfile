@@ -23,7 +23,7 @@ RUN useradd -m -s /bin/bash tester && \
     echo "tester ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 USER tester
-WORKDIR /home/tester/configsync
+WORKDIR /home/tester/mountsync
 
 # Copy the repository (we will mount it as a volume for faster dev, but COPY for the base image)
 # COPY . . 

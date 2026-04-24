@@ -1,9 +1,9 @@
-# ConfigSync
+# MountSync
 
-ConfigSync is a minimalist, cloud-agnostic dotfile and directory orchestrator. It leverages `rclone` to synchronize your environment across multiple machines using symbolic links.
+MountSync is a minimalist, cloud-agnostic dotfile and directory orchestrator. It leverages `rclone` to synchronize your environment across multiple machines using symbolic links.
 
 > [!NOTE]
-> ConfigSync operates on a simple philosophy: files are moved to a central "Cloud Vault" and replaced locally by symbolic links. A central registry (`sync-map.conf`) tracks these items, allowing instant replication of your environment on any machine.
+> MountSync operates on a simple philosophy: files are moved to a central "Cloud Vault" and replaced locally by symbolic links. A central registry (`sync-map.conf`) tracks these items, allowing instant replication of your environment on any machine.
 
 ## Features
 
@@ -17,25 +17,25 @@ ConfigSync is a minimalist, cloud-agnostic dotfile and directory orchestrator. I
 Get up and running by executing the interactive installer directly from your terminal:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/GabrielTeixeiral0l/configsync/main/install.sh | bash
+curl -sL https://raw.githubusercontent.com/GabrielTeixeiral0l/MountSync/main/install.sh | bash
 ```
 
 The installer handles the entire setup process:
 - Verifies or installs `rclone`.
 - Guides you through configuring your cloud remote and mount point.
 - Sets up a Systemd user service for background mounting.
-- Integrates the `csync` command into your local environment (`PATH`).
+- Integrates the `mosy` command into your local environment (`PATH`).
 
 ## Usage
 
-Once installed, use the `csync` CLI to manage your dotfiles.
+Once installed, use the `mosy` CLI to manage your dotfiles.
 
 ### 1. Sync a New Item
 
 Move a file or directory to the cloud vault and replace the local version with a symbolic link.
 
 ```bash
-csync add ~/.bashrc
+mosy add ~/.bashrc
 ```
 
 ### 2. Pull Updates
@@ -43,7 +43,7 @@ csync add ~/.bashrc
 Scan the sync map in your cloud and create symbolic links for any items that exist in the vault but are missing on your current machine.
 
 ```bash
-csync pull
+mosy pull
 ```
 
 > [!IMPORTANT]
@@ -54,7 +54,7 @@ csync pull
 When setting up a fresh machine, this command recreates all symbolic links defined in the sync map and sets up a bridge to your cloud shell configurations.
 
 ```bash
-csync init
+mosy init
 ```
 
 > [!WARNING]
@@ -62,24 +62,24 @@ csync init
 
 ## Configuration
 
-ConfigSync resolves its configuration in the following order of precedence:
+MountSync resolves its configuration in the following order of precedence:
 
-1. **Environment Variables:** `CSYNC_CLOUD_DIR` and `CSYNC_MOUNT_POINT`.
-2. **Configuration File:** `~/.config/csync/config`.
-3. **Default Fallback:** `~/GoogleDrive/csync_vault`.
+1. **Environment Variables:** `MOSY_CLOUD_DIR` and `MOSY_MOUNT_POINT`.
+2. **Configuration File:** `~/.config/mosy/config`.
+3. **Default Fallback:** `~/GoogleDrive/mosy_vault`.
 
 ### Example Configuration
 
-`~/.config/csync/config`
+`~/.config/mosy/config`
 
 ```bash
-CSYNC_REMOTE_NAME="MyGoogleDrive"
-CSYNC_MOUNT_POINT="/home/user/Cloud"
-CSYNC_CLOUD_DIR="/home/user/Cloud/csync_vault"
+MOSY_REMOTE_NAME="MyGoogleDrive"
+MOSY_MOUNT_POINT="/home/user/Cloud"
+MOSY_CLOUD_DIR="/home/user/Cloud/mosy_vault"
 ```
 
 ## Structure
 
-- `csync`: Unified CLI entrypoint.
+- `mosy`: Unified CLI entrypoint.
 - `src/`: Modular source files containing the core logic.
 - `install.sh`: Interactive installation and setup wizard.

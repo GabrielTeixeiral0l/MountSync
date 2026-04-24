@@ -1,14 +1,15 @@
 # Load configuration
-[ -f "${HOME}/.config/csync/config" ] && . "${HOME}/.config/csync/config"
+CONFIG_DIR="${HOME}/.config/mosy"
+[ -f "$CONFIG_DIR/config" ] && . "$CONFIG_DIR/config"
 
-SYNC_DIR="${CSYNC_CLOUD_DIR:-${HOME}/GoogleDrive/csync_vault}"
-MOUNT_POINT="${CSYNC_MOUNT_POINT:-${HOME}/GoogleDrive}"
+SYNC_DIR="${MOSY_CLOUD_DIR:-${HOME}/GoogleDrive/mosy_vault}"
+MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
 MAP_FILE="$SYNC_DIR/sync-map.conf"
 
 check_mount() {
     if ! mount | grep -q "$MOUNT_POINT"; then
         echo "Error: Cloud drive is not mounted at $MOUNT_POINT"
-        echo "Try: systemctl --user start csync-mount.service (if installed)"
+        echo "Try: systemctl --user start mosy-mount.service (if installed)"
         exit 1
     fi
 }

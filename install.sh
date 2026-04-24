@@ -1,21 +1,21 @@
 #!/bin/bash
 
-# ConfigSync - install.sh
-# Installation script for ConfigSync
+# MountSync - install.sh
+# Installation script for MountSync
 
 set -e # Exit on error
 
 # Auto-download if piped from curl
-if [ ! -f "csync" ] || [ ! -d "src" ]; then
-    echo "--- Downloading ConfigSync ---"
-    if [ -d "$HOME/.configsync" ]; then
-        echo "Updating existing repository at $HOME/.configsync..."
-        cd "$HOME/.configsync"
+if [ ! -f "mosy" ] || [ ! -d "src" ]; then
+    echo "--- Downloading MountSync ---"
+    if [ -d "$HOME/.mountsync" ]; then
+        echo "Updating existing repository at $HOME/.mountsync..."
+        cd "$HOME/.mountsync"
         git pull origin main
     else
-        echo "Cloning repository to $HOME/.configsync..."
-        git clone https://github.com/GabrielTeixeiral0l/configsync.git "$HOME/.configsync"
-        cd "$HOME/.configsync"
+        echo "Cloning repository to $HOME/.mountsync..."
+        git clone https://github.com/GabrielTeixeiral0l/mountsync.git "$HOME/.mountsync"
+        cd "$HOME/.mountsync"
     fi
     exec bash install.sh < /dev/tty
     exit 0
@@ -34,7 +34,7 @@ if ! command -v rclone &> /dev/null; then
         sudo -v < /dev/tty
         curl https://rclone.org/install.sh | sudo bash
     else
-        echo "Error: rclone is required for ConfigSync."
+        echo "Error: rclone is required for MountSync."
         exit 1
     fi
 fi
@@ -47,12 +47,12 @@ if ! rclone listremotes | grep -q .; then
     if [[ $run_config =~ ^[Yy]$ ]]; then
         rclone config
     else
-        echo "Warning: You need at least one configured rclone remote for ConfigSync to work."
+        echo "Warning: You need at least one configured rclone remote for MountSync to work."
     fi
 fi
 
 # 2. Configuration Wizard
-echo "--- ConfigSync Setup ---"
+echo "--- MountSync Setup ---"
 read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME
 REMOTE_NAME="${REMOTE_NAME:-$DEFAULT_REMOTE}"
 
@@ -61,26 +61,26 @@ MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"
 MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}" 
 
 # 3. Generation of Configuration
-CONFIG_DIR="${HOME}/.config/csync"
+CONFIG_DIR="${HOME}/.config/mosy"
 mkdir -p "$CONFIG_DIR" || { echo "Error: Could not create config directory $CONFIG_DIR"; exit 1; }
 CONFIG_FILE="$CONFIG_DIR/config"
 
 cat <<EOF > "$CONFIG_FILE" || { echo "Error: Could not write to $CONFIG_FILE"; exit 1; }
-CSYNC_REMOTE_NAME="$REMOTE_NAME"
-CSYNC_MOUNT_POINT="$MOUNT_POINT"
-CSYNC_CLOUD_DIR="$MOUNT_POINT/csync_vault"
+MOSY_REMOTE_NAME="$REMOTE_NAME"
+MOSY_MOUNT_POINT="$MOUNT_POINT"
+MOSY_CLOUD_DIR="$MOUNT_POINT/mosy_vault"
 EOF
 
 # 4. Persistence with Systemd
 SERVICE_DIR="${HOME}/.config/systemd/user"
 mkdir -p "$SERVICE_DIR" || { echo "Error: Could not create systemd directory $SERVICE_DIR"; exit 1; }
-SERVICE_FILE="$SERVICE_DIR/csync-mount.service"
+SERVICE_FILE="$SERVICE_DIR/mosy-mount.service"
 
 RCLONE_PATH=$(command -v rclone)
 
 cat <<EOF > "$SERVICE_FILE" || { echo "Error: Could not write to $SERVICE_FILE"; exit 1; }
 [Unit]
-Description=Rclone Mount for ConfigSync
+Description=Rclone Mount for MountSync
 After=network-online.target
 
 [Service]
@@ -95,12 +95,12 @@ EOF
 
 echo "Setting up Systemd service..."
 systemctl --user daemon-reload || true
-systemctl --user enable csync-mount.service || echo "Warning: Could not enable systemd service (might be in a container/non-systemd system)."
+systemctl --user enable mosy-mount.service || echo "Warning: Could not enable systemd service (might be in a container/non-systemd system)."
 
 # 5. Integration in PATH
 BIN_DIR="${HOME}/.local/bin"
 mkdir -p "$BIN_DIR" || { echo "Error: Could not create $BIN_DIR"; exit 1; }
-ln -sf "$(pwd)/csync" "$BIN_DIR/csync"
+ln -sf "$(pwd)/mosy" "$BIN_DIR/mosy"
 
 if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
     echo "Warning: $BIN_DIR is not in your PATH."
@@ -108,4 +108,4 @@ if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
     echo "export PATH=\"\$HOME/.local/bin:\$PATH\""
 fi
 
-echo "Installation complete! 'csync' is now linked to $BIN_DIR/csync"
+echo "Installation complete! 'mosy' is now linked to $BIN_DIR/mosy"

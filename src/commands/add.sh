@@ -3,7 +3,7 @@
 cmd_add() {
     check_mount
     if [ -z "$1" ]; then
-        echo "Usage: csync add <file_or_directory>"
+        echo "Usage: mosy add <file_or_directory>"
         exit 1
     fi
 

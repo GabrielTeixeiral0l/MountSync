@@ -21,7 +21,7 @@ case "$1" in
         cmd_pull "$@"
         ;;
     *)
-        echo "Usage: csync <command> [args]"
+        echo "Usage: mosy <command> [args]"
         echo "Commands:"
         echo "  add <file_or_directory>  Add an item to the cloud vault"
         echo "  init                    Configure PC from sync map"

@@ -30,7 +30,7 @@ EOF
   run bash -c "printf 'MyRemote\n$HOME/MyCloud\n' | bash install.sh"
   
   assert_success
-  assert_file_exists "$HOME/.config/csync/config"
+  assert_file_exists "$HOME/.config/mosy/config"
 }
 
 @test "Install: Skips rclone installation if already present" {
@@ -81,7 +81,7 @@ EOF
   
   assert_success
   assert_dir_exists "$HOME/.local/bin"
-  assert_file_exists "$HOME/.local/bin/csync"
+  assert_file_exists "$HOME/.local/bin/mosy"
 }
 
 @test "Install: Warns if ~/.local/bin is not in PATH" {
@@ -102,7 +102,7 @@ EOF
   run bash -c "printf 'TestRemote\n~/TildeCloud\n' | bash install.sh"
   
   assert_success
-  run grep "CSYNC_MOUNT_POINT=\"$HOME/TildeCloud\"" "$HOME/.config/csync/config"
+  run grep "MOSY_MOUNT_POINT=\"$HOME/TildeCloud\"" "$HOME/.config/mosy/config"
   assert_success
 }
 
@@ -113,7 +113,7 @@ EOF
   run bash -c "printf '\n\n' | bash install.sh"
   
   assert_success
-  run grep "CSYNC_REMOTE_NAME=\"GoogleDrive\"" "$HOME/.config/csync/config"
+  run grep "MOSY_REMOTE_NAME=\"GoogleDrive\"" "$HOME/.config/mosy/config"
   assert_success
 }
 
@@ -121,15 +121,15 @@ EOF
   echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
-  mkdir -p "$HOME/.config/csync"
-  echo "OLD_DATA=true" > "$HOME/.config/csync/config"
+  mkdir -p "$HOME/.config/mosy"
+  echo "OLD_DATA=true" > "$HOME/.config/mosy/config"
 
   run bash -c "printf 'NewRemote\n\n' | bash install.sh"
   
   assert_success
-  run grep "CSYNC_REMOTE_NAME=\"NewRemote\"" "$HOME/.config/csync/config"
+  run grep "MOSY_REMOTE_NAME=\"NewRemote\"" "$HOME/.config/mosy/config"
   assert_success
-  run grep "OLD_DATA" "$HOME/.config/csync/config"
+  run grep "OLD_DATA" "$HOME/.config/mosy/config"
   assert_failure
 }
 
@@ -154,7 +154,7 @@ EOF
 #!/bin/bash
 if [[ "\$1" == "clone" ]]; then
   mkdir -p "\$3/src"
-  touch "\$3/csync"
+  touch "\$3/mosy"
   # Mock install.sh in the cloned dir so exec bash install.sh doesn't fail
   cat <<SCRIPT > "\$3/install.sh"
 echo "MOCKED INSTALLER RAN"
@@ -170,8 +170,8 @@ EOF
   run bash "$PROJECT_ROOT/install.sh"
 
   assert_success
-  assert_output --partial "--- Downloading ConfigSync ---"
-  assert_output --partial "Cloning repository to $HOME/.configsync..."
+  assert_output --partial "--- Downloading MountSync ---"
+  assert_output --partial "Cloning repository to $HOME/.mountsync..."
   assert_output --partial "MOCKED INSTALLER RAN"
 }
 
@@ -192,17 +192,17 @@ fi
 EOF
   chmod +x "$MOCK_BIN/git"
 
-  # Create dummy existing configsync dir
-  mkdir -p "$HOME/.configsync/src"
-  touch "$HOME/.configsync/csync"
+  # Create dummy existing mountsync dir
+  mkdir -p "$HOME/.mountsync/src"
+  touch "$HOME/.mountsync/mosy"
 
   EMPTY_DIR=$(mktemp -d)
   cd "$EMPTY_DIR"
   run bash "$PROJECT_ROOT/install.sh"
 
   assert_success
-  assert_output --partial "--- Downloading ConfigSync ---"
-  assert_output --partial "Updating existing repository at $HOME/.configsync..."
+  assert_output --partial "--- Downloading MountSync ---"
+  assert_output --partial "Updating existing repository at $HOME/.mountsync..."
   assert_output --partial "MOCKED PULL RAN"
   assert_output --partial "MOCKED INSTALLER RAN"
 }

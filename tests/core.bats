@@ -2,18 +2,22 @@
 
 load 'test_helper.bash'
 
+setup() {
+    common_setup
+}
+
 @test "Core: Loads configuration from environment variables" {
-  export CSYNC_CLOUD_DIR="$HOME/custom_cloud"
-  export CSYNC_MOUNT_POINT="$HOME/custom_mount"
+  export MOSY_CLOUD_DIR="$HOME/custom_cloud"
+  export MOSY_MOUNT_POINT="$HOME/custom_mount"
   
   run bash -c "source src/core.sh && echo \$SYNC_DIR \$MOUNT_POINT"
   assert_output --partial "$HOME/custom_cloud $HOME/custom_mount"
 }
 
 @test "Core: Loads configuration from config file" {
-  mkdir -p "$HOME/.config/csync"
-  echo "CSYNC_MOUNT_POINT=\"$HOME/file_mount\"" > "$HOME/.config/csync/config"
-  echo "CSYNC_CLOUD_DIR=\"$HOME/file_cloud\"" >> "$HOME/.config/csync/config"
+  mkdir -p "$HOME/.config/mosy"
+  echo "MOSY_MOUNT_POINT=\"$HOME/file_mount\"" > "$HOME/.config/mosy/config"
+  echo "MOSY_CLOUD_DIR=\"$HOME/file_cloud\"" >> "$HOME/.config/mosy/config"
   
   run bash -c "source src/core.sh && echo \$SYNC_DIR \$MOUNT_POINT"
   assert_output --partial "$HOME/file_cloud $HOME/file_mount"
@@ -21,14 +25,14 @@ load 'test_helper.bash'
 
 @test "Core: Defaults to GoogleDrive fallback" {
   run bash -c "source src/core.sh && echo \$SYNC_DIR \$MOUNT_POINT"
-  assert_output --partial "$HOME/GoogleDrive/csync_vault $HOME/GoogleDrive"
+  assert_output --partial "$HOME/GoogleDrive/mosy_vault $HOME/GoogleDrive"
 }
 
 @test "Core: foreach_mapping iteration works" {
-  export CSYNC_CLOUD_DIR="$HOME/Cloud/csync_vault"
-  mkdir -p "$CSYNC_CLOUD_DIR"
-  echo "local1|cloud1" > "$CSYNC_CLOUD_DIR/sync-map.conf"
-  echo "local2|cloud2" >> "$CSYNC_CLOUD_DIR/sync-map.conf"
+  export MOSY_CLOUD_DIR="$HOME/Cloud/mosy_vault"
+  mkdir -p "$MOSY_CLOUD_DIR"
+  echo "local1|cloud1" > "$MOSY_CLOUD_DIR/sync-map.conf"
+  echo "local2|cloud2" >> "$MOSY_CLOUD_DIR/sync-map.conf"
   
   cat <<EOF > test_script.sh
 source src/core.sh
