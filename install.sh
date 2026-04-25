@@ -100,6 +100,7 @@ EOF
 echo "Setting up Systemd service..."
 systemctl --user daemon-reload || true
 systemctl --user enable mosy-mount.service || echo "Warning: Could not enable systemd service (might be in a container/non-systemd system)."
+systemctl --user start mosy-mount.service || echo "Warning: Could not start systemd service. You may need to start it manually."
 
 # 5. Integration in PATH
 BIN_DIR="${HOME}/.local/bin"

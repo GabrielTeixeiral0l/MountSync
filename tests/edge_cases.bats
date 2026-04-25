@@ -18,6 +18,14 @@ setup() {
   assert_output --partial "Error: Cloud drive is not mounted at $HOME/NotMounted"
 }
 
+@test "Core: Fails if mount point directory exists but is not a mount" {
+  export MOSY_MOUNT_POINT="$HOME/NotMounted_Dir"
+  mkdir -p "$MOSY_MOUNT_POINT"
+  run mosy init
+  assert_failure
+  assert_output --partial "Error: Cloud drive is not mounted at $HOME/NotMounted_Dir"
+}
+
 @test "Add: Fails if target outside HOME" {
   # Try to add a file from /tmp (outside current $HOME)
   local outside_file=$(mktemp)

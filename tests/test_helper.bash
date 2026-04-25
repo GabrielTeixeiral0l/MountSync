@@ -34,6 +34,28 @@ fi
 exit 1
 EOF
     chmod +x "$MOCK_BIN/mount"
+
+    # 5. Mock mountpoint command
+    cat <<EOF > "$MOCK_BIN/mountpoint"
+#!/bin/bash
+# Minimal mountpoint mock
+ARGS="\$@"
+PATH_ARG=""
+for arg in "\$@"; do
+    if [[ "\$arg" != -* ]]; then
+        PATH_ARG="\$arg"
+    fi
+done
+
+if [[ -n "\$PATH_ARG" ]] && ([[ "\$PATH_ARG" == "\$MOSY_MOUNT_POINT" ]] || [[ "\$PATH_ARG" == "\$MOSY_MOUNT_POINT/" ]]); then
+    if [[ "\$MOSY_MOUNT_POINT" == *"NotMounted"* ]]; then
+        exit 1
+    fi
+    exit 0
+fi
+exit 1
+EOF
+    chmod +x "$MOCK_BIN/mountpoint"
 }
 
 teardown() {

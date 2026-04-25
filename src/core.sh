@@ -6,8 +6,21 @@ SYNC_DIR="${MOSY_CLOUD_DIR:-${HOME}/GoogleDrive/mosy_vault}"
 MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
 MAP_FILE="$SYNC_DIR/sync-map.conf"
 
+is_mounted() {
+    # 1. Use mountpoint command if available (most reliable)
+    if command -v mountpoint >/dev/null 2>&1; then
+        mountpoint -q "$MOUNT_POINT"
+        return $?
+    fi
+
+    # 2. Fallback: check mount output with precision
+    # We look for the mount point followed by a space to avoid partial matches
+    mount | grep -qE "[[:space:]]on[[:space:]]${MOUNT_POINT%/}/?[[:space:]]" || \
+    mount | grep -qE "[[:space:]]${MOUNT_POINT%/}/?[[:space:]]type[[:space:]]"
+}
+
 check_mount() {
-    if ! mount | grep -q "$MOUNT_POINT"; then
+    if ! is_mounted; then
         echo "Error: Cloud drive is not mounted at $MOUNT_POINT"
         echo "Try: systemctl --user start mosy-mount.service (if installed)"
         exit 1

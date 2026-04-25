@@ -18,6 +18,7 @@ setup() {
 
     cat <<EOF > "$MOCK_BIN/systemctl"
 #!/bin/bash
+echo "Mocked systemctl \$@"
 exit 0
 EOF
     chmod +x "$MOCK_BIN/systemctl"
@@ -31,6 +32,7 @@ EOF
   
   assert_success
   assert_file_exists "$HOME/.config/mosy/config"
+  assert_output --partial "Mocked systemctl --user start mosy-mount.service"
 }
 
 @test "Install: Skips rclone installation if already present" {

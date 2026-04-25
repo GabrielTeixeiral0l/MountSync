@@ -50,7 +50,7 @@ cmd_status() {
     echo -e "--- System Status ---"
     
     # Check Mount
-    if mount | grep -q "$MOUNT_POINT"; then
+    if is_mounted; then
         echo -e "Mount Point ($MOUNT_POINT): ${GREEN}MOUNTED${NC}"
     else
         echo -e "Mount Point ($MOUNT_POINT): ${RED}NOT MOUNTED${NC}"
