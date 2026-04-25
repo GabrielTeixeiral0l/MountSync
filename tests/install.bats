@@ -147,6 +147,29 @@ EOF
   assert_failure
 }
 
+@test "Install: Allows skipping systemd setup if already mounted" {
+  # Mock rclone
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # Mock mountpoint to return success (meaning it's a mountpoint)
+  cat <<EOF > "$MOCK_BIN/mountpoint"
+#!/bin/bash
+exit 0
+EOF
+  chmod +x "$MOCK_BIN/mountpoint"
+
+  # Run install and say 'n' to the auto-mount service question
+  # Inputs: Enter (remote), Enter (mountpoint), 'n' (skip systemd)
+  run bash -c "printf '\n\nn\n' | bash install.sh"
+
+  assert_success
+  assert_output --partial "Skipping Systemd service setup"
+  
+  # Service file should NOT exist
+  [ ! -f "$HOME/.config/systemd/user/mosy-mount.service" ]
+}
+
 @test "Install: Auto-downloads repo when piped via curl" {
   echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"

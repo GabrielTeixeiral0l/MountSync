@@ -64,6 +64,17 @@ read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
 MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"
 MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}" 
 
+# 2.5. Mount Awareness Check
+SHOULD_SETUP_SYSTEMD=true
+if mountpoint -q "$MOUNT_POINT" 2>/dev/null || mount | grep -q "$MOUNT_POINT"; then
+    echo "Notice: $MOUNT_POINT is already a mountpoint."
+    read -p "Do you still want to install the MountSync auto-mount service? (y/N): " setup_service
+    if [[ ! $setup_service =~ ^[Yy]$ ]]; then
+        SHOULD_SETUP_SYSTEMD=false
+        echo "Skipping Systemd service setup. MountSync will use your existing mount."
+    fi
+fi
+
 # 3. Generation of Configuration
 CONFIG_DIR="${HOME}/.config/mosy"
 mkdir -p "$CONFIG_DIR" || { echo "Error: Could not create config directory $CONFIG_DIR"; exit 1; }
@@ -76,13 +87,14 @@ MOSY_CLOUD_DIR="$MOUNT_POINT/mosy_vault"
 EOF
 
 # 4. Persistence with Systemd
-SERVICE_DIR="${HOME}/.config/systemd/user"
-mkdir -p "$SERVICE_DIR" || { echo "Error: Could not create systemd directory $SERVICE_DIR"; exit 1; }
-SERVICE_FILE="$SERVICE_DIR/mosy-mount.service"
+if [ "$SHOULD_SETUP_SYSTEMD" = true ]; then
+    SERVICE_DIR="${HOME}/.config/systemd/user"
+    mkdir -p "$SERVICE_DIR" || { echo "Error: Could not create systemd directory $SERVICE_DIR"; exit 1; }
+    SERVICE_FILE="$SERVICE_DIR/mosy-mount.service"
 
-RCLONE_PATH=$(command -v rclone)
+    RCLONE_PATH=$(command -v rclone)
 
-cat <<EOF > "$SERVICE_FILE" || { echo "Error: Could not write to $SERVICE_FILE"; exit 1; }
+    cat <<EOF > "$SERVICE_FILE" || { echo "Error: Could not write to $SERVICE_FILE"; exit 1; }
 [Unit]
 Description=Rclone Mount for MountSync
 After=network-online.target
@@ -97,10 +109,11 @@ Restart=on-failure
 WantedBy=default.target
 EOF
 
-echo "Setting up Systemd service..."
-systemctl --user daemon-reload || true
-systemctl --user enable mosy-mount.service || echo "Warning: Could not enable systemd service (might be in a container/non-systemd system)."
-systemctl --user start mosy-mount.service || echo "Warning: Could not start systemd service. You may need to start it manually."
+    echo "Setting up Systemd service..."
+    systemctl --user daemon-reload || true
+    systemctl --user enable mosy-mount.service || echo "Warning: Could not enable systemd service (might be in a container/non-systemd system)."
+    systemctl --user start mosy-mount.service || echo "Warning: Could not start systemd service. You may need to start it manually."
+fi
 
 # 5. Integration in PATH
 BIN_DIR="${HOME}/.local/bin"
