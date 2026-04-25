@@ -35,12 +35,12 @@ EOF
 }
 
 @test "Uninstall: Completes and removes installation directory" {
-    # Provide 'n' for revert and 'y' for directory cleanup
-    run bash -c "echo -e 'n\ny' | mosy uninstall"
+    # Provide 'n' (revert), 'y' (confirm uninstall), 'n' (unmount)
+    run bash -c "echo -e 'n\ny\nn' | mosy uninstall"
     
     assert_success
-    assert_output --partial "Stopping and disabling service..."
-    assert_output --partial "Cleaning up files..."
+    assert_output --partial "Cleaning up system integration..."
+    assert_output --partial "Disabling service and removing files..."
     
     [ ! -f "$HOME/.config/systemd/user/mosy-mount.service" ]
     [ ! -f "$HOME/.local/bin/mosy" ]
@@ -56,11 +56,12 @@ EOF
 
     [ -L "$HOME/file1" ]
 
-    # Provide 'y' for revert and 'y' for cleanup
-    run bash -c "echo -e 'y\ny' | mosy uninstall"
+    # Provide 'y' (revert), 'y' (confirm uninstall), 'y' (unmount)
+    run bash -c "echo -e 'y\ny\ny' | mosy uninstall"
 
     assert_success
     assert_output --partial "Reverting file1 to local file..."
+    assert_output --partial "Stopping service and unmounting..."
     
     [ ! -L "$HOME/file1" ]
     [ -f "$HOME/file1" ]

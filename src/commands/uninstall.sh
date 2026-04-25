@@ -18,16 +18,23 @@ cmd_uninstall() {
         foreach_mapping revert_item
     fi
 
-    echo "Stopping and disabling service..."
-    systemctl --user stop mosy-mount.service || true
-    systemctl --user disable mosy-mount.service || true
-    rm -f "$HOME/.config/systemd/user/mosy-mount.service"
-
     read -p "The installation folder ($SCRIPT_DIR) and binary will be removed. Confirm? (y/N) " confirm < "$tty_input"
     if [[ "$confirm" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-        echo "Cleaning up files..."
+        echo "Cleaning up system integration..."
+        
+        # Ask before stopping the mount
+        read -p "Do you want to unmount the cloud drive ($MOUNT_POINT) now? (y/N) " unmount < "$tty_input"
+        if [[ "$unmount" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+            echo "Stopping service and unmounting..."
+            systemctl --user stop mosy-mount.service || true
+        fi
+
+        echo "Disabling service and removing files..."
+        systemctl --user disable mosy-mount.service || true
+        rm -f "$HOME/.config/systemd/user/mosy-mount.service"
         rm -f "$HOME/.local/bin/mosy"
         rm -rf "$SCRIPT_DIR"
+        
         echo "MountSync uninstalled successfully. Goodbye!"
     else
         echo "Uninstall cancelled. System remains unchanged."
