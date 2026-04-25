@@ -20,8 +20,15 @@ foreach_mapping() {
         return 0
     fi
 
-    while IFS="|" read -r local_rel cloud_rel; do
+    # Read map into memory first to avoid issues if the callback modifies the file
+    local map_entries=()
+    while IFS= read -r line || [ -n "$line" ]; do
+        [ -n "$line" ] && map_entries+=("$line")
+    done < "$MAP_FILE"
+
+    for entry in "${map_entries[@]}"; do
+        IFS="|" read -r local_rel cloud_rel <<< "$entry"
         if [ -z "$local_rel" ]; then continue; fi
         "$callback" "$local_rel" "$cloud_rel"
-    done < "$MAP_FILE"
+    done
 }
