@@ -25,7 +25,7 @@ cmd_remove() {
         cp "$SOURCE" "$TARGET"
     fi
 
-    # Remover do mapa
+    # Remove from map
     local clean_content=$(grep -v "^$REL_PATH|" "$MAP_FILE")
     echo "$clean_content" > "$MAP_FILE"
 

@@ -48,8 +48,8 @@ EOF
 
     [ -L "$HOME/file1" ]
 
-    # Provide 's' for revert and 'n' for cleanup
-    run bash -c "echo -e 's\nn' | mosy uninstall"
+    # Provide 'y' for revert and 'n' for cleanup
+    run bash -c "echo -e 'y\nn' | mosy uninstall"
 
     assert_success
     assert_output --partial "Reverting file1 to local file..."
