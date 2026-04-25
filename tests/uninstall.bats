@@ -40,7 +40,6 @@ EOF
     
     assert_success
     assert_output --partial "Stopping and disabling service..."
-    assert_output --partial "Removing binary..."
     assert_output --partial "Cleaning up files..."
     
     [ ! -f "$HOME/.config/systemd/user/mosy-mount.service" ]

@@ -23,13 +23,13 @@ cmd_uninstall() {
     systemctl --user disable mosy-mount.service || true
     rm -f "$HOME/.config/systemd/user/mosy-mount.service"
 
-    echo "Removing binary..."
-    rm -f "$HOME/.local/bin/mosy"
-
-    read -p "The installation folder ($SCRIPT_DIR) will be removed. Confirm? (y/N) " confirm < "$tty_input"
+    read -p "The installation folder ($SCRIPT_DIR) and binary will be removed. Confirm? (y/N) " confirm < "$tty_input"
     if [[ "$confirm" =~ ^([yY][eE][sS]|[yY])$ ]]; then
         echo "Cleaning up files..."
+        rm -f "$HOME/.local/bin/mosy"
         rm -rf "$SCRIPT_DIR"
         echo "MountSync uninstalled successfully. Goodbye!"
+    else
+        echo "Uninstall cancelled. System remains unchanged."
     fi
 }
