@@ -15,10 +15,17 @@ EOF
 
     # Setup directories
     mkdir -p "$HOME/.local/bin"
-    touch "$HOME/.local/bin/mosy"
     mkdir -p "$HOME/.config/systemd/user"
     touch "$HOME/.config/systemd/user/mosy-mount.service"
-    mkdir -p "$HOME/.mountsync"
+    
+    # Simulate installation directory
+    mkdir -p "$HOME/.mountsync/src"
+    cp -r "$PROJECT_ROOT/src" "$HOME/.mountsync/"
+    cp "$PROJECT_ROOT/mosy" "$HOME/.mountsync/"
+    ln -sf "$HOME/.mountsync/mosy" "$HOME/.local/bin/mosy"
+
+    # Update PATH to use the installed mosy
+    export PATH="$HOME/.local/bin:$MOCK_BIN:$PATH"
 
     export MOSY_MOUNT_POINT="$HOME/Cloud"
     export MOSY_CLOUD_DIR="$MOSY_MOUNT_POINT/mosy_vault"
@@ -27,16 +34,18 @@ EOF
     export MOSY_NO_TTY=1
 }
 
-@test "Uninstall: Completes without reverting files" {
-    # Provide 'n' for the first prompt and 'n' for the second
-    run bash -c "echo -e 'n\nn' | mosy uninstall"
+@test "Uninstall: Completes and removes installation directory" {
+    # Provide 'n' for revert and 'y' for directory cleanup
+    run bash -c "echo -e 'n\ny' | mosy uninstall"
     
     assert_success
     assert_output --partial "Stopping and disabling service..."
     assert_output --partial "Removing binary..."
+    assert_output --partial "Cleaning up files..."
     
     [ ! -f "$HOME/.config/systemd/user/mosy-mount.service" ]
     [ ! -f "$HOME/.local/bin/mosy" ]
+    [ ! -d "$HOME/.mountsync" ]
 }
 
 @test "Uninstall: Reverts files and completes" {
@@ -48,8 +57,8 @@ EOF
 
     [ -L "$HOME/file1" ]
 
-    # Provide 'y' for revert and 'n' for cleanup
-    run bash -c "echo -e 'y\nn' | mosy uninstall"
+    # Provide 'y' for revert and 'y' for cleanup
+    run bash -c "echo -e 'y\ny' | mosy uninstall"
 
     assert_success
     assert_output --partial "Reverting file1 to local file..."
@@ -57,4 +66,5 @@ EOF
     [ ! -L "$HOME/file1" ]
     [ -f "$HOME/file1" ]
     [ ! -f "$HOME/.local/bin/mosy" ]
+    [ ! -d "$HOME/.mountsync" ]
 }

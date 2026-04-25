@@ -26,13 +26,10 @@ cmd_uninstall() {
     echo "Removing binary..."
     rm -f "$HOME/.local/bin/mosy"
 
-    read -p "The installation folder (~/.mountsync) will be removed. Confirm? (y/N) " confirm < "$tty_input"
+    read -p "The installation folder ($SCRIPT_DIR) will be removed. Confirm? (y/N) " confirm < "$tty_input"
     if [[ "$confirm" =~ ^([yY][eE][sS]|[yY])$ ]]; then
         echo "Cleaning up files..."
-        # Final cleanup: removing the project folder
-        # We can't easily rm -rf the current dir while running from it, 
-        # so we schedule it or warn the user.
-        echo "Please manually remove the folder: rm -rf $HOME/.mountsync"
+        rm -rf "$SCRIPT_DIR"
         echo "MountSync uninstalled successfully. Goodbye!"
     fi
 }
