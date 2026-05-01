@@ -1,14 +1,46 @@
-# Load configuration
-CONFIG_DIR="${HOME}/.config/mosy"
-[ -f "$CONFIG_DIR/config" ] && . "$CONFIG_DIR/config"
-
-SYNC_DIR="${MOSY_CLOUD_DIR:-${HOME}/GoogleDrive/mosy_vault}"
-MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
-MAP_FILE="$SYNC_DIR/sync-map.conf"
-
 load_settings() {
-    :
+    local config_file="${HOME}/.config/mosy/config"
+    
+    # Pre-save environment variables to ensure they take precedence
+    local env_MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
+    local env_MOSY_MOUNT_POINT="${MOSY_MOUNT_POINT:-}"
+    local env_MOSY_VFS_CACHE="${MOSY_VFS_CACHE:-}"
+    local env_MOSY_CLOUD_DIR="${MOSY_CLOUD_DIR:-}"
+    local env_MOSY_BACKUP_EXT="${MOSY_BACKUP_EXT:-}"
+    local env_MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-}"
+    local env_MOSY_DRY_RUN="${MOSY_DRY_RUN:-}"
+
+    # 1. Source config if exists
+    if [ -f "$config_file" ]; then
+        . "$config_file"
+    fi
+
+    # Restore environment variables if they were set
+    [ -n "$env_MOSY_REMOTE_NAME" ] && MOSY_REMOTE_NAME="$env_MOSY_REMOTE_NAME"
+    [ -n "$env_MOSY_MOUNT_POINT" ]  && MOSY_MOUNT_POINT="$env_MOSY_MOUNT_POINT"
+    [ -n "$env_MOSY_VFS_CACHE" ]    && MOSY_VFS_CACHE="$env_MOSY_VFS_CACHE"
+    [ -n "$env_MOSY_CLOUD_DIR" ]    && MOSY_CLOUD_DIR="$env_MOSY_CLOUD_DIR"
+    [ -n "$env_MOSY_BACKUP_EXT" ] && MOSY_BACKUP_EXT="$env_MOSY_BACKUP_EXT"
+    [ -n "$env_MOSY_LOG_LEVEL" ]    && MOSY_LOG_LEVEL="$env_MOSY_LOG_LEVEL"
+    [ -n "$env_MOSY_DRY_RUN" ]    && MOSY_DRY_RUN="$env_MOSY_DRY_RUN"
+
+    # 2. Apply defaults for unset variables
+    MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
+    MOSY_MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
+    MOSY_VFS_CACHE="${MOSY_VFS_CACHE:-writes}"
+    MOSY_CLOUD_DIR="${MOSY_CLOUD_DIR:-${MOSY_MOUNT_POINT}/mosy_vault}"
+    MOSY_BACKUP_EXT="${MOSY_BACKUP_EXT:-.bak}"
+    MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-INFO}"
+    MOSY_DRY_RUN="${MOSY_DRY_RUN:-false}"
+
+    # 3. Derived variables
+    SYNC_DIR="${MOSY_CLOUD_DIR}"
+    MOUNT_POINT="${MOSY_MOUNT_POINT}"
+    MAP_FILE="$SYNC_DIR/sync-map.conf"
 }
+
+# Load settings automatically when sourced
+load_settings
 
 is_mounted() {
     # 1. Use mountpoint command if available (most reliable)
