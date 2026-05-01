@@ -34,13 +34,14 @@ setup() {
   echo "local1|cloud1" > "$MOSY_CLOUD_DIR/sync-map.conf"
   echo "local2|cloud2" >> "$MOSY_CLOUD_DIR/sync-map.conf"
   
-  cat <<EOF > test_script.sh
+  local test_script="${BATS_TMPDIR}/test_script.sh"
+  cat <<EOF > "$test_script"
 source src/core.sh
 callback() { echo "L:\$1 C:\$2"; }
 foreach_mapping callback
 EOF
   
-  run bash test_script.sh
+  run bash "$test_script"
   assert_output --partial "L:local1 C:cloud1"
   assert_output --partial "L:local2 C:cloud2"
 }

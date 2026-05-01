@@ -17,8 +17,9 @@ if [ ! -f "mosy" ] || [ ! -d "src" ]; then
         git clone https://github.com/GabrielTeixeiral0l/MountSync.git "$HOME/.mountsync"
         cd "$HOME/.mountsync"
     fi
-    if [ -c /dev/tty ]; then
-        exec bash install.sh < /dev/tty
+    if [ -t 0 ] || [ -c /dev/tty ]; then
+        # Try to use TTY if available, otherwise just run
+        exec bash install.sh < /dev/tty 2>/dev/null || exec bash install.sh
     else
         exec bash install.sh
     fi
