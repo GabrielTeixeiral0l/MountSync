@@ -6,6 +6,10 @@ SYNC_DIR="${MOSY_CLOUD_DIR:-${HOME}/GoogleDrive/mosy_vault}"
 MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
 MAP_FILE="$SYNC_DIR/sync-map.conf"
 
+load_settings() {
+    :
+}
+
 is_mounted() {
     # 1. Use mountpoint command if available (most reliable)
     if command -v mountpoint >/dev/null 2>&1; then
