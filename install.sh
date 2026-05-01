@@ -58,8 +58,23 @@ fi
 
 # 2. Configuration Wizard
 echo "--- MountSync Setup ---"
-read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME
-REMOTE_NAME="${REMOTE_NAME:-$DEFAULT_REMOTE}"
+
+REMOTES=($(rclone listremotes 2>/dev/null | sed 's/://'))
+DEFAULT_REMOTE="GoogleDrive"
+if [ ${#REMOTES[@]} -gt 0 ]; then
+    DEFAULT_REMOTE="${REMOTES[0]}"
+    echo "Detected rclone remotes:"
+    for i in "${!REMOTES[@]}"; do
+        echo "  $((i+1))) ${REMOTES[$i]}"
+    done
+fi
+
+read -p "Enter your rclone remote name or number [$DEFAULT_REMOTE]: " REMOTE_INPUT
+if [[ "$REMOTE_INPUT" =~ ^[0-9]+$ ]] && [ "$REMOTE_INPUT" -le "${#REMOTES[@]}" ] && [ "$REMOTE_INPUT" -gt 0 ]; then
+    REMOTE_NAME="${REMOTES[$((REMOTE_INPUT-1))]}"
+else
+    REMOTE_NAME="${REMOTE_INPUT:-$DEFAULT_REMOTE}"
+fi
 
 read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
 MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"

@@ -231,3 +231,28 @@ EOF
   assert_output --partial "MOCKED PULL RAN"
   assert_output --partial "MOCKED INSTALLER RAN"
 }
+
+@test "Install: Suggests first rclone remote as default" {
+  # Mock rclone with two remotes
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "DriveA:"; echo "DriveB:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # Run and just press enter for both (expecting DriveA as default)
+  run bash -c "printf '\n\n' | bash install.sh"
+  
+  assert_success
+  run grep "MOSY_REMOTE_NAME=\"DriveA\"" "$HOME/.config/mosy/config"
+  assert_success
+}
+
+@test "Install: Allows picking a remote from a list" {
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "DriveA:"; echo "DriveB:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # Choose option 2 (DriveB)
+  run bash -c "printf '2\n\n' | bash install.sh"
+  
+  assert_success
+  run grep "MOSY_REMOTE_NAME=\"DriveB\"" "$HOME/.config/mosy/config"
+  assert_success
+}
