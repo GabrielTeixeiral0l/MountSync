@@ -5,6 +5,4 @@ docs/
 *.md
 !README.md
 sync-map.conf
-tests/libs/
-tests/mock_bin/
 test_script.sh
