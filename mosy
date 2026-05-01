@@ -40,6 +40,10 @@ case "$1" in
         shift
         cmd_uninstall "$@"
         ;;
+    version)
+        source "${SCRIPT_DIR}/src/commands/version.sh"
+        command_version
+        ;;
     *)
         echo "Usage: mosy <command> [args]"
         echo "Commands:"

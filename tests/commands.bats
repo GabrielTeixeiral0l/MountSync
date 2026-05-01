@@ -69,3 +69,10 @@ setup() {
   [ ! -L "$HOME/config/app" ]
   [ -L "$HOME/scripts/tool" ]
 }
+
+@test "Version: Displays current version and path" {
+  run mosy version
+  assert_success
+  assert_output --partial "MountSync version"
+  assert_output --partial "Installed at:"
+}
