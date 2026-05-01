@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+    echo "rclone on /home/user/Cloud type fuse.rclone (rw)"
+    # Only mock the specific test mount if it's the expected one
+    if [[ "$CSYNC_MOUNT_POINT" == *"/Cloud" ]]; then
+        echo "rclone on $CSYNC_MOUNT_POINT type fuse.rclone (rw)"
+    fi
+    exit 0
+fi
+
+if [[ "$*" == *"/Cloud"* ]]; then
+    exit 0
+fi
+
+if [ -x /usr/bin/mount ]; then
+    exec /usr/bin/mount "$@"
+fi
+
+exit 1
