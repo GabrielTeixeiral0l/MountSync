@@ -76,3 +76,106 @@ setup() {
   assert_output --partial "MountSync version"
   assert_output --partial "Installed at:"
 }
+
+@test "Update: Fails if local changes exist" {
+  # Mock git to show changes
+  cat <<EOF > "$MOCK_BIN/git"
+#!/bin/bash
+if [[ "\$*" == *"diff-index --quiet HEAD --"* ]]; then
+    exit 1
+fi
+exit 0
+EOF
+  chmod +x "$MOCK_BIN/git"
+
+  run mosy update
+  assert_failure
+  assert_output --partial "Local changes detected"
+}
+
+@test "Update: Reports already up to date" {
+  # Mock git to show same SHA
+  cat <<EOF > "$MOCK_BIN/git"
+#!/bin/bash
+if [[ "\$*" == *"diff-index --quiet HEAD --"* ]]; then
+    exit 0
+fi
+if [[ "\$*" == *"rev-parse HEAD"* ]]; then
+    echo "current-sha"
+    exit 0
+fi
+if [[ "\$*" == *"fetch origin main"* ]]; then
+    exit 0
+fi
+if [[ "\$*" == *"rev-parse origin/main"* ]]; then
+    echo "current-sha"
+    exit 0
+fi
+exit 1
+EOF
+  chmod +x "$MOCK_BIN/git"
+
+  run mosy update
+  assert_success
+  assert_output --partial "MountSync is already up to date."
+}
+
+@test "Update: Success scenario" {
+  # Mock git for success
+  cat <<EOF > "$MOCK_BIN/git"
+#!/bin/bash
+if [[ "\$*" == *"diff-index --quiet HEAD --"* ]]; then exit 0; fi
+if [[ "\$*" == *"rev-parse HEAD"* ]]; then echo "old-sha"; exit 0; fi
+if [[ "\$*" == *"fetch origin main"* ]]; then exit 0; fi
+if [[ "\$*" == *"rev-parse origin/main"* ]]; then echo "new-sha"; exit 0; fi
+if [[ "\$*" == *"pull origin main"* ]]; then exit 0; fi
+exit 1
+EOF
+  chmod +x "$MOCK_BIN/git"
+
+  # Mock rclone for install.sh
+  cat <<EOF > "$MOCK_BIN/rclone"
+#!/bin/bash
+if [[ "\$*" == "listremotes" ]]; then echo "remote:"; exit 0; fi
+exit 0
+EOF
+  chmod +x "$MOCK_BIN/rclone"
+
+  run mosy update
+  assert_success
+  assert_output --partial "Update successful!"
+}
+
+@test "Update: Failure and rollback" {
+  # Mock git for failure and rollback
+  cat <<EOF > "$MOCK_BIN/git"
+#!/bin/bash
+# Using a file to track state for mock persistence if needed, but simple grep works here
+if [[ "\$*" == *"diff-index --quiet HEAD --"* ]]; then exit 0; fi
+if [[ "\$*" == *"rev-parse HEAD"* ]]; then echo "old-sha"; exit 0; fi
+if [[ "\$*" == *"fetch origin main"* ]]; then exit 0; fi
+if [[ "\$*" == *"rev-parse origin/main"* ]]; then echo "new-sha"; exit 0; fi
+if [[ "\$*" == *"pull origin main"* ]]; then
+    echo "Pull failed!"
+    exit 1
+fi
+if [[ "\$*" == *"reset --hard old-sha"* ]]; then
+    echo "Rollback success"
+    exit 0
+fi
+exit 1
+EOF
+  chmod +x "$MOCK_BIN/git"
+
+  # Mock rclone for install.sh
+  cat <<EOF > "$MOCK_BIN/rclone"
+#!/bin/bash
+exit 0
+EOF
+  chmod +x "$MOCK_BIN/rclone"
+
+  run mosy update
+  assert_failure
+  assert_output --partial "Update failed. Rolling back..."
+  assert_output --partial "Rollback success"
+}

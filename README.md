@@ -74,6 +74,20 @@ mosy init
 > [!WARNING]
 > Running `init` on an existing machine will back up local files before replacing them with symlinks from the vault to prevent data loss.
 
+### 4. Self-Update
+
+Keep MountSync up to date with the latest features and fixes. This command safely pulls the latest code and refreshes your system components.
+
+```bash
+mosy update
+```
+
+### 5. Check Version
+
+```bash
+mosy version
+```
+
 ## Architecture
 
 MountSync is designed with a modular, "core-and-command" architecture:

@@ -44,6 +44,10 @@ case "$1" in
         source "${SCRIPT_DIR}/src/commands/version.sh"
         command_version
         ;;
+    update)
+        source "${SCRIPT_DIR}/src/commands/update.sh"
+        command_update
+        ;;
     *)
         echo "Usage: mosy <command> [args]"
         echo "Commands:"
