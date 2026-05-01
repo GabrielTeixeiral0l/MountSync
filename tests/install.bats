@@ -231,3 +231,26 @@ EOF
   assert_output --partial "MOCKED PULL RAN"
   assert_output --partial "MOCKED INSTALLER RAN"
 }
+
+@test "Install: --update flag skips prompts and preserves config" {
+  # Mock rclone
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  mkdir -p "$HOME/.config/mosy"
+  cat <<EOF > "$HOME/.config/mosy/config"
+MOSY_REMOTE_NAME="ExistingRemote"
+MOSY_MOUNT_POINT="$HOME/ExistingCloud"
+MOSY_CLOUD_DIR="$HOME/ExistingCloud/mosy_vault"
+EOF
+
+  # Run with --update, should not ask anything
+  # If it asks for input, it will fail because stdin is closed/empty in run
+  run bash install.sh --update
+  
+  assert_success
+  run grep "MOSY_REMOTE_NAME=\"ExistingRemote\"" "$HOME/.config/mosy/config"
+  assert_success
+  run grep "MOSY_MOUNT_POINT=\"$HOME/ExistingCloud\"" "$HOME/.config/mosy/config"
+  assert_success
+}

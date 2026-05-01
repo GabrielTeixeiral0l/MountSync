@@ -5,6 +5,11 @@
 
 set -e # Exit on error
 
+IS_UPDATE=false
+if [[ "$1" == "--update" ]]; then
+    IS_UPDATE=true
+fi
+
 # Auto-download if piped from curl
 if [ ! -f "mosy" ] || [ ! -d "src" ]; then
     echo "--- Downloading MountSync ---"
@@ -30,8 +35,22 @@ fi
 DEFAULT_REMOTE="GoogleDrive"
 DEFAULT_MOUNT="${HOME}/GoogleDrive"
 
+if [ "$IS_UPDATE" = true ]; then
+    CONFIG_FILE="${HOME}/.config/mosy/config"
+    if [ -f "$CONFIG_FILE" ]; then
+        # shellcheck source=/dev/null
+        source "$CONFIG_FILE"
+        DEFAULT_REMOTE="${MOSY_REMOTE_NAME:-$DEFAULT_REMOTE}"
+        DEFAULT_MOUNT="${MOSY_MOUNT_POINT:-$DEFAULT_MOUNT}"
+    fi
+fi
+
 # 1. Dependency Check: rclone
 if ! command -v rclone &> /dev/null; then
+    if [ "$IS_UPDATE" = true ]; then
+        echo "Error: rclone not found. Cannot update without rclone."
+        exit 1
+    fi
     echo "rclone not found."
     read -p "Install rclone now? (y/n): " install_rclone
     if [[ $install_rclone =~ ^[Yy]$ ]]; then
@@ -46,33 +65,49 @@ fi
 
 # 1.5. Remote Configuration Check
 if ! rclone listremotes | grep -q .; then
-    echo "--- rclone Configuration ---"
-    echo "No cloud remotes detected in rclone."
-    read -p "Would you like to configure one now? (y/n): " run_config
-    if [[ $run_config =~ ^[Yy]$ ]]; then
-        rclone config
+    if [ "$IS_UPDATE" = true ]; then
+        echo "Warning: No cloud remotes detected in rclone. Update might fail."
     else
-        echo "Warning: You need at least one configured rclone remote for MountSync to work."
+        echo "--- rclone Configuration ---"
+        echo "No cloud remotes detected in rclone."
+        read -p "Would you like to configure one now? (y/n): " run_config
+        if [[ $run_config =~ ^[Yy]$ ]]; then
+            rclone config
+        else
+            echo "Warning: You need at least one configured rclone remote for MountSync to work."
+        fi
     fi
 fi
 
 # 2. Configuration Wizard
 echo "--- MountSync Setup ---"
-read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME
-REMOTE_NAME="${REMOTE_NAME:-$DEFAULT_REMOTE}"
+if [ "$IS_UPDATE" = true ]; then
+    REMOTE_NAME="$DEFAULT_REMOTE"
+    MOUNT_POINT="$DEFAULT_MOUNT"
+    echo "Using remote: $REMOTE_NAME"
+    echo "Using mount point: $MOUNT_POINT"
+else
+    read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME
+    REMOTE_NAME="${REMOTE_NAME:-$DEFAULT_REMOTE}"
 
-read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
-MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"
+    read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
+    MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"
+fi
 MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}" 
 
 # 2.5. Mount Awareness Check
 SHOULD_SETUP_SYSTEMD=true
 if mountpoint -q "$MOUNT_POINT" 2>/dev/null || mount | grep -q "$MOUNT_POINT"; then
     echo "Notice: $MOUNT_POINT is already a mountpoint."
-    read -p "Do you still want to install the MountSync auto-mount service? (y/N): " setup_service
-    if [[ ! $setup_service =~ ^[Yy]$ ]]; then
+    if [ "$IS_UPDATE" = true ]; then
         SHOULD_SETUP_SYSTEMD=false
-        echo "Skipping Systemd service setup. MountSync will use your existing mount."
+        echo "Skipping Systemd service setup (Update Mode)."
+    else
+        read -p "Do you still want to install the MountSync auto-mount service? (y/N): " setup_service
+        if [[ ! $setup_service =~ ^[Yy]$ ]]; then
+            SHOULD_SETUP_SYSTEMD=false
+            echo "Skipping Systemd service setup. MountSync will use your existing mount."
+        fi
     fi
 fi
 
