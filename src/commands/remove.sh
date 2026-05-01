@@ -22,8 +22,8 @@ cmd_remove() {
         echo "The link is broken. Removing the broken link to cleanup..."
         rm "$TARGET"
         # Cleanup map anyway to keep it consistent
-        local clean_map=$(grep -v "^$REL_PATH|" "$MAP_FILE")
-        echo "$clean_map" > "$MAP_FILE"
+        local clean_map=$(grep -v "^$REL_PATH|" "$MOSY_MAP_FILE")
+        echo "$clean_map" > "$MOSY_MAP_FILE"
         echo "Success! Broken link removed and item unmanaged."
         return 0
     fi
@@ -41,8 +41,8 @@ cmd_remove() {
     mv "${TARGET}.new" "$TARGET"
 
     # Robust map update
-    local clean_map=$(grep -v "^$REL_PATH|" "$MAP_FILE")
-    echo "$clean_map" > "$MAP_FILE"
+    local clean_map=$(grep -v "^$REL_PATH|" "$MOSY_MAP_FILE")
+    echo "$clean_map" > "$MOSY_MAP_FILE"
 
     echo "Success! $REL_PATH is now a local file."
     echo "Note: The cloud copy remains in the vault for your other devices."

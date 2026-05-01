@@ -6,7 +6,7 @@ list_callback() {
 }
 
 cmd_list() {
-    if [ ! -f "$MAP_FILE" ]; then
+    if [ ! -f "$MOSY_MAP_FILE" ]; then
         echo "No items are currently being managed by MountSync."
         return 0
     fi
