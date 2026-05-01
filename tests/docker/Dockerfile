@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libdw-dev \
     libiberty-dev \
+    bats \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up a test user
@@ -25,8 +26,5 @@ RUN useradd -m -s /bin/bash tester && \
 USER tester
 WORKDIR /home/tester/mountsync
 
-# Copy the repository (we will mount it as a volume for faster dev, but COPY for the base image)
-# COPY . . 
-
 # Command to run tests
-CMD ["./tests/libs/bats-core/bin/bats", "tests/"]
+CMD ["bats", "tests/"]
