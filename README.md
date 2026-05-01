@@ -1,11 +1,23 @@
 # MountSync
 
 ![Tests](https://github.com/GabrielTeixeiral0l/MountSync/actions/workflows/tests.yml/badge.svg)
+![License](https://img.shields.io/github/license/GabrielTeixeiral0l/MountSync?color=blue)
+![Bash](https://img.shields.io/badge/shell-bash-4EAA25?logo=gnu-bash&logoColor=white)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
 MountSync is a minimalist, cloud-agnostic dotfile and directory orchestrator. It leverages `rclone` to synchronize your environment across multiple machines using symbolic links.
 
 > [!NOTE]
 > MountSync operates on a simple philosophy: files are moved to a central "Cloud Vault" and replaced locally by symbolic links. A central registry (`sync-map.conf`) tracks these items, allowing instant replication of your environment on any machine.
+
+## Prerequisites
+
+Before installing MountSync, ensure your system meets the following requirements:
+
+- **Operating System:** Linux (with `systemd` for automated mounting).
+- **Shell:** `bash` (version 4.0 or higher recommended).
+- **Cloud Engine:** `rclone` installed and configured with at least one remote.
+- **Dependencies:** `fuse3` (required for rclone mounts).
 
 ## Features
 
@@ -61,6 +73,25 @@ mosy init
 
 > [!WARNING]
 > Running `init` on an existing machine will back up local files before replacing them with symlinks from the vault to prevent data loss.
+
+## Architecture
+
+MountSync is designed with a modular, "core-and-command" architecture:
+
+1. **Unified Entrypoint (`mosy`)**: A thin wrapper that routes subcommands.
+2. **Core Logic (`src/core.sh`)**: Handles configuration loading, mount verification, and the `sync-map.conf` iterator.
+3. **Modular Commands (`src/commands/*.sh`)**: Each sub-command (add, pull, init, etc.) is an independent script, making it easy to audit and extend.
+
+## Troubleshooting
+
+### Cloud drive is not mounted
+If you see an error about the cloud drive not being mounted:
+1. Check if the mount service is running: `systemctl --user status mosy-mount.service`
+2. Manually verify the mount point: `mountpoint /your/mount/path`
+3. Ensure your rclone remote name in `~/.config/mosy/config` matches your `rclone config`.
+
+### Symlink conflicts
+MountSync will never overwrite a real file during `pull`. If a conflict occurs, it will skip the item and warn you. You must manually move the local file if you want to replace it with the cloud version.
 
 ## Configuration
 
