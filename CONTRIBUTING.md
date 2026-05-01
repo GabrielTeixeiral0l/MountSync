@@ -78,9 +78,10 @@ Example: `feat(commands): add status command to check synchronization state`
 
 ## Pull Request Process
 
-1. Ensure your code follows the style guidelines and all tests pass.
+1. Ensure your code follows the style guidelines and all tests pass locally.
 2. Update the README.md or help text if you've added/changed functionality.
 3. Submit your PR against the `dev` branch.
-4. Fill out the PR template completely.
+4. **Automated Testing**: Once you submit your PR, GitHub Actions will automatically run the full test suite in a Docker environment. Your PR will only be considered for merge once the "Tests" check passes (green checkmark ✅).
+5. Fill out the PR template completely.
 
 After a successful merge into `dev`, feature branches are deleted.
