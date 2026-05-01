@@ -10,7 +10,10 @@ common_setup() {
     export TEST_HOME=$(mktemp -d)
     export HOME="$TEST_HOME"
     
-    # 3. Path setup for testing
+    # 3. Default Settings for Tests
+    export MOSY_REMOTE_NAME="test-remote"
+
+    # 4. Path setup for testing
     export PROJECT_ROOT="$(pwd)"
     export MOCK_BIN="$TEST_HOME/mock_bin"
     mkdir -p "$MOCK_BIN"

@@ -8,12 +8,14 @@ setup() {
 }
 
 @test "settings: loads default values when no config exists" {
+    export MOSY_REMOTE_NAME="gdrive"
     run bash -c "source src/core.sh && load_settings && echo \$MOSY_VFS_CACHE"
     [ "$status" -eq 0 ]
     [ "$output" == "writes" ]
 }
 
 @test "settings: config file overrides defaults" {
+    export MOSY_REMOTE_NAME="gdrive"
     echo 'MOSY_VFS_CACHE="off"' > "$HOME/.config/mosy/config"
     run bash -c "source src/core.sh && load_settings && echo \$MOSY_VFS_CACHE"
     [ "$status" -eq 0 ]
@@ -21,9 +23,19 @@ setup() {
 }
 
 @test "settings: environment variables override everything" {
+    export MOSY_REMOTE_NAME="gdrive"
     echo 'MOSY_VFS_CACHE="off"' > "$HOME/.config/mosy/config"
     export MOSY_VFS_CACHE="full"
     run bash -c "source src/core.sh && load_settings && echo \$MOSY_VFS_CACHE"
     [ "$status" -eq 0 ]
     [ "$output" == "full" ]
+}
+
+@test "settings: fails if MOSY_REMOTE_NAME is missing" {
+    unset MOSY_REMOTE_NAME
+    # Create empty config to ensure it's not loaded from there
+    touch "$HOME/.config/mosy/config"
+    run bash -c "source src/core.sh && load_settings"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Error: MOSY_REMOTE_NAME is not defined"* ]]
 }

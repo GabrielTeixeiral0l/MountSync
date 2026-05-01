@@ -33,7 +33,13 @@ load_settings() {
     MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-INFO}"
     MOSY_DRY_RUN="${MOSY_DRY_RUN:-false}"
 
-    # 3. Derived variables
+    # 3. Mandatory settings validation
+    if [ -z "$MOSY_REMOTE_NAME" ]; then
+        echo "Error: MOSY_REMOTE_NAME is not defined in config or environment" >&2
+        return 1
+    fi
+
+    # 4. Derived variables
     SYNC_DIR="${MOSY_CLOUD_DIR}"
     MOUNT_POINT="${MOSY_MOUNT_POINT}"
     MAP_FILE="$SYNC_DIR/sync-map.conf"
