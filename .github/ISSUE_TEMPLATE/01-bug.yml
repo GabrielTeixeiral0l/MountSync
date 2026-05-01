@@ -1,0 +1,90 @@
+name: Bug Report
+description: Report something that is broken in MountSync.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug! Please fill out the form below to help us reproduce and fix it.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Steps
+      description: |
+        How do we trigger this bug? Please provide the exact commands you ran.
+        If possible, include a small `.bats` test or a reproduction script.
+      placeholder: |
+        mosy add file.txt
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of MountSync is affected?
+      options:
+        - Core (src/core.sh)
+        - Commands (src/commands/*)
+        - Installer (install.sh)
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS (e.g., Ubuntu 22.04) and Shell (e.g., bash 5.1).
+      placeholder: e.g., Ubuntu 22.04 / bash
+    validations:
+      required: true
+  - type: input
+    id: rclone_version
+    attributes:
+      label: Rclone Version
+      description: Output of 'rclone version'.
+      placeholder: e.g., v1.66.0
+  - type: dropdown
+    id: mount_status
+    attributes:
+      label: Mount Status
+      description: Is your cloud drive mounted?
+      options:
+        - "Yes (manually)"
+        - "Yes (via mosy-mount.service)"
+        - "No"
+        - "Not sure"
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklists
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched the [existing issues](https://github.com/gabrielteixeira/mountsync/issues).
+          required: true
+        - label: I am using the latest version of MountSync.
+          required: true
