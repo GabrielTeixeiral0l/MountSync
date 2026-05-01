@@ -28,7 +28,7 @@ EOF
   echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
-  run bash -c "printf 'MyRemote\ny\n$HOME/MyCloud\n' | bash install.sh"
+  run bash -c "printf 'MyRemote\ny\n$HOME/MyCloud\ny\n' | bash install.sh"
   
   assert_success
   assert_file_exists "$HOME/.config/mosy/config"
@@ -39,7 +39,7 @@ EOF
   echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
-  run bash -c "printf '\n\n' | bash install.sh"
+  run bash -c "printf '\n\n\n' | bash install.sh"
   
   assert_success
   refute_output --partial "rclone not found"
@@ -68,7 +68,7 @@ echo "echo 'RCLONE INSTALLED'"
 EOF
   chmod +x "$MOCK_BIN/sudo" "$MOCK_BIN/curl"
 
-  run bash -c "command() { if [[ \"\$2\" == \"rclone\" ]]; then if [ -x \"$MOCK_BIN/rclone\" ]; then return 0; else return 1; fi; else builtin command \"\$@\"; fi; }; export -f command; printf 'y\nMyRemote\ny\n$HOME/MyCloud\n' | bash install.sh"
+  run bash -c "command() { if [[ \"\$2\" == \"rclone\" ]]; then if [ -x \"$MOCK_BIN/rclone\" ]; then return 0; else return 1; fi; else builtin command \"\$@\"; fi; }; export -f command; printf 'y\nMyRemote\ny\n$HOME/MyCloud\ny\n' | bash install.sh"
   
   assert_success
   assert_output --partial "Installing rclone..."
@@ -79,7 +79,7 @@ EOF
   echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
   
-  run bash -c "printf '\n\n' | bash install.sh"
+  run bash -c "printf '\n\n\n' | bash install.sh"
   
   assert_success
   assert_dir_exists "$HOME/.local/bin"
@@ -91,7 +91,7 @@ EOF
   chmod +x "$MOCK_BIN/rclone"
   
   # Ensure the subshell has a path that definitely doesn't include the new bin
-  run bash -c "export PATH='$MOCK_BIN:$PROJECT_ROOT:/usr/bin:/bin'; printf '\n\n' | bash install.sh"
+  run bash -c "export PATH='$MOCK_BIN:$PROJECT_ROOT:/usr/bin:/bin'; printf '\n\n\n' | bash install.sh"
   
   assert_success
   assert_output --partial "Warning: $HOME/.local/bin is not in your PATH"
@@ -101,7 +101,7 @@ EOF
   echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
-  run bash -c "printf 'TestRemote\ny\n~/TildeCloud\n' | bash install.sh"
+  run bash -c "printf 'TestRemote\ny\n~/TildeCloud\ny\n' | bash install.sh"
   
   assert_success
   run grep "MOSY_MOUNT_POINT=\"$HOME/TildeCloud\"" "$HOME/.config/mosy/config"
@@ -112,7 +112,7 @@ EOF
   echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
-  run bash -c "printf '\n\n' | bash install.sh"
+  run bash -c "printf '\n\n\n' | bash install.sh"
   
   assert_success
   run grep "MOSY_REMOTE_NAME=\"GoogleDrive\"" "$HOME/.config/mosy/config"
@@ -126,7 +126,7 @@ EOF
   mkdir -p "$HOME/.config/mosy"
   echo "OLD_DATA=true" > "$HOME/.config/mosy/config"
 
-  run bash -c "printf 'NewRemote\ny\n\n' | bash install.sh"
+  run bash -c "printf 'NewRemote\ny\n\ny\n' | bash install.sh"
   
   assert_success
   run grep "MOSY_REMOTE_NAME=\"NewRemote\"" "$HOME/.config/mosy/config"
@@ -142,7 +142,7 @@ EOF
   mkdir -p "$HOME"
   touch "$HOME/.config"
 
-  run bash -c "printf '\n\n' | bash install.sh"
+  run bash -c "printf '\n\n\n' | bash install.sh"
   
   assert_failure
 }
@@ -158,6 +158,8 @@ EOF
 exit 0
 EOF
   chmod +x "$MOCK_BIN/mountpoint"
+
+  mkdir -p "$HOME/GoogleDrive"
 
   # Run install and say 'n' to the auto-mount service question
   # Inputs: Enter (remote), Enter (mountpoint), 'n' (skip systemd)
@@ -238,7 +240,7 @@ EOF
   chmod +x "$MOCK_BIN/rclone"
 
   # Run and just press enter for both (expecting DriveA as default)
-  run bash -c "printf '\n\n' | bash install.sh"
+  run bash -c "printf '\n\n\n' | bash install.sh"
   
   assert_success
   run grep "MOSY_REMOTE_NAME=\"DriveA\"" "$HOME/.config/mosy/config"
@@ -250,7 +252,7 @@ EOF
   chmod +x "$MOCK_BIN/rclone"
 
   # Choose option 2 (DriveB)
-  run bash -c "printf '2\n\n' | bash install.sh"
+  run bash -c "printf '2\n\n\n' | bash install.sh"
   
   assert_success
   run grep "MOSY_REMOTE_NAME=\"DriveB\"" "$HOME/.config/mosy/config"
@@ -262,8 +264,37 @@ EOF
   chmod +x "$MOCK_BIN/rclone"
 
   # Enter 'FakeDrive', then 'y' to proceed anyway
-  run bash -c "printf 'FakeDrive\ny\n\n' | bash install.sh"
+  run bash -c "printf 'FakeDrive\ny\n\n\n' | bash install.sh"
   
   assert_success
   assert_output --partial "Warning: Remote 'FakeDrive' not found"
+}
+
+@test "Install: Asks to create non-existent mount point" {
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # Path that doesn't exist
+  NON_EXISTENT="$HOME/NewlyCreated"
+  
+  # Input: Enter (remote), path, 'y' (create dir), then 'y' for systemd (default)
+  run bash -c "printf '\n$NON_EXISTENT\ny\ny\n' | bash install.sh"
+  
+  assert_success
+  assert_dir_exists "$NON_EXISTENT"
+}
+
+@test "Install: Re-asks for mount point if user denies creation" {
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # Input: Enter (remote), bad path, 'n' (deny), good path (which we create manually first), then 'y' for systemd
+  GOOD_PATH="$HOME/RealDir"
+  mkdir -p "$GOOD_PATH"
+  
+  run bash -c "printf '\n$HOME/FakeDir\nn\n$GOOD_PATH\ny\n' | bash install.sh"
+  
+  assert_success
+  run grep "MOSY_MOUNT_POINT=\"$GOOD_PATH\"" "$HOME/.config/mosy/config"
+  assert_success
 }

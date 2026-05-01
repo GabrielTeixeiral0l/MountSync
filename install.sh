@@ -95,9 +95,25 @@ while [ "$VALID_REMOTE" = false ]; do
     fi
 done
 
-read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
-MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"
-MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}" 
+VALID_PATH=false
+while [ "$VALID_PATH" = false ]; do
+    read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_INPUT
+    MOUNT_POINT="${MOUNT_INPUT:-$DEFAULT_MOUNT}"
+    MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}"
+    
+    if [ -d "$MOUNT_POINT" ]; then
+        VALID_PATH=true
+    else
+        read -p "Directory '$MOUNT_POINT' does not exist. Create it now? (Y/n): " CREATE_DIR
+        if [[ ! $CREATE_DIR =~ ^[Nn]$ ]]; then
+            if mkdir -p "$MOUNT_POINT" 2>/dev/null; then
+                VALID_PATH=true
+            else
+                echo "Error: Could not create directory $MOUNT_POINT. Please check permissions."
+            fi
+        fi
+    fi
+done
 
 # 2.5. Mount Awareness Check
 SHOULD_SETUP_SYSTEMD=true
