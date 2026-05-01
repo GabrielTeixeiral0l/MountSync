@@ -69,12 +69,31 @@ if [ ${#REMOTES[@]} -gt 0 ]; then
     done
 fi
 
-read -p "Enter your rclone remote name or number [$DEFAULT_REMOTE]: " REMOTE_INPUT
-if [[ "$REMOTE_INPUT" =~ ^[0-9]+$ ]] && [ "$REMOTE_INPUT" -le "${#REMOTES[@]}" ] && [ "$REMOTE_INPUT" -gt 0 ]; then
-    REMOTE_NAME="${REMOTES[$((REMOTE_INPUT-1))]}"
-else
-    REMOTE_NAME="${REMOTE_INPUT:-$DEFAULT_REMOTE}"
-fi
+VALID_REMOTE=false
+while [ "$VALID_REMOTE" = false ]; do
+    read -p "Enter your rclone remote name or number [$DEFAULT_REMOTE]: " REMOTE_INPUT
+    if [[ "$REMOTE_INPUT" =~ ^[0-9]+$ ]] && [ "$REMOTE_INPUT" -le "${#REMOTES[@]}" ] && [ "$REMOTE_INPUT" -gt 0 ]; then
+        REMOTE_NAME="${REMOTES[$((REMOTE_INPUT-1))]}"
+    else
+        REMOTE_NAME="${REMOTE_INPUT:-$DEFAULT_REMOTE}"
+    fi
+    
+    # Validation check
+    FOUND=false
+    for r in "${REMOTES[@]}"; do
+        if [ "$r" == "$REMOTE_NAME" ]; then FOUND=true; break; fi
+    done
+    
+    if [ "$FOUND" = true ] || [ ${#REMOTES[@]} -eq 0 ]; then
+        VALID_REMOTE=true
+    else
+        echo "Warning: Remote '$REMOTE_NAME' not found in rclone configuration."
+        read -p "Do you want to proceed anyway? (y/N): " PROCEED
+        if [[ $PROCEED =~ ^[Yy]$ ]]; then
+            VALID_REMOTE=true
+        fi
+    fi
+done
 
 read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
 MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"

@@ -28,7 +28,7 @@ EOF
   echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
-  run bash -c "printf 'MyRemote\n$HOME/MyCloud\n' | bash install.sh"
+  run bash -c "printf 'MyRemote\ny\n$HOME/MyCloud\n' | bash install.sh"
   
   assert_success
   assert_file_exists "$HOME/.config/mosy/config"
@@ -68,7 +68,7 @@ echo "echo 'RCLONE INSTALLED'"
 EOF
   chmod +x "$MOCK_BIN/sudo" "$MOCK_BIN/curl"
 
-  run bash -c "command() { if [[ \"\$2\" == \"rclone\" ]]; then if [ -x \"$MOCK_BIN/rclone\" ]; then return 0; else return 1; fi; else builtin command \"\$@\"; fi; }; export -f command; printf 'y\nMyRemote\n$HOME/MyCloud\n' | bash install.sh"
+  run bash -c "command() { if [[ \"\$2\" == \"rclone\" ]]; then if [ -x \"$MOCK_BIN/rclone\" ]; then return 0; else return 1; fi; else builtin command \"\$@\"; fi; }; export -f command; printf 'y\nMyRemote\ny\n$HOME/MyCloud\n' | bash install.sh"
   
   assert_success
   assert_output --partial "Installing rclone..."
@@ -101,7 +101,7 @@ EOF
   echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
   chmod +x "$MOCK_BIN/rclone"
 
-  run bash -c "printf 'TestRemote\n~/TildeCloud\n' | bash install.sh"
+  run bash -c "printf 'TestRemote\ny\n~/TildeCloud\n' | bash install.sh"
   
   assert_success
   run grep "MOSY_MOUNT_POINT=\"$HOME/TildeCloud\"" "$HOME/.config/mosy/config"
@@ -126,7 +126,7 @@ EOF
   mkdir -p "$HOME/.config/mosy"
   echo "OLD_DATA=true" > "$HOME/.config/mosy/config"
 
-  run bash -c "printf 'NewRemote\n\n' | bash install.sh"
+  run bash -c "printf 'NewRemote\ny\n\n' | bash install.sh"
   
   assert_success
   run grep "MOSY_REMOTE_NAME=\"NewRemote\"" "$HOME/.config/mosy/config"
@@ -255,4 +255,15 @@ EOF
   assert_success
   run grep "MOSY_REMOTE_NAME=\"DriveB\"" "$HOME/.config/mosy/config"
   assert_success
+}
+
+@test "Install: Warns when entering a non-existent remote" {
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "RealDrive:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # Enter 'FakeDrive', then 'y' to proceed anyway
+  run bash -c "printf 'FakeDrive\ny\n\n' | bash install.sh"
+  
+  assert_success
+  assert_output --partial "Warning: Remote 'FakeDrive' not found"
 }
