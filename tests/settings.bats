@@ -37,5 +37,12 @@ setup() {
     touch "$HOME/.config/mosy/config"
     run bash -c "source src/core.sh && load_settings"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"Error: MOSY_REMOTE_NAME is not defined"* ]]
+    [[ "$output" == *"Error: MOSY_REMOTE_NAME is missing"* ]]
+}
+
+@test "settings: loads new Phase 1 defaults" {
+    export MOSY_REMOTE_NAME="gdrive"
+    run bash -c "source src/core.sh && load_settings && echo \"\$MOSY_LOG_LEVEL|\$MOSY_DRY_RUN|\$MOSY_BACKUP_EXT\""
+    [ "$status" -eq 0 ]
+    [ "$output" == "INFO|false|.bak" ]
 }

@@ -1,7 +1,7 @@
 load_settings() {
     local config_file="${HOME}/.config/mosy/config"
     
-    # Pre-save environment variables to ensure they take precedence
+    # Save env vars to preserve precedence
     local env_MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
     local env_MOSY_MOUNT_POINT="${MOSY_MOUNT_POINT:-}"
     local env_MOSY_VFS_CACHE="${MOSY_VFS_CACHE:-}"
@@ -10,37 +10,33 @@ load_settings() {
     local env_MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-}"
     local env_MOSY_DRY_RUN="${MOSY_DRY_RUN:-}"
 
-    # 1. Source config if exists
     if [ -f "$config_file" ]; then
         . "$config_file"
     fi
 
-    # Restore environment variables if they were set
+    # Restore env vars
     [ -n "$env_MOSY_REMOTE_NAME" ] && MOSY_REMOTE_NAME="$env_MOSY_REMOTE_NAME"
     [ -n "$env_MOSY_MOUNT_POINT" ]  && MOSY_MOUNT_POINT="$env_MOSY_MOUNT_POINT"
     [ -n "$env_MOSY_VFS_CACHE" ]    && MOSY_VFS_CACHE="$env_MOSY_VFS_CACHE"
     [ -n "$env_MOSY_CLOUD_DIR" ]    && MOSY_CLOUD_DIR="$env_MOSY_CLOUD_DIR"
-    [ -n "$env_MOSY_BACKUP_EXT" ] && MOSY_BACKUP_EXT="$env_MOSY_BACKUP_EXT"
+    [ -n "$env_MOSY_BACKUP_EXT" ]   && MOSY_BACKUP_EXT="$env_MOSY_BACKUP_EXT"
     [ -n "$env_MOSY_LOG_LEVEL" ]    && MOSY_LOG_LEVEL="$env_MOSY_LOG_LEVEL"
-    [ -n "$env_MOSY_DRY_RUN" ]    && MOSY_DRY_RUN="$env_MOSY_DRY_RUN"
+    [ -n "$env_MOSY_DRY_RUN" ]      && MOSY_DRY_RUN="$env_MOSY_DRY_RUN"
 
-    # 2. Apply defaults for unset variables
-    MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
-    MOSY_MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
-    MOSY_VFS_CACHE="${MOSY_VFS_CACHE:-writes}"
-    MOSY_CLOUD_DIR="${MOSY_CLOUD_DIR:-${MOSY_MOUNT_POINT}/mosy_vault}"
-    MOSY_BACKUP_EXT="${MOSY_BACKUP_EXT:-.bak}"
-    MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-INFO}"
-    MOSY_DRY_RUN="${MOSY_DRY_RUN:-false}"
+    # Set defaults
+    export MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
+    export MOSY_MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
+    export MOSY_VFS_CACHE="${MOSY_VFS_CACHE:-writes}"
+    export MOSY_CLOUD_DIR="${MOSY_CLOUD_DIR:-${MOSY_MOUNT_POINT}/mosy_vault}"
+    export MOSY_BACKUP_EXT="${MOSY_BACKUP_EXT:-.bak}"
+    export MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-INFO}"
+    export MOSY_DRY_RUN="${MOSY_DRY_RUN:-false}"
 
-    # 3. Mandatory settings validation
     if [ -z "$MOSY_REMOTE_NAME" ]; then
-        echo "Error: MOSY_REMOTE_NAME is not defined in config or environment" >&2
+        echo "Error: MOSY_REMOTE_NAME is missing" >&2
         return 1
     fi
-
-    # 4. Derived variables
-    MOSY_MAP_FILE="$MOSY_CLOUD_DIR/sync-map.conf"
+    export MOSY_MAP_FILE="$MOSY_CLOUD_DIR/sync-map.conf"
 }
 
 # Load settings automatically when sourced
@@ -86,4 +82,30 @@ foreach_mapping() {
         if [ -z "$local_rel" ]; then continue; fi
         "$callback" "$local_rel" "$cloud_rel"
     done
+}
+
+log_info() {
+    if [[ "$MOSY_LOG_LEVEL" == "INFO" || "$MOSY_LOG_LEVEL" == "DEBUG" ]]; then
+        echo "$@"
+    fi
+}
+
+mosy_backup() {
+    local target="$1"
+    if [ -e "$target" ]; then
+        local timestamp=$(date +%Y%m%d_%H%M%S)
+        local backup_path="${target}${MOSY_BACKUP_EXT}_${timestamp}"
+        log_info "Backing up $target to $(basename "$backup_path")..."
+        mosy_exec "mv \"$target\" \"$backup_path\""
+    fi
+}
+
+log_debug() {
+    if [[ "$MOSY_LOG_LEVEL" == "DEBUG" ]]; then
+        echo "[DEBUG] $@"
+    fi
+}
+
+log_error() {
+    echo "$@" >&2
 }
