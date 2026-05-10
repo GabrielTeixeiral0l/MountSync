@@ -40,6 +40,11 @@ case "$1" in
         shift
         cmd_uninstall "$@"
         ;;
+    config)
+        source "${SCRIPT_DIR}/src/commands/config.sh"
+        shift
+        cmd_config "$@"
+        ;;
     *)
         echo "Usage: mosy <command> [args]"
         echo "Commands:"
@@ -50,6 +55,7 @@ case "$1" in
         echo "  status                  Show system and file integrity status"
         echo "  remove <path>           Stop syncing an item and make it local"
         echo "  uninstall               Remove MountSync from your system"
+        echo "  config                  Manage configuration"
         exit 1
         ;;
 esac

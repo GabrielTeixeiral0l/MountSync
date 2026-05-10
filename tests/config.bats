@@ -56,3 +56,16 @@ setup() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"Usage: mosy config set <KEY> <VALUE>"* ]]
 }
+
+@test "config: set handles values with double quotes" {
+    run ./mosy config set MOSY_BACKUP_EXT 'quote"test'
+    [ "$status" -eq 0 ]
+    # Check the file content (escaped)
+    grep -q 'MOSY_BACKUP_EXT="quote\\"test"' "$HOME/.config/mosy/config"
+    
+    # Verify it can be loaded back correctly and displayed
+    unset MOSY_BACKUP_EXT
+    run ./mosy config
+    [ "$status" -eq 0 ]
+    [[ "$output" == *'quote"test'* ]]
+}
