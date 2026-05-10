@@ -64,3 +64,4 @@ EOF
 teardown() {
     rm -rf "$TEST_HOME"
 }
+mosy_exec() { eval "$1"; }
