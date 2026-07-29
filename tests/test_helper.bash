@@ -10,7 +10,10 @@ common_setup() {
     export TEST_HOME=$(mktemp -d)
     export HOME="$TEST_HOME"
     
-    # 3. Path setup for testing
+    # 3. Default Settings for Tests
+    export MOSY_REMOTE_NAME="test-remote"
+
+    # 4. Path setup for testing
     export PROJECT_ROOT="$(pwd)"
     export MOCK_BIN="$TEST_HOME/mock_bin"
     mkdir -p "$MOCK_BIN"
@@ -25,7 +28,7 @@ if [ \$# -eq 0 ]; then
         echo "sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)"
         exit 0
     fi
-    echo "rclone on /home/gabrielteixeira/GoogleDrive type fuse.rclone"
+    echo "rclone on /home/user/GoogleDrive type fuse.rclone"
     echo "rclone on \$HOME/Cloud type fuse.rclone"
     echo "rclone on \$MOSY_MOUNT_POINT type fuse.rclone"
     exit 0
@@ -61,3 +64,4 @@ EOF
 teardown() {
     rm -rf "$TEST_HOME"
 }
+mosy_exec() { eval "$1"; }

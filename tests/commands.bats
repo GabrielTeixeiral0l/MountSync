@@ -69,3 +69,15 @@ setup() {
   [ ! -L "$HOME/config/app" ]
   [ -L "$HOME/scripts/tool" ]
 }
+
+@test "Version: Displays current version" {
+  run mosy version
+  assert_success
+  assert_output --partial "MountSync v1.0.0"
+}
+
+@test "Update: Fails if no installation repo" {
+  run mosy update
+  assert_failure
+  assert_output --partial "Error: installation repository not found"
+}

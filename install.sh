@@ -5,6 +5,11 @@
 
 set -e # Exit on error
 
+IS_UPDATE=false
+if [[ "$1" == "--update" ]]; then
+    IS_UPDATE=true
+fi
+
 # Auto-download if piped from curl
 if [ ! -f "mosy" ] || [ ! -d "src" ]; then
     echo "--- Downloading MountSync ---"
@@ -30,8 +35,22 @@ fi
 DEFAULT_REMOTE="GoogleDrive"
 DEFAULT_MOUNT="${HOME}/GoogleDrive"
 
+if [ "$IS_UPDATE" = true ]; then
+    CONFIG_FILE="${HOME}/.config/mosy/config"
+    if [ -f "$CONFIG_FILE" ]; then
+        # shellcheck source=/dev/null
+        source "$CONFIG_FILE"
+        DEFAULT_REMOTE="${MOSY_REMOTE_NAME:-$DEFAULT_REMOTE}"
+        DEFAULT_MOUNT="${MOSY_MOUNT_POINT:-$DEFAULT_MOUNT}"
+    fi
+fi
+
 # 1. Dependency Check: rclone
 if ! command -v rclone &> /dev/null; then
+    if [ "$IS_UPDATE" = true ]; then
+        echo "Error: rclone not found. Cannot update without rclone."
+        exit 1
+    fi
     echo "rclone not found."
     read -p "Install rclone now? (y/n): " install_rclone
     if [[ $install_rclone =~ ^[Yy]$ ]]; then
@@ -46,33 +65,100 @@ fi
 
 # 1.5. Remote Configuration Check
 if ! rclone listremotes | grep -q .; then
-    echo "--- rclone Configuration ---"
-    echo "No cloud remotes detected in rclone."
-    read -p "Would you like to configure one now? (y/n): " run_config
-    if [[ $run_config =~ ^[Yy]$ ]]; then
-        rclone config
+    if [ "$IS_UPDATE" = true ]; then
+        echo "Warning: No cloud remotes detected in rclone. Update might fail."
     else
-        echo "Warning: You need at least one configured rclone remote for MountSync to work."
+        echo "--- rclone Configuration ---"
+        echo "No cloud remotes detected in rclone."
+        read -p "Would you like to configure one now? (y/n): " run_config
+        if [[ $run_config =~ ^[Yy]$ ]]; then
+            rclone config
+        else
+            echo "Warning: You need at least one configured rclone remote for MountSync to work."
+        fi
     fi
 fi
 
 # 2. Configuration Wizard
 echo "--- MountSync Setup ---"
-read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME
-REMOTE_NAME="${REMOTE_NAME:-$DEFAULT_REMOTE}"
 
-read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
-MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"
-MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}" 
+if [ "$IS_UPDATE" = true ]; then
+    REMOTE_NAME="$DEFAULT_REMOTE"
+    MOUNT_POINT="$DEFAULT_MOUNT"
+    MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}"
+    echo "Using remote: $REMOTE_NAME"
+    echo "Using mount point: $MOUNT_POINT"
+else
+    REMOTES=($(rclone listremotes 2>/dev/null | sed 's/://'))
+    DEFAULT_REMOTE="GoogleDrive"
+    if [ ${#REMOTES[@]} -gt 0 ]; then
+        DEFAULT_REMOTE="${REMOTES[0]}"
+        echo "Detected rclone remotes:"
+        for i in "${!REMOTES[@]}"; do
+            echo "  $((i+1))) ${REMOTES[$i]}"
+        done
+    fi
+
+    VALID_REMOTE=false
+    while [ "$VALID_REMOTE" = false ]; do
+        read -p "Enter your rclone remote name or number [$DEFAULT_REMOTE]: " REMOTE_INPUT
+        if [[ "$REMOTE_INPUT" =~ ^[0-9]+$ ]] && [ "$REMOTE_INPUT" -le "${#REMOTES[@]}" ] && [ "$REMOTE_INPUT" -gt 0 ]; then
+            REMOTE_NAME="${REMOTES[$((REMOTE_INPUT-1))]}"
+        else
+            REMOTE_NAME="${REMOTE_INPUT:-$DEFAULT_REMOTE}"
+        fi
+        
+        # Validation check
+        FOUND=false
+        for r in "${REMOTES[@]}"; do
+            if [ "$r" == "$REMOTE_NAME" ]; then FOUND=true; break; fi
+        done
+        
+        if [ "$FOUND" = true ] || [ ${#REMOTES[@]} -eq 0 ]; then
+            VALID_REMOTE=true
+        else
+            echo "Warning: Remote '$REMOTE_NAME' not found in rclone configuration."
+            read -p "Do you want to proceed anyway? (y/N): " PROCEED
+            if [[ $PROCEED =~ ^[Yy]$ ]]; then
+                VALID_REMOTE=true
+            fi
+        fi
+    done
+
+    VALID_PATH=false
+    while [ "$VALID_PATH" = false ]; do
+        read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_INPUT
+        MOUNT_POINT="${MOUNT_INPUT:-$DEFAULT_MOUNT}"
+        MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}"
+        
+        if [ -d "$MOUNT_POINT" ]; then
+            VALID_PATH=true
+        else
+            read -p "Directory '$MOUNT_POINT' does not exist. Create it now? (Y/n): " CREATE_DIR
+            if [[ ! $CREATE_DIR =~ ^[Nn]$ ]]; then
+                if mkdir -p "$MOUNT_POINT" 2>/dev/null; then
+                    VALID_PATH=true
+                else
+                    echo "Error: Could not create directory $MOUNT_POINT. Please check permissions."
+                fi
+            fi
+        fi
+    done
+fi
 
 # 2.5. Mount Awareness Check
 SHOULD_SETUP_SYSTEMD=true
 if mountpoint -q "$MOUNT_POINT" 2>/dev/null || mount | grep -q "$MOUNT_POINT"; then
     echo "Notice: $MOUNT_POINT is already a mountpoint."
-    read -p "Do you still want to install the MountSync auto-mount service? (y/N): " setup_service
-    if [[ ! $setup_service =~ ^[Yy]$ ]]; then
+    if [ "$IS_UPDATE" = true ]; then
         SHOULD_SETUP_SYSTEMD=false
-        echo "Skipping Systemd service setup. MountSync will use your existing mount."
+        echo "Skipping Systemd service setup (Update Mode)."
+    else
+        read -p "Do you still want to install the MountSync auto-mount service? (y/N): " setup_service
+        if [[ ! $setup_service =~ ^[Yy]$ ]]; then
+            SHOULD_SETUP_SYSTEMD=false
+            echo "Skipping Systemd service setup. MountSync will use your existing mount."
+        fi
     fi
 fi
 
@@ -125,6 +211,29 @@ if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
     echo "Warning: $BIN_DIR is not in your PATH."
     echo "Add the following line to your ~/.bashrc (or ~/.zshrc):"
     echo "export PATH=\"\$HOME/.local/bin:\$PATH\""
+fi
+
+# 6. Shell Autocomplete Completions
+echo "Installing shell completions..."
+COMPLETIONS_DIR="${HOME}/.config/mosy/completions"
+mkdir -p "$COMPLETIONS_DIR"
+cp completions/mosy.bash "$COMPLETIONS_DIR/mosy.bash"
+cp completions/_mosy "$COMPLETIONS_DIR/_mosy"
+
+# Register in ~/.bashrc
+BASHRC="${HOME}/.bashrc"
+if [ -f "$BASHRC" ]; then
+    if ! grep -q "mosy.bash" "$BASHRC"; then
+        echo -e "\n# MountSync Bash Completion\nif [ -f \"$COMPLETIONS_DIR/mosy.bash\" ]; then\n    source \"$COMPLETIONS_DIR/mosy.bash\"\nfi" >> "$BASHRC"
+    fi
+fi
+
+# Register in ~/.zshrc
+ZSHRC="${HOME}/.zshrc"
+if [ -f "$ZSHRC" ]; then
+    if ! grep -q "completions/_mosy" "$ZSHRC"; then
+        echo -e "\n# MountSync Zsh Completion\nif [ -d \"$COMPLETIONS_DIR\" ]; then\n    fpath=(\"$COMPLETIONS_DIR\" \$fpath)\n    autoload -Uz compinit && compinit\nfi" >> "$ZSHRC"
+    fi
 fi
 
 echo "Installation complete! 'mosy' is now linked to $BIN_DIR/mosy"

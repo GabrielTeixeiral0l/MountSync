@@ -6,3 +6,5 @@ docs/
 !README.md
 sync-map.conf
 test_script.sh
+.worktrees/
+.worktrees/
