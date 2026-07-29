@@ -1,6 +1,6 @@
 #!/bin/bash
 
-command_update() {
+cmd_update() {
     echo "Updating MountSync..."
     local repo_dir="$HOME/.mountsync"
     if [ ! -d "$repo_dir" ]; then

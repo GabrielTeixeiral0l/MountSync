@@ -5,53 +5,9 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 source "${SCRIPT_DIR}/src/core.sh"
 
 case "$1" in
-    add)
-        source "${SCRIPT_DIR}/src/commands/add.sh"
-        shift
-        cmd_add "$@"
-        ;;
-    init)
-        source "${SCRIPT_DIR}/src/commands/init.sh"
-        shift
-        cmd_init "$@"
-        ;;
-    pull)
-        source "${SCRIPT_DIR}/src/commands/pull.sh"
-        shift
-        cmd_pull "$@"
-        ;;
-    list)
-        source "${SCRIPT_DIR}/src/commands/list.sh"
-        shift
-        cmd_list "$@"
-        ;;
-    status)
-        source "${SCRIPT_DIR}/src/commands/status.sh"
-        shift
-        cmd_status "$@"
-        ;;
-    remove)
-        source "${SCRIPT_DIR}/src/commands/remove.sh"
-        shift
-        cmd_remove "$@"
-        ;;
-    uninstall)
-        source "${SCRIPT_DIR}/src/commands/uninstall.sh"
-        shift
-        cmd_uninstall "$@"
-        ;;
-    config)
-        source "${SCRIPT_DIR}/src/commands/config.sh"
-        shift
-        cmd_config "$@"
-        ;;
-    version)
-        source "${SCRIPT_DIR}/src/commands/version.sh"
-        command_version
-        ;;
-    update)
-        source "${SCRIPT_DIR}/src/commands/update.sh"
-        command_update
+    add|init|pull|list|status|remove|uninstall|config|version|update)
+        source "${SCRIPT_DIR}/src/commands/${1}.sh"
+        "cmd_${1}" "${@:2}"
         ;;
     *)
         echo "Usage: mosy <command> [args]"
