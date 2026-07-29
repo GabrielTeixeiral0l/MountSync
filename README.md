@@ -116,3 +116,9 @@ MOSY_CLOUD_DIR="/home/user/Cloud/mosy_vault"
 - `mosy`: Unified CLI entrypoint.
 - `src/`: Modular source files containing the core logic.
 - `install.sh`: Interactive installation and setup wizard.
+
+## Support / Donations
+
+If MountSync helps you stay synced and organized, consider supporting the project:
+
+- **Bitcoin (BTC):** `bc1qcxkrqtqmpal3fdauakk36ykl9ukurd072j4rfj`
