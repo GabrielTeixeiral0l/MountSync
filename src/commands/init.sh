@@ -6,7 +6,7 @@ _init_link() {
     local HOME_DIR="${HOME}"
 
     LOCAL_TARGET="$HOME_DIR/$local_rel"
-    CLOUD_SOURCE="$SYNC_DIR/$cloud_rel"
+    CLOUD_SOURCE="$MOSY_CLOUD_DIR/$cloud_rel"
 
     if [ -L "$LOCAL_TARGET" ]; then
         echo "Removing old link at $local_rel..."
@@ -23,8 +23,8 @@ _init_link() {
 
 cmd_init() {
     check_mount
-    if [ ! -f "$MAP_FILE" ]; then
-        echo "Warning: No sync map found at $MAP_FILE. Nothing to link."
+    if [ ! -f "$MOSY_MAP_FILE" ]; then
+        echo "Warning: No sync map found at $MOSY_MAP_FILE. Nothing to link."
         exit 0
     fi
 
@@ -33,11 +33,11 @@ cmd_init() {
 
     HOME_DIR="${HOME}"
     BASHRC="$HOME_DIR/.bashrc"
-    BRIDGE_CMD="source $SYNC_DIR/.bashrc_cloud"
+    BRIDGE_CMD="source $MOSY_CLOUD_DIR/.bashrc_cloud"
 
     if ! grep -q "$BRIDGE_CMD" "$BASHRC" 2>/dev/null; then
         echo "Adding bridge to your local .bashrc..."
-        echo -e "\n# MountSync - Bridge to cloud settings\nif [ -f \"$SYNC_DIR/.bashrc_cloud\" ]; then\n    $BRIDGE_CMD\nfi" >> "$BASHRC"
+        echo -e "\n# MountSync - Bridge to cloud settings\nif [ -f \"$MOSY_CLOUD_DIR/.bashrc_cloud\" ]; then\n    $BRIDGE_CMD\nfi" >> "$BASHRC"
     fi
 
     echo "PC configured successfully! Restart your terminal or run 'source ~/.bashrc'."

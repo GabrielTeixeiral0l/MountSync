@@ -10,7 +10,7 @@ setup() {
   export MOSY_CLOUD_DIR="$HOME/custom_cloud"
   export MOSY_MOUNT_POINT="$HOME/custom_mount"
   
-  run bash -c "source src/core.sh && echo \$SYNC_DIR \$MOUNT_POINT"
+  run bash -c "source src/core.sh && echo \$MOSY_CLOUD_DIR \$MOSY_MOUNT_POINT"
   assert_output --partial "$HOME/custom_cloud $HOME/custom_mount"
 }
 
@@ -19,12 +19,12 @@ setup() {
   echo "MOSY_MOUNT_POINT=\"$HOME/file_mount\"" > "$HOME/.config/mosy/config"
   echo "MOSY_CLOUD_DIR=\"$HOME/file_cloud\"" >> "$HOME/.config/mosy/config"
   
-  run bash -c "source src/core.sh && echo \$SYNC_DIR \$MOUNT_POINT"
+  run bash -c "source src/core.sh && echo \$MOSY_CLOUD_DIR \$MOSY_MOUNT_POINT"
   assert_output --partial "$HOME/file_cloud $HOME/file_mount"
 }
 
 @test "Core: Defaults to GoogleDrive fallback" {
-  run bash -c "source src/core.sh && echo \$SYNC_DIR \$MOUNT_POINT"
+  run bash -c "source src/core.sh && echo \$MOSY_CLOUD_DIR \$MOSY_MOUNT_POINT"
   assert_output --partial "$HOME/GoogleDrive/mosy_vault $HOME/GoogleDrive"
 }
 

@@ -16,7 +16,7 @@ status_callback() {
     local local_rel=$1
     local cloud_rel=$2
     local local_path="${HOME}/${local_rel}"
-    local cloud_path="${SYNC_DIR}/${cloud_rel}"
+    local cloud_path="${MOSY_CLOUD_DIR}/${cloud_rel}"
     
     ((TOTAL++))
 
@@ -51,9 +51,9 @@ cmd_status() {
     
     # Check Mount
     if is_mounted; then
-        echo -e "Mount Point ($MOUNT_POINT): ${GREEN}MOUNTED${NC}"
+        echo -e "Mount Point ($MOSY_MOUNT_POINT): ${GREEN}MOUNTED${NC}"
     else
-        echo -e "Mount Point ($MOUNT_POINT): ${RED}NOT MOUNTED${NC}"
+        echo -e "Mount Point ($MOSY_MOUNT_POINT): ${RED}NOT MOUNTED${NC}"
     fi
 
     # Check Systemd
@@ -72,7 +72,7 @@ cmd_status() {
     WARN=0
     ERR=0
 
-    if [ ! -f "$MAP_FILE" ]; then
+    if [ ! -f "$MOSY_MAP_FILE" ]; then
         echo "No items are currently being managed (map file missing)."
     else
         foreach_mapping status_callback

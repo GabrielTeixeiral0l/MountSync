@@ -27,7 +27,7 @@ cmd_add() {
     fi
 
     REL_PATH=${TARGET#$HOME_DIR/}
-    CLOUD_DEST="$SYNC_DIR/$REL_PATH"
+    CLOUD_DEST="$MOSY_CLOUD_DIR/$REL_PATH"
     CLOUD_DEST_DIR=$(dirname "$CLOUD_DEST")
 
     mkdir -p "$CLOUD_DEST_DIR"
@@ -42,9 +42,9 @@ cmd_add() {
 
     ln -s "$CLOUD_DEST" "$TARGET"
 
-    touch "$MAP_FILE"
-    if ! grep -q "^$REL_PATH|" "$MAP_FILE"; then
-        echo "$REL_PATH|$REL_PATH" >> "$MAP_FILE"
+    touch "$MOSY_MAP_FILE"
+    if ! grep -q "^$REL_PATH|" "$MOSY_MAP_FILE"; then
+        echo "$REL_PATH|$REL_PATH" >> "$MOSY_MAP_FILE"
     fi
 
     echo "Success! $REL_PATH is now synced."

@@ -23,7 +23,7 @@ cmd_uninstall() {
         echo "Cleaning up system integration..."
         
         # Ask before stopping the mount
-        read -p "Do you want to unmount the cloud drive ($MOUNT_POINT) now? (y/N) " unmount < "$tty_input"
+        read -p "Do you want to unmount the cloud drive ($MOSY_MOUNT_POINT) now? (y/N) " unmount < "$tty_input"
         if [[ "$unmount" =~ ^([yY][eE][sS]|[yY])$ ]]; then
             echo "Stopping service and unmounting..."
             systemctl --user stop mosy-mount.service || true

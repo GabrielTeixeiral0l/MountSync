@@ -5,7 +5,7 @@ _pull_link() {
     local cloud_rel=$2
 
     LOCAL_TARGET="$HOME/$local_rel"
-    CLOUD_SOURCE="$SYNC_DIR/$cloud_rel"
+    CLOUD_SOURCE="$MOSY_CLOUD_DIR/$cloud_rel"
 
     if [ ! -e "$LOCAL_TARGET" ] && [ ! -L "$LOCAL_TARGET" ]; then
         if [ -e "$CLOUD_SOURCE" ]; then
