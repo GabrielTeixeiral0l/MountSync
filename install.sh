@@ -58,12 +58,62 @@ fi
 
 # 2. Configuration Wizard
 echo "--- MountSync Setup ---"
-read -p "Enter your rclone remote name [$DEFAULT_REMOTE]: " REMOTE_NAME
-REMOTE_NAME="${REMOTE_NAME:-$DEFAULT_REMOTE}"
 
-read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_POINT
-MOUNT_POINT="${MOUNT_POINT:-$DEFAULT_MOUNT}"
-MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}" 
+REMOTES=($(rclone listremotes 2>/dev/null | sed 's/://'))
+DEFAULT_REMOTE="GoogleDrive"
+if [ ${#REMOTES[@]} -gt 0 ]; then
+    DEFAULT_REMOTE="${REMOTES[0]}"
+    echo "Detected rclone remotes:"
+    for i in "${!REMOTES[@]}"; do
+        echo "  $((i+1))) ${REMOTES[$i]}"
+    done
+fi
+
+VALID_REMOTE=false
+while [ "$VALID_REMOTE" = false ]; do
+    read -p "Enter your rclone remote name or number [$DEFAULT_REMOTE]: " REMOTE_INPUT
+    if [[ "$REMOTE_INPUT" =~ ^[0-9]+$ ]] && [ "$REMOTE_INPUT" -le "${#REMOTES[@]}" ] && [ "$REMOTE_INPUT" -gt 0 ]; then
+        REMOTE_NAME="${REMOTES[$((REMOTE_INPUT-1))]}"
+    else
+        REMOTE_NAME="${REMOTE_INPUT:-$DEFAULT_REMOTE}"
+    fi
+    
+    # Validation check
+    FOUND=false
+    for r in "${REMOTES[@]}"; do
+        if [ "$r" == "$REMOTE_NAME" ]; then FOUND=true; break; fi
+    done
+    
+    if [ "$FOUND" = true ] || [ ${#REMOTES[@]} -eq 0 ]; then
+        VALID_REMOTE=true
+    else
+        echo "Warning: Remote '$REMOTE_NAME' not found in rclone configuration."
+        read -p "Do you want to proceed anyway? (y/N): " PROCEED
+        if [[ $PROCEED =~ ^[Yy]$ ]]; then
+            VALID_REMOTE=true
+        fi
+    fi
+done
+
+VALID_PATH=false
+while [ "$VALID_PATH" = false ]; do
+    read -p "Enter your cloud mount point [$DEFAULT_MOUNT]: " MOUNT_INPUT
+    MOUNT_POINT="${MOUNT_INPUT:-$DEFAULT_MOUNT}"
+    MOUNT_POINT="${MOUNT_POINT/#\~/$HOME}"
+    
+    if [ -d "$MOUNT_POINT" ]; then
+        VALID_PATH=true
+    else
+        read -p "Directory '$MOUNT_POINT' does not exist. Create it now? (Y/n): " CREATE_DIR
+        if [[ ! $CREATE_DIR =~ ^[Nn]$ ]]; then
+            if mkdir -p "$MOUNT_POINT" 2>/dev/null; then
+                VALID_PATH=true
+            else
+                echo "Error: Could not create directory $MOUNT_POINT. Please check permissions."
+            fi
+        fi
+    fi
+done
 
 # 2.5. Mount Awareness Check
 SHOULD_SETUP_SYSTEMD=true
