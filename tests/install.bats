@@ -298,3 +298,79 @@ EOF
   run grep "MOSY_MOUNT_POINT=\"$GOOD_PATH\"" "$HOME/.config/mosy/config"
   assert_success
 }
+
+@test "Install: --update flag skips prompts and preserves config" {
+  # Mock rclone
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  mkdir -p "$HOME/.config/mosy"
+  cat <<EOF > "$HOME/.config/mosy/config"
+MOSY_REMOTE_NAME="ExistingRemote"
+MOSY_MOUNT_POINT="$HOME/ExistingCloud"
+MOSY_CLOUD_DIR="$HOME/ExistingCloud/mosy_vault"
+EOF
+
+  # Run with --update, should not ask anything
+  # If it asks for input, it will fail because stdin is closed/empty in run
+  run bash install.sh --update
+  
+  assert_success
+  run grep "MOSY_REMOTE_NAME=\"ExistingRemote\"" "$HOME/.config/mosy/config"
+  assert_success
+  run grep "MOSY_MOUNT_POINT=\"$HOME/ExistingCloud\"" "$HOME/.config/mosy/config"
+  assert_success
+}
+
+@test "Install: sets up shell completions for Bash and Zsh" {
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # Create fake profiles to test appending
+  touch "$HOME/.bashrc"
+  touch "$HOME/.zshrc"
+
+  run bash -c "printf '\n\n\n' | bash install.sh"
+  assert_success
+
+  # Verify files copied
+  assert_file_exists "$HOME/.config/mosy/completions/mosy.bash"
+  assert_file_exists "$HOME/.config/mosy/completions/_mosy"
+
+  # Verify appends
+  run grep "mosy.bash" "$HOME/.bashrc"
+  assert_success
+  run grep "MountSync Zsh Completion" "$HOME/.zshrc"
+  assert_success
+}
+
+@test "Uninstall: cleans up shell completions and profile additions" {
+  # Mock rclone
+  echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "GoogleDrive:"; fi' > "$MOCK_BIN/rclone"
+  chmod +x "$MOCK_BIN/rclone"
+
+  # 1. Install
+  touch "$HOME/.bashrc"
+  touch "$HOME/.zshrc"
+  run bash -c "printf '\n\n\n' | bash install.sh"
+  assert_success
+
+  # 2. Run uninstall from a temporary copy to protect the repo
+  local uninstall_temp=$(mktemp -d)
+  mkdir -p "$uninstall_temp/src"
+  cp -r src "$uninstall_temp/"
+  cp mosy "$uninstall_temp/"
+
+  export MOSY_NO_TTY=1
+  run bash -c "echo -e 'n\ny\nn' | $uninstall_temp/mosy uninstall"
+  assert_success
+
+  # Verify files removed
+  [ ! -d "$HOME/.config/mosy/completions" ]
+
+  # Verify profiles cleaned up
+  run grep "mosy.bash" "$HOME/.bashrc"
+  assert_failure
+  run grep "MountSync Zsh Completion" "$HOME/.zshrc"
+  assert_failure
+}

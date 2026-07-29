@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-setup() { source src/core.sh; export MOSY_REMOTE_NAME="test"; load_settings; }
+setup() { export MOSY_REMOTE_NAME="test"; source src/core.sh; }
 
 @test "logging: log_info prints in INFO level" {
     export MOSY_LOG_LEVEL="INFO"

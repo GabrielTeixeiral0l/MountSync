@@ -33,6 +33,16 @@ cmd_uninstall() {
         systemctl --user disable mosy-mount.service || true
         rm -f "$HOME/.config/systemd/user/mosy-mount.service"
         rm -f "$HOME/.local/bin/mosy"
+        rm -rf "$HOME/.config/mosy/completions"
+
+        # Clean completions from profiles
+        if [ -f "$HOME/.bashrc" ]; then
+            sed -i '/# MountSync Bash Completion/,/^fi$/d' "$HOME/.bashrc" 2>/dev/null || true
+        fi
+        if [ -f "$HOME/.zshrc" ]; then
+            sed -i '/# MountSync Zsh Completion/,/^fi$/d' "$HOME/.zshrc" 2>/dev/null || true
+        fi
+
         rm -rf "$SCRIPT_DIR"
         
         echo "MountSync uninstalled successfully. Goodbye!"

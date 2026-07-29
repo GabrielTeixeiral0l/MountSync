@@ -3,7 +3,7 @@
 setup() {
     load 'test_helper'
     common_setup
-    export HOME="$BATS_TEST_TMPDIR"
+    export HOME="$TEST_HOME"
     mkdir -p "$HOME/.config/mosy"
 }
 

@@ -1,0 +1,37 @@
+#compdef mosy
+
+_mosy() {
+    local line state
+
+    _arguments -C \
+        '1: :->cmd' \
+        '*:: :->args'
+
+    case $state in
+        cmd)
+            local -a subcmds
+            subcmds=(
+                'add:Add an item to the cloud vault'
+                'init:Configure PC from sync map'
+                'pull:Link missing items from cloud vault'
+                'list:List all managed items'
+                'status:Show system and file integrity status'
+                'remove:Stop syncing an item and make it local'
+                'uninstall:Remove MountSync from your system'
+                'config:Manage configuration'
+                'version:Show installed version'
+                'update:Update MountSync to latest version'
+            )
+            _describe "commands" subcmds
+            ;;
+        args)
+            case $line[1] in
+                config)
+                    _arguments \
+                        '1: :(set)' \
+                        '2: :(MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN)'
+                    ;;
+            esac
+            ;;
+    esac
+}

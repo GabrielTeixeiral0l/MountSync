@@ -45,6 +45,14 @@ case "$1" in
         shift
         cmd_config "$@"
         ;;
+    version)
+        source "${SCRIPT_DIR}/src/commands/version.sh"
+        command_version
+        ;;
+    update)
+        source "${SCRIPT_DIR}/src/commands/update.sh"
+        command_update
+        ;;
     *)
         echo "Usage: mosy <command> [args]"
         echo "Commands:"
@@ -56,6 +64,8 @@ case "$1" in
         echo "  remove <path>           Stop syncing an item and make it local"
         echo "  uninstall               Remove MountSync from your system"
         echo "  config                  Manage configuration"
+        echo "  version                 Show installed version"
+        echo "  update                  Update MountSync to latest version"
         exit 1
         ;;
 esac

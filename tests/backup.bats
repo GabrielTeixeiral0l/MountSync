@@ -9,7 +9,7 @@ setup() {
 
 @test "backup: renames file using MOSY_BACKUP_EXT" {
     export MOSY_BACKUP_EXT=".testbak"
-    touch "$BATS_TEST_TMPDIR/file"
-    run mosy_backup "$BATS_TEST_TMPDIR/file"
-    ls "$BATS_TEST_TMPDIR/file.testbak_"*
+    touch "$TEST_HOME/file"
+    run mosy_backup "$TEST_HOME/file"
+    ls "$TEST_HOME/file.testbak_"*
 }
