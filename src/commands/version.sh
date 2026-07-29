@@ -1,6 +1,6 @@
 #!/bin/bash
 
-command_version() {
+cmd_version() {
     local local_ver="v1.0.0"
     echo "MountSync $local_ver"
     
