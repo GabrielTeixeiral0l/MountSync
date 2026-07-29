@@ -84,7 +84,7 @@ body:
     attributes:
       label: Checklist
       options:
-        - label: I have searched the [existing issues](https://github.com/gabrielteixeira/mountsync/issues).
+        - label: I have searched the [existing issues](https://github.com/GabrielTeixeiral0l/MountSync/issues).
           required: true
         - label: I am using the latest version of MountSync.
           required: true

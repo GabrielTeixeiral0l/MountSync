@@ -28,7 +28,7 @@ if [ \$# -eq 0 ]; then
         echo "sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)"
         exit 0
     fi
-    echo "rclone on /home/gabrielteixeira/GoogleDrive type fuse.rclone"
+    echo "rclone on /home/user/GoogleDrive type fuse.rclone"
     echo "rclone on \$HOME/Cloud type fuse.rclone"
     echo "rclone on \$MOSY_MOUNT_POINT type fuse.rclone"
     exit 0
