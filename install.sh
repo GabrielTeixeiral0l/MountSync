@@ -13,22 +13,22 @@ fi
 # Auto-download if piped from curl
 if [ ! -f "mosy" ] || [ ! -d "src" ]; then
     echo "--- Downloading MountSync ---"
-    if [ -d "$HOME/.mountsync" ]; then
-        echo "Updating existing repository at $HOME/.mountsync..."
-        cd "$HOME/.mountsync"
+    REPO_DIR="$HOME/.mountsync"
+    if [ -d "$REPO_DIR" ]; then
+        echo "Updating existing repository at $REPO_DIR..."
+        cd "$REPO_DIR"
         git pull origin main
     else
-        echo "Cloning repository to $HOME/.mountsync..."
-        git clone https://github.com/GabrielTeixeiral0l/MountSync.git "$HOME/.mountsync"
-        cd "$HOME/.mountsync"
+        echo "Cloning repository to $REPO_DIR..."
+        git clone https://github.com/GabrielTeixeiral0l/MountSync.git "$REPO_DIR"
+        cd "$REPO_DIR"
     fi
-    if [ -t 0 ] || [ -c /dev/tty ]; then
-        # Try to use TTY if available, otherwise just run
-        exec bash install.sh < /dev/tty 2>/dev/null || exec bash install.sh
+    
+    if (exec </dev/tty) 2>/dev/null; then
+        exec bash install.sh < /dev/tty
     else
         exec bash install.sh
     fi
-    exit 0
 fi
 
 # Default values
