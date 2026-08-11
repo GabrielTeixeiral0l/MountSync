@@ -13,7 +13,7 @@ _init_link() {
         rm "$LOCAL_TARGET"
     elif [ -e "$LOCAL_TARGET" ]; then
         echo "Warning: $LOCAL_TARGET already exists locally. Moving to backup..."
-        mv "$LOCAL_TARGET" "${LOCAL_TARGET}.backup_$(date +%s)"
+        mosy_backup "$LOCAL_TARGET"
     fi
 
     echo "Creating link for $local_rel..."

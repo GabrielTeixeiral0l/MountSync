@@ -61,7 +61,7 @@ setup() {
   assert_success
   
   # Check if backup was created (pattern search because of timestamp)
-  run bash -c "ls $HOME/config/app.backup_*"
+  run bash -c "ls $HOME/config/app\${MOSY_BACKUP_EXT:-.bak}_*"
   assert_success
   # Check if link was created
   [ -L "$HOME/config/app" ]

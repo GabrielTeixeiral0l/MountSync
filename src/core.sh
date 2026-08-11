@@ -96,7 +96,7 @@ mosy_backup() {
         local timestamp=$(date +%Y%m%d_%H%M%S)
         local backup_path="${target}${MOSY_BACKUP_EXT}_${timestamp}"
         log_info "Backing up $target to $(basename "$backup_path")..."
-        mosy_exec "mv \"$target\" \"$backup_path\""
+        mv "$target" "$backup_path"
     fi
 }
 

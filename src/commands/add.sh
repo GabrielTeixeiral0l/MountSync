@@ -35,7 +35,7 @@ cmd_add() {
     echo "Syncing $REL_PATH..."
     if [ -e "$CLOUD_DEST" ]; then
         echo "Warning: A version already exists in the cloud at $REL_PATH. Backing up local copy."
-        mv "$TARGET" "${TARGET}.backup_$(date +%s)" || exit 1
+        mosy_backup "$TARGET" || exit 1
     else
         mv "$TARGET" "$CLOUD_DEST" || exit 1
     fi
