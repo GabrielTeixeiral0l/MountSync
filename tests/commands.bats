@@ -36,19 +36,15 @@ setup() {
   [ -L "$HOME/testdir" ]
 }
 
-@test "Init: Recreates links and adds bridge to .bashrc" {
+@test "Init: Recreates links from sync map" {
   mkdir -p "$MOSY_CLOUD_DIR/scripts"
   touch "$MOSY_CLOUD_DIR/scripts/myscript"
   echo "scripts/myscript|scripts/myscript" > "$MOSY_CLOUD_DIR/sync-map.conf"
-  
-  touch "$HOME/.bashrc"
   
   run mosy init
   
   assert_success
   [ -L "$HOME/scripts/myscript" ]
-  run grep "MountSync - Bridge" "$HOME/.bashrc"
-  assert_success
 }
 
 @test "Pull: Links missing items but doesn't touch existing" {

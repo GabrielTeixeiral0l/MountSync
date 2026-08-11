@@ -31,14 +31,5 @@ cmd_init() {
     echo "Configuring PC from sync map..."
     foreach_mapping _init_link
 
-    HOME_DIR="${HOME}"
-    BASHRC="$HOME_DIR/.bashrc"
-    BRIDGE_CMD="source $MOSY_CLOUD_DIR/.bashrc_cloud"
-
-    if ! grep -q "$BRIDGE_CMD" "$BASHRC" 2>/dev/null; then
-        echo "Adding bridge to your local .bashrc..."
-        echo -e "\n# MountSync - Bridge to cloud settings\nif [ -f \"$MOSY_CLOUD_DIR/.bashrc_cloud\" ]; then\n    $BRIDGE_CMD\nfi" >> "$BASHRC"
-    fi
-
-    echo "PC configured successfully! Restart your terminal or run 'source ~/.bashrc'."
+    echo "PC configured successfully!"
 }
