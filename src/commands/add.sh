@@ -20,13 +20,12 @@ cmd_add() {
     fi
 
     TARGET=$(realpath "$RAW_TARGET")
-    HOME_DIR="${HOME}"
-    if [[ "$TARGET" != "$HOME_DIR"* ]]; then
-        echo "Error: Target must be within your home directory ($HOME_DIR)."
+    if [[ "$TARGET" != "$HOME"* ]]; then
+        echo "Error: Target must be within your home directory ($HOME)."
         exit 1
     fi
 
-    REL_PATH=${TARGET#$HOME_DIR/}
+    REL_PATH=$(get_relative_home_path "$RAW_TARGET")
     CLOUD_DEST="$MOSY_CLOUD_DIR/$REL_PATH"
     CLOUD_DEST_DIR=$(dirname "$CLOUD_DEST")
 

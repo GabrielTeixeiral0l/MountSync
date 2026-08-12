@@ -8,7 +8,7 @@ cmd_remove() {
     fi
 
     local TARGET=$(realpath -s "$1")
-    local REL_PATH=${TARGET#$HOME/}
+    local REL_PATH=$(get_relative_home_path "$1")
 
     if [ ! -L "$TARGET" ]; then
         echo "Error: $1 is not a symbolic link managed by MountSync."

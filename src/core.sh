@@ -98,6 +98,13 @@ log_debug() {
     fi
 }
 
+get_relative_home_path() {
+    local target="$1"
+    local abs_target
+    abs_target=$(realpath -s "$target" 2>/dev/null || realpath "$target")
+    echo "${abs_target#$HOME/}"
+}
+
 log_error() {
     echo "$@" >&2
 }
