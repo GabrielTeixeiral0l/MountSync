@@ -1,27 +1,20 @@
 load_settings() {
     local config_file="${HOME}/.config/mosy/config"
     
-    # Save env vars to preserve precedence
-    local env_MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
-    local env_MOSY_MOUNT_POINT="${MOSY_MOUNT_POINT:-}"
-    local env_MOSY_VFS_CACHE="${MOSY_VFS_CACHE:-}"
-    local env_MOSY_CLOUD_DIR="${MOSY_CLOUD_DIR:-}"
-    local env_MOSY_BACKUP_EXT="${MOSY_BACKUP_EXT:-}"
-    local env_MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-}"
-    local env_MOSY_DRY_RUN="${MOSY_DRY_RUN:-}"
+    local keys=(MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN)
+    
+    # Preserve environment overrides
+    local env_saved=()
+    for k in "${keys[@]}"; do
+        [ -n "${!k+x}" ] && env_saved+=("$k=${!k}")
+    done
 
-    if [ -f "$config_file" ]; then
-        . "$config_file"
-    fi
+    [ -f "$config_file" ] && . "$config_file"
 
-    # Restore env vars
-    [ -n "$env_MOSY_REMOTE_NAME" ] && MOSY_REMOTE_NAME="$env_MOSY_REMOTE_NAME"
-    [ -n "$env_MOSY_MOUNT_POINT" ]  && MOSY_MOUNT_POINT="$env_MOSY_MOUNT_POINT"
-    [ -n "$env_MOSY_VFS_CACHE" ]    && MOSY_VFS_CACHE="$env_MOSY_VFS_CACHE"
-    [ -n "$env_MOSY_CLOUD_DIR" ]    && MOSY_CLOUD_DIR="$env_MOSY_CLOUD_DIR"
-    [ -n "$env_MOSY_BACKUP_EXT" ]   && MOSY_BACKUP_EXT="$env_MOSY_BACKUP_EXT"
-    [ -n "$env_MOSY_LOG_LEVEL" ]    && MOSY_LOG_LEVEL="$env_MOSY_LOG_LEVEL"
-    [ -n "$env_MOSY_DRY_RUN" ]      && MOSY_DRY_RUN="$env_MOSY_DRY_RUN"
+    # Restore environment overrides
+    for env in "${env_saved[@]}"; do
+        export "$env"
+    done
 
     # Set defaults
     export MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
