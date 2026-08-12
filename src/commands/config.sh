@@ -66,19 +66,15 @@ _config_set() {
     mkdir -p "$(dirname "$config_file")"
     touch "$config_file"
 
-    local tmp_file=$(mktemp)
-    trap 'rm -f "$tmp_file"' EXIT
-
-    grep -v "^${key}=" "$config_file" > "$tmp_file" || true
-
-    # Escape backslashes, double quotes, dollar signs, and backticks
+    # Escape double quotes and backslashes for bash assignment
     local escaped_val="${val//\\/\\\\}"
     escaped_val="${escaped_val//\"/\\\"}"
-    escaped_val="${escaped_val//\$/\\\$}"
-    escaped_val="${escaped_val//\`/\\\`}"
 
-    printf "%s=\"%s\"\n" "$key" "$escaped_val" >> "$tmp_file"
-    mv "$tmp_file" "$config_file"
+    if grep -q "^${key}=" "$config_file"; then
+        sed -i "s|^${key}=.*|${key}=\"${escaped_val}\"|" "$config_file"
+    else
+        echo "${key}=\"${escaped_val}\"" >> "$config_file"
+    fi
 
     log_info "Configured ${key}=\"${val}\""
 }
