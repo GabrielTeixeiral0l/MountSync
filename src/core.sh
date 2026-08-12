@@ -38,16 +38,12 @@ if ! load_settings; then
 fi
 
 is_mounted() {
-    # 1. Use mountpoint command if available (most reliable)
+    local target="${1:-$MOSY_MOUNT_POINT}"
     if command -v mountpoint >/dev/null 2>&1; then
-        mountpoint -q "$MOSY_MOUNT_POINT"
+        mountpoint -q "$target"
         return $?
     fi
-
-    # 2. Fallback: check mount output with precision
-    # We look for the mount point followed by a space to avoid partial matches
-    mount | grep -qE "[[:space:]]on[[:space:]]${MOSY_MOUNT_POINT%/}/?[[:space:]]" || \
-    mount | grep -qE "[[:space:]]${MOSY_MOUNT_POINT%/}/?[[:space:]]type[[:space:]]"
+    mount | grep -qE "[[:space:]]on[[:space:]]${target%/}/?[[:space:]]"
 }
 
 check_mount() {

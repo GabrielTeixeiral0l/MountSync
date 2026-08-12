@@ -148,7 +148,7 @@ fi
 
 # 2.5. Mount Awareness Check
 SHOULD_SETUP_SYSTEMD=true
-if mountpoint -q "$MOUNT_POINT" 2>/dev/null || mount | grep -q "$MOUNT_POINT"; then
+if mountpoint -q "$MOUNT_POINT" 2>/dev/null || mount | grep -qE "[[:space:]]on[[:space:]]${MOUNT_POINT%/}/?[[:space:]]"; then
     echo "Notice: $MOUNT_POINT is already a mountpoint."
     if [ "$IS_UPDATE" = true ]; then
         SHOULD_SETUP_SYSTEMD=false
