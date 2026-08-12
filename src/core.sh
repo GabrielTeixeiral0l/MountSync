@@ -1,22 +1,25 @@
 load_settings() {
     local config_file="${HOME}/.config/mosy/config"
     
-    local keys=(MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN)
-    
-    # Preserve environment overrides
-    local env_saved=()
-    for k in "${keys[@]}"; do
-        [ -n "${!k+x}" ] && env_saved+=("$k=${!k}")
-    done
+    # Save environment variables before sourcing config file
+    local env_remote="${MOSY_REMOTE_NAME+x}" && local env_remote_val="$MOSY_REMOTE_NAME"
+    local env_mount="${MOSY_MOUNT_POINT+x}" && local env_mount_val="$MOSY_MOUNT_POINT"
+    local env_vfs="${MOSY_VFS_CACHE+x}" && local env_vfs_val="$MOSY_VFS_CACHE"
+    local env_cloud="${MOSY_CLOUD_DIR+x}" && local env_cloud_val="$MOSY_CLOUD_DIR"
+    local env_backup="${MOSY_BACKUP_EXT+x}" && local env_backup_val="$MOSY_BACKUP_EXT"
+    local env_log="${MOSY_LOG_LEVEL+x}" && local env_log_val="$MOSY_LOG_LEVEL"
+    local env_dry="${MOSY_DRY_RUN+x}" && local env_dry_val="$MOSY_DRY_RUN"
 
     [ -f "$config_file" ] && . "$config_file"
 
-    # Restore environment overrides
-    for env in "${env_saved[@]}"; do
-        export "$env"
-    done
+    [ -n "$env_remote" ] && export MOSY_REMOTE_NAME="$env_remote_val"
+    [ -n "$env_mount" ] && export MOSY_MOUNT_POINT="$env_mount_val"
+    [ -n "$env_vfs" ] && export MOSY_VFS_CACHE="$env_vfs_val"
+    [ -n "$env_cloud" ] && export MOSY_CLOUD_DIR="$env_cloud_val"
+    [ -n "$env_backup" ] && export MOSY_BACKUP_EXT="$env_backup_val"
+    [ -n "$env_log" ] && export MOSY_LOG_LEVEL="$env_log_val"
+    [ -n "$env_dry" ] && export MOSY_DRY_RUN="$env_dry_val"
 
-    # Set defaults
     export MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
     export MOSY_MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
     export MOSY_VFS_CACHE="${MOSY_VFS_CACHE:-writes}"
