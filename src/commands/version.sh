@@ -5,8 +5,7 @@ cmd_version() {
     echo "MountSync $local_ver"
     
     # Query GitHub releases silently with timeout
-    local latest_ver
-    latest_ver=$(curl -s -m 2 "https://api.github.com/repos/GabrielTeixeiral0l/MountSync/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+    latest_ver=$(curl -s -m 2 "https://api.github.com/repos/GabrielTeixeiral0l/MountSync/releases/latest" | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p')
     
     if [ -n "$latest_ver" ]; then
         if [ "$local_ver" != "$latest_ver" ]; then
