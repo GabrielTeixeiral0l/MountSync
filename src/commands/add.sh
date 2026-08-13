@@ -47,7 +47,7 @@ cmd_add() {
     fi
 
     REL_PATH=$(get_relative_home_path "$RAW_TARGET")
-    CLOUD_DEST="$MOSY_CLOUD_DIR/$REL_PATH"
+    CLOUD_DEST="$MOSY_PROFILE_DIR/$REL_PATH"
     CLOUD_DEST_DIR=$(dirname "$CLOUD_DEST")
 
     mkdir -p "$CLOUD_DEST_DIR"

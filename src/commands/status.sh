@@ -16,7 +16,7 @@ status_callback() {
     local local_rel=$1
     local cloud_rel=$2
     local local_path="${HOME}/${local_rel}"
-    local cloud_path="${MOSY_CLOUD_DIR}/${cloud_rel}"
+    local cloud_path="${MOSY_PROFILE_DIR}/${cloud_rel}"
     
     ((TOTAL++))
 

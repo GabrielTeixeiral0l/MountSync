@@ -4,8 +4,8 @@ _pull_link() {
     local local_rel=$1
     local cloud_rel=$2
 
-    LOCAL_TARGET="$HOME/$local_rel"
-    CLOUD_SOURCE="$MOSY_CLOUD_DIR/$cloud_rel"
+    local LOCAL_TARGET="$HOME/$local_rel"
+    local CLOUD_SOURCE="$MOSY_PROFILE_DIR/$cloud_rel"
 
     if [ ! -e "$LOCAL_TARGET" ] && [ ! -L "$LOCAL_TARGET" ]; then
         if [ -e "$CLOUD_SOURCE" ]; then

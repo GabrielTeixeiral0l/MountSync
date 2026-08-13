@@ -77,3 +77,18 @@ setup() {
   assert_failure
   assert_output --partial "Error: installation repository not found"
 }
+
+@test "Add: --profile creates item in profile subdirectory and isolated map" {
+  touch "$HOME/workfile"
+  
+  run mosy -p work add "$HOME/workfile"
+  
+  assert_success
+  assert_output --partial "Success! workfile is now synced"
+  
+  [ -f "$MOSY_CLOUD_DIR/profiles/work/workfile" ]
+  [ -L "$HOME/workfile" ]
+  run grep "workfile|workfile" "$MOSY_CLOUD_DIR/profiles/work/sync-map.conf"
+  assert_success
+  [ ! -f "$MOSY_CLOUD_DIR/sync-map.conf" ]
+}

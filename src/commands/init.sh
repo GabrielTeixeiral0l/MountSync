@@ -5,8 +5,8 @@ _init_link() {
     local cloud_rel=$2
     local HOME_DIR="${HOME}"
 
-    LOCAL_TARGET="$HOME_DIR/$local_rel"
-    CLOUD_SOURCE="$MOSY_CLOUD_DIR/$cloud_rel"
+    LOCAL_TARGET="$HOME/$local_rel"
+    CLOUD_SOURCE="$MOSY_PROFILE_DIR/$cloud_rel"
 
     if [ -L "$LOCAL_TARGET" ]; then
         echo "Removing old link at $local_rel..."

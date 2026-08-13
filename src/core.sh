@@ -9,6 +9,7 @@ load_settings() {
     local env_backup="${MOSY_BACKUP_EXT+x}" && local env_backup_val="$MOSY_BACKUP_EXT"
     local env_log="${MOSY_LOG_LEVEL+x}" && local env_log_val="$MOSY_LOG_LEVEL"
     local env_dry="${MOSY_DRY_RUN+x}" && local env_dry_val="$MOSY_DRY_RUN"
+    local env_profile="${MOSY_PROFILE+x}" && local env_profile_val="$MOSY_PROFILE"
 
     [ -f "$config_file" ] && . "$config_file"
 
@@ -19,6 +20,7 @@ load_settings() {
     [ -n "$env_backup" ] && export MOSY_BACKUP_EXT="$env_backup_val"
     [ -n "$env_log" ] && export MOSY_LOG_LEVEL="$env_log_val"
     [ -n "$env_dry" ] && export MOSY_DRY_RUN="$env_dry_val"
+    [ -n "$env_profile" ] && export MOSY_PROFILE="$env_profile_val"
 
     export MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
     export MOSY_MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
@@ -27,12 +29,19 @@ load_settings() {
     export MOSY_BACKUP_EXT="${MOSY_BACKUP_EXT:-.bak}"
     export MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-INFO}"
     export MOSY_DRY_RUN="${MOSY_DRY_RUN:-false}"
+    export MOSY_PROFILE="${MOSY_PROFILE:-default}"
 
     if [ -z "$MOSY_REMOTE_NAME" ]; then
         echo "Error: MOSY_REMOTE_NAME is missing" >&2
         return 1
     fi
-    export MOSY_MAP_FILE="$MOSY_CLOUD_DIR/sync-map.conf"
+
+    if [ "$MOSY_PROFILE" = "default" ]; then
+        export MOSY_PROFILE_DIR="$MOSY_CLOUD_DIR"
+    else
+        export MOSY_PROFILE_DIR="$MOSY_CLOUD_DIR/profiles/$MOSY_PROFILE"
+    fi
+    export MOSY_MAP_FILE="$MOSY_PROFILE_DIR/sync-map.conf"
 }
 
 # Load settings automatically when sourced

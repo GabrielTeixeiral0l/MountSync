@@ -1,6 +1,19 @@
 #!/bin/bash
 
-# Load core logic
+# Parse global flags
+while [[ "$1" == -* ]]; do
+    case "$1" in
+        -p|--profile)
+            export MOSY_PROFILE="$2"
+            shift 2
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# Load core logic after setting potential MOSY_PROFILE override
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 source "${SCRIPT_DIR}/src/core.sh"
 
@@ -10,7 +23,7 @@ case "$1" in
         "cmd_${1}" "${@:2}"
         ;;
     *)
-        echo "Usage: mosy <command> [args]"
+        echo "Usage: mosy [-p|--profile <name>] <command> [args]"
         echo "Commands:"
         echo "  add <file_or_directory>  Add an item to the cloud vault"
         echo "  init                    Configure PC from sync map"

@@ -46,3 +46,20 @@ setup() {
     [ "$status" -eq 0 ]
     [ "$output" == "INFO|false|.bak" ]
 }
+
+@test "settings: profile defaults to default and uses root vault" {
+    export MOSY_REMOTE_NAME="gdrive"
+    export MOSY_CLOUD_DIR="/tmp/vault"
+    run bash -c "source src/core.sh && load_settings && echo \"\$MOSY_PROFILE|\$MOSY_MAP_FILE\""
+    [ "$status" -eq 0 ]
+    [ "$output" == "default|/tmp/vault/sync-map.conf" ]
+}
+
+@test "settings: custom profile uses profiles subdirectory" {
+    export MOSY_REMOTE_NAME="gdrive"
+    export MOSY_CLOUD_DIR="/tmp/vault"
+    export MOSY_PROFILE="work"
+    run bash -c "source src/core.sh && load_settings && echo \"\$MOSY_PROFILE|\$MOSY_MAP_FILE\""
+    [ "$status" -eq 0 ]
+    [ "$output" == "work|/tmp/vault/profiles/work/sync-map.conf" ]
+}
