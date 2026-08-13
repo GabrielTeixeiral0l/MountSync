@@ -80,15 +80,12 @@ foreach_mapping() {
         # Filter by tag if MOSY_FILTER_TAG is set
         if [ -n "${MOSY_FILTER_TAG:-}" ]; then
             local tag_matched=false
-            IFS=',' read -ra entry_tags <<< "${tags:-}"
             IFS=',' read -ra filter_tags <<< "$MOSY_FILTER_TAG"
             for ft in "${filter_tags[@]}"; do
-                for et in "${entry_tags[@]}"; do
-                    if [ "$ft" == "$et" ]; then
-                        tag_matched=true
-                        break 2
-                    fi
-                done
+                if [[ ",${tags:-}," == *",$ft,"* ]]; then
+                    tag_matched=true
+                    break
+                fi
             done
             if [ "$tag_matched" = false ]; then continue; fi
         fi
@@ -96,15 +93,12 @@ foreach_mapping() {
         # Filter by group if MOSY_FILTER_GROUP is set
         if [ -n "${MOSY_FILTER_GROUP:-}" ]; then
             local group_matched=false
-            IFS=',' read -ra entry_groups <<< "${groups:-}"
             IFS=',' read -ra filter_groups <<< "$MOSY_FILTER_GROUP"
             for fg in "${filter_groups[@]}"; do
-                for eg in "${entry_groups[@]}"; do
-                    if [ "$fg" == "$eg" ]; then
-                        group_matched=true
-                        break 2
-                    fi
-                done
+                if [[ ",${groups:-}," == *",$fg,"* ]]; then
+                    group_matched=true
+                    break
+                fi
             done
             if [ "$group_matched" = false ]; then continue; fi
         fi
