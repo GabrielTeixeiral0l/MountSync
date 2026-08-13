@@ -24,6 +24,7 @@ Before installing MountSync, ensure your system meets the following requirements
 - **Cloud Agnostic:** Works seamlessly with any provider supported by `rclone` (Google Drive, Dropbox, S3, WebDAV).
 - **Background Persistence:** Includes an automated Systemd service to keep your cloud drive mounted across reboots.
 - **Incremental Synchronization:** Safely bring in new configurations from other machines without overwriting existing local files.
+- **Tags & Groups:** Categorize managed items to selectively synchronize, initialize, list, or check status across different environments.
 - **Minimalist Design:** Written in modular, efficient Bash with zero heavy dependencies.
 
 ## Quick Start
@@ -44,35 +45,83 @@ The installer handles the entire setup process:
 
 Once installed, use the `mosy` CLI to manage your dotfiles.
 
-### 1. Sync a New Item
+### 1. Sync a New Item (`add`)
 
-Move a file or directory to the cloud vault and replace the local version with a symbolic link.
+Move a file or directory to the cloud vault and replace the local version with a symbolic link. You can assign optional tags (`--tag` / `-t`) and groups (`--group` / `-g`).
 
 ```bash
+# Basic usage
 mosy add ~/.bashrc
+
+# Sync with tags and groups
+mosy add ~/.bashrc --tag shell,main --group dotfiles
+mosy add ~/.config/nvim -t dev,editor -g config
 ```
 
-### 2. Pull Updates
+### 2. Pull Updates (`pull`)
 
 Scan the sync map in your cloud and create symbolic links for any items that exist in the vault but are missing on your current machine.
 
 ```bash
+# Pull all missing items
 mosy pull
+
+# Filter pull by tag or group
+mosy pull --tag work
+mosy pull -g dev
 ```
 
 > [!IMPORTANT]
 > The `pull` command is non-destructive. It will never overwrite or touch existing local files.
 
-### 3. Initialize a New Machine
+### 3. Initialize a New Machine (`init`)
 
-When setting up a fresh machine, this command recreates all symbolic links defined in the sync map and sets up a bridge to your cloud shell configurations.
+When setting up a fresh machine, this command recreates all symbolic links defined in the sync map. You can selectively initialize environments using tags or groups.
 
 ```bash
+# Initialize all items
 mosy init
+
+# Initialize only items with specific tags or groups
+mosy init --tag work --group dev
 ```
 
 > [!WARNING]
 > Running `init` on an existing machine will back up local files before replacing them with symlinks from the vault to prevent data loss.
+
+### 4. List Managed Items (`list`)
+
+List all files and directories currently managed by MountSync along with their associated tags and groups.
+
+```bash
+# List all managed items
+mosy list
+
+# Filter listed items by tag or group
+mosy list --tag shell
+mosy list -g config
+```
+
+### 5. Check System & File Integrity (`status`)
+
+Check mount point status, background service health, and verify symlink integrity for managed files.
+
+```bash
+# Check status of all items
+mosy status
+
+# Check status filtered by tag or group
+mosy status --tag work -g dev
+```
+
+### Tags and Groups Filtering
+
+MountSync allows you to categorize configurations for flexible environment management:
+
+- **Tags (`--tag` / `-t`):** Custom identifiers for items (e.g., `shell`, `work`, `dev`). Pass comma-separated values to specify multiple tags.
+- **Groups (`--group` / `-g`):** Higher-level categories for grouping items (e.g., `dotfiles`, `config`). Pass comma-separated values for multiple groups.
+
+When filtering with `--tag` or `--group` in `init`, `pull`, `list`, or `status`, MountSync matches items that contain at least one of the specified tags or groups.
 
 ## Architecture
 
