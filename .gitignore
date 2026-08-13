@@ -1,10 +1,10 @@
 *.backup_*
 *.swp
 .DS_Store
-docs/
-*.md
-!README.md
 sync-map.conf
 test_script.sh
 .worktrees/
 .worktrees/
+*.md
+!README.md
+!docs/*.md
