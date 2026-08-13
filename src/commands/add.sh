@@ -2,13 +2,34 @@
 
 cmd_add() {
     check_mount
-    if [ -z "$1" ]; then
-        echo "Usage: mosy add <file_or_directory>"
+    local TAGS=""
+    local ITEM_GROUPS=""
+    local RAW_TARGET=""
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --tag|-t)
+                TAGS="$2"
+                shift 2
+                ;;
+            --group|-g)
+                ITEM_GROUPS="$2"
+                shift 2
+                ;;
+            *)
+                if [ -z "$RAW_TARGET" ]; then
+                    RAW_TARGET="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [ -z "$RAW_TARGET" ]; then
+        echo "Usage: mosy add <file_or_directory> [--tag <tags>] [--group <groups>]"
         exit 1
     fi
 
-    local RAW_TARGET="$1"
-    
     if [ -L "$RAW_TARGET" ]; then
         echo "Warning: $RAW_TARGET is already a symbolic link."
         exit 0
@@ -43,9 +64,11 @@ cmd_add() {
     ln -s "$CLOUD_DEST" "$TARGET"
 
     touch "$MOSY_MAP_FILE"
-    if ! grep -q "^$REL_PATH|" "$MOSY_MAP_FILE"; then
-        echo "$REL_PATH|$REL_PATH" >> "$MOSY_MAP_FILE"
+    if grep -q "^$REL_PATH|" "$MOSY_MAP_FILE"; then
+        # Remove existing line if replacing
+        sed -i "/^${REL_PATH//\//\\/}|/d" "$MOSY_MAP_FILE"
     fi
+    echo "$REL_PATH|$REL_PATH|$TAGS|$ITEM_GROUPS" >> "$MOSY_MAP_FILE"
 
     echo "Success! $REL_PATH is now synced."
 }
