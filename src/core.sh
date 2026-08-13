@@ -35,13 +35,18 @@ load_settings() {
         echo "Error: MOSY_REMOTE_NAME is missing" >&2
         return 1
     fi
-
     if [ "$MOSY_PROFILE" = "default" ]; then
         export MOSY_PROFILE_DIR="$MOSY_CLOUD_DIR"
     else
         export MOSY_PROFILE_DIR="$MOSY_CLOUD_DIR/profiles/$MOSY_PROFILE"
     fi
     export MOSY_MAP_FILE="$MOSY_PROFILE_DIR/sync-map.conf"
+
+    # Source ignore helper
+    local src_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [ -f "$src_dir/ignore.sh" ]; then
+        . "$src_dir/ignore.sh"
+    fi
 }
 
 # Load settings automatically when sourced

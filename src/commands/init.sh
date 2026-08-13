@@ -8,6 +8,11 @@ _init_link() {
     LOCAL_TARGET="$HOME/$local_rel"
     CLOUD_SOURCE="$MOSY_PROFILE_DIR/$cloud_rel"
 
+    if is_ignored "$cloud_rel"; then
+        echo "Skipping ignored item: $cloud_rel"
+        return 0
+    fi
+
     if [ -L "$LOCAL_TARGET" ]; then
         echo "Removing old link at $local_rel..."
         rm "$LOCAL_TARGET"

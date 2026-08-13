@@ -53,6 +53,10 @@ cmd_add() {
     mkdir -p "$CLOUD_DEST_DIR"
 
     echo "Syncing $REL_PATH..."
+    if [ -d "$TARGET" ]; then
+        clean_ignored_files "$TARGET"
+    fi
+
     if [ -e "$CLOUD_DEST" ]; then
         echo "Warning: A version already exists in the cloud at $REL_PATH. Backing up local copy."
         mosy_backup "$TARGET" || exit 1

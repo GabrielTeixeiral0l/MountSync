@@ -8,6 +8,10 @@ _pull_link() {
     local CLOUD_SOURCE="$MOSY_PROFILE_DIR/$cloud_rel"
 
     if [ ! -e "$LOCAL_TARGET" ] && [ ! -L "$LOCAL_TARGET" ]; then
+        if is_ignored "$cloud_rel"; then
+            echo "Skipping ignored item: $cloud_rel"
+            return 0
+        fi
         if [ -e "$CLOUD_SOURCE" ]; then
             mkdir -p "$(dirname "$LOCAL_TARGET")"
             ln -s "$CLOUD_SOURCE" "$LOCAL_TARGET"
