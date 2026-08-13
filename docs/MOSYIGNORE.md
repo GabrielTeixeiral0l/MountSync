@@ -1,36 +1,34 @@
-# Ignore Patterns Guide (`.mosyignore`)
+# How to Exclude Files with `.mosyignore`
 
-MountSync provides a flexible file filtering mechanism using `.mosyignore` files. This feature prevents unwanted files, temporary build artifacts, dependency directories, and sensitive logs from being synced to your Cloud Vault or linked during setup.
+This guide explains how to prevent build artifacts, dependency folders, log files, and temporary cache directories from syncing to your Cloud Vault or creating unwanted symlinks using ignore patterns in MountSync.
 
 ---
 
 ## Overview
 
-When managing complex configuration directories (such as `~/.config/nvim`, project folders, or system setups), certain files and subdirectories should not be stored in the cloud. Examples include:
+When syncing tool configurations or project folders (such as `~/.config/nvim`, dev projects, or custom scripts), directories often accumulate files that should remain local-only. Common examples include:
 
-* Dependencies and packages (e.g., `node_modules`).
-* Version control metadata (e.g., `.git`).
-* System-generated metadata (e.g., `.DS_Store`).
-* Log files and temporary caches (e.g., `*.log`, `*.tmp`).
+* Dependency caches (for example, `node_modules`).
+* Version control metadata (for example, `.git`).
+* Build outputs and artifacts (for example, `dist/`, `build/`, `*.o`).
+* Temporary files and log output (for example, `*.log`, `*.tmp`, `*.swp`).
 
-MountSync automatically filters these files during `add`, `init`, and `pull` operations based on global or local ignore rules.
-
----
-
-## Supported Locations
-
-MountSync checks for ignore rules in two locations:
-
-| Location | Path | Scope | Description |
-| :--- | :--- | :--- | :--- |
-| **Global** | `~/.config/mosy/.mosyignore` | System-wide | Applies to all `mosy` commands and managed directories. If this file does not exist, MountSync falls back to built-in default patterns. |
-| **Local** | `<directory>/.mosyignore` | Directory-specific | Placed directly inside a target directory (e.g., `~/.config/nvim/.mosyignore`). Customizes ignore rules for that specific folder when using `mosy add`. |
+MountSync uses `.mosyignore` files to filter out unwanted items automatically when executing `mosy add`, `mosy init`, and `mosy pull`.
 
 ---
 
-## Default Ignore Patterns
+## Step 1: Understand Ignore Scope and Locations
 
-If no global `~/.config/mosy/.mosyignore` file exists, MountSync uses the following built-in default patterns:
+MountSync supports two levels of ignore files:
+
+| Scope | Location | Description |
+| :--- | :--- | :--- |
+| **Global** | `~/.config/mosy/.mosyignore` | System-wide rules applied to all `mosy` operations. If this file does not exist, MountSync uses built-in default rules. |
+| **Local** | `DIRECTORY/.mosyignore` | Directory-specific rules placed inside the targeted folder (for example, `~/.config/nvim/.mosyignore`). Customizes behavior for that specific directory during `mosy add`. |
+
+### Default Fallback Patterns
+
+When no global `~/.config/mosy/.mosyignore` file is present, MountSync defaults to the following patterns:
 
 ```text
 .git
@@ -42,74 +40,91 @@ node_modules/*
 *.log
 ```
 
-If a global `~/.config/mosy/.mosyignore` file is present, its patterns take precedence over the default list. When adding a directory containing a local `.mosyignore` file, the local rules are appended to the active patterns.
+If a global ignore file exists, its rules override the built-in defaults. When adding a directory that contains a local `.mosyignore` file, the local rules are appended to the active pattern set.
 
 ---
 
-## Syntax and Formatting Rules
+## Step 2: Create a `.mosyignore` File
 
-The `.mosyignore` file follows simple pattern-matching syntax:
+Create a global file at `~/.config/mosy/.mosyignore` for system-wide exclusions or a local `.mosyignore` file inside your project directory.
 
-* **Comments:** Lines starting with `#` are ignored.
-* **Blank lines:** Empty lines or lines containing only whitespace are skipped.
-* **Wildcards:** Standard shell pattern wildcards (such as `*`) are supported.
-* **Directories:** Trailing slashes in patterns (e.g., `cache/`) are trimmed and matched against directory names.
+### Ignore Syntax Rules
 
-### Example `.mosyignore` File
+* **Comments:** Lines starting with `#` are ignored as comments.
+* **Empty Lines:** Blank lines or lines containing whitespace are skipped.
+* **Wildcards:** Standard shell wildcards such as `*` are supported.
+* **Directory Slashes:** Trailing slashes (for example, `cache/`) are stripped and matched against directory names.
+
+### Comprehensive Example `.mosyignore`
 
 ```text
-# Global or local MountSync ignore file
+# General version control and system files
 .git
 .git/*
+.DS_Store
+Thumbs.db
+
+# Dependencies and packages
 node_modules
 node_modules/*
-.DS_Store
-*.tmp
-*.log
-*.swp
-*.bak
+vendor/
+.venv/
+
+# Build artifacts and compiled outputs
 dist/
 build/
-.cache
+*.o
+*.so
+*.pyc
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.bak
+.cache/
 ```
 
 ---
 
-## How Ignore Rules Work Across Subcommands
+## Step 3: Understand Subcommand Ignore Behavior
 
-### 1. Automatic Expunging during `mosy add`
+The ignore rules interact differently with MountSync subcommands.
 
-When you execute `mosy add <directory>` on a folder:
+### Automatic Expunging during `mosy add`
 
-1. MountSync checks if the directory contains a local `.mosyignore` file and loads global/local rules.
-2. Before moving the directory into the Cloud Vault, MountSync scans the directory recursively (`clean_ignored_files`).
-3. Any file or directory matching an active ignore pattern is automatically **expunged (deleted)** from the local directory.
-4. The cleaned directory is then moved to the Cloud Vault and symlinked back to your home directory.
+When you add a directory using `mosy add DIRECTORY`:
 
+1. MountSync checks for local `.mosyignore` files and loads both global and local ignore patterns.
+2. MountSync scans the directory recursively (`clean_ignored_files`) before moving it to the Cloud Vault.
+3. Every file or subdirectory matching an active ignore pattern is **expunged (deleted)** from the local filesystem prior to vault migration.
+4. The cleaned directory is moved to the vault and linked back to your home directory.
 > [!WARNING]
-> **Expunging Action:** Automatic deletion during `mosy add` permanently removes ignored files (e.g., `node_modules` or `.git`) from the local directory before vault migration. Ensure you do not list essential files in `.mosyignore`.
+> **Permanent Deletion:** `mosy add` permanently expunges matching files (such as `node_modules` or `.git`) from local disk before transferring the directory to the Cloud Vault. Verify your ignore patterns to avoid losing critical files.
 
-### 2. Skipping Ignored Items during `mosy init`
+### Symlink Skipping during `mosy init`
 
-When running `mosy init` on a new or existing machine:
+When you add a directory using `mosy add DIRECTORY`:
 
-1. MountSync iterates through the entries in `sync-map.conf`.
-2. For each cloud item, `mosy init` checks whether the item path matches any active ignore rule using `is_ignored`.
-3. If an item matches an ignore rule, MountSync displays `Skipping ignored item: <path>` and skips creating a symbolic link for that item.
+1. MountSync checks for `DIRECTORY/.mosyignore` (local rules) and `~/.config/mosy/.mosyignore` (global rules).
+2. All files matching active patterns are permanently expunged from the local directory before it is moved to the cloud vault.
+3. This guarantees that build artifacts (`node_modules`, `.cache`) are never uploaded or synced to cloud storage.
 
-### 3. Non-Destructive Skipping during `mosy pull`
+---
 
-When executing `mosy pull` to pull missing items:
+### Behavior During `mosy init` and `mosy pull`
 
-1. MountSync evaluates unlinked items listed in `sync-map.conf`.
-2. If an unlinked cloud item matches an active ignore pattern, MountSync skips creating the symlink and logs `Skipping ignored item: <path>`.
+When executing `mosy init` or `mosy pull` on another machine:
+
+1. MountSync reads `sync-map.conf` to discover cloud vault items.
+2. Unlinked cloud items matching an active ignore pattern are skipped without altering local files, logging: `Skipping ignored item: PATH`.
 
 ---
 
 ## Related Guides
 
-* [CLI Reference](CLI_REFERENCE.md): View detailed subcommand descriptions and options.
-* [Configuration Reference](CONFIGURATION.md): Learn about environment configuration.
-* [Multiple Profiles Guide](PROFILES.md): Manage isolated configuration sets.
-* [Tags and Groups](TAGS_AND_GROUPS.md): Categorize and filter items.
-* [Main README](../README.md): Return to the main page.
+* [CLI Reference](CLI_REFERENCE.md): Detailed information on `mosy add`, `mosy init`, and `mosy pull` command flags.
+* [Configuration Guide](CONFIGURATION.md): Learn how global configuration paths are structured.
+* [Profiles Guide](PROFILES.md): Manage isolated configuration profiles with MountSync.
+* [Tags and Groups Guide](TAGS_AND_GROUPS.md): Filter items when executing MountSync commands.
+* [Main Documentation](../README.md): Return to the main project page.

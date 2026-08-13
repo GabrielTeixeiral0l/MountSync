@@ -1,113 +1,99 @@
-# Multiple Profiles Guide
+# How to Manage Profiles in MountSync
 
-MountSync supports **Multiple Profiles**, allowing you to separate and manage different sets of dotfiles and configurations within the same cloud Vault.
-
----
+This guide explains how to isolate configurations into different profiles (such as work, personal, or server) using MountSync.
 
 ## Overview
 
-By default, MountSync operates on the `default` profile. However, as your computer ecosystem grows (work laptop, personal PC, VPS servers, etc.), you may need to isolate certain files without mixing synchronization maps.
+MountSync allows you to maintain independent configuration profiles. Each profile owns its own sync configuration map and state within your storage vault, preventing configuration overlap between different contexts.
 
-With the **Profiles** feature, you can maintain isolated vaults for each context while sharing the same `rclone` mount point.
+## Profile Storage and Directory Structure
 
----
+Profiles are stored inside your cloud vault directory (`$MOSY_CLOUD_DIR`):
 
-## How It Works
-
-### Setting the Active Profile
-
-The active profile can be selected via:
-1. **Global flag `-p` or `--profile <name>`** in the CLI command:
-   ```bash
-   mosy -p work add ~/.config/nvim
-   ```
-2. **Environment Variable `MOSY_PROFILE`**:
-   ```bash
-   export MOSY_PROFILE=work
-   mosy status
-   ```
-
----
-
-## Cloud Vault Directory Structure
-
-The sync map (`sync-map.conf`) and stored files depend on the selected profile:
-
-* **Default Profile (`default`)**:
-  * Directories/Files: `$MOSY_CLOUD_DIR/`
-  * Map File: `$MOSY_CLOUD_DIR/sync-map.conf`
-* **Named Profile (e.g., `work`, `personal`, `server`)**:
-  * Directories/Files: `$MOSY_CLOUD_DIR/profiles/<name>/`
-  * Map File: `$MOSY_CLOUD_DIR/profiles/<name>/sync-map.conf`
-
-### Visual Directory Layout of the Vault
+* **Default profile**: Uses `$MOSY_CLOUD_DIR/sync-map.conf`
+* **Custom profiles**: Stored in `$MOSY_CLOUD_DIR/profiles/PROFILE_NAME/sync-map.conf`
 
 ```text
-$MOSY_CLOUD_DIR/                           # Example: ~/GoogleDrive/mosy_vault
-├── sync-map.conf                          # Map for 'default' profile
-├── .bashrc                                # Synchronized file (default)
-├── .gitconfig                             # Synchronized file (default)
-└── profiles/                              # Directory containing additional profiles
+$MOSY_CLOUD_DIR/
+├── sync-map.conf                # Default profile configuration
+└── profiles/
     ├── work/
-    │   ├── sync-map.conf                  # Map for 'work' profile
-    │   ├── .config/
-    │   │   └── nvim/                      # Neovim for work profile
-    │   └── .ssh/
-    │       └── config_work                # Corporate SSH config
+    │   └── sync-map.conf        # Work profile configuration
     ├── personal/
-    │   ├── sync-map.conf                  # Map for 'personal' profile
-    │   └── .config/
-    │       └── mpv/                       # Personal MPV settings
+    │   └── sync-map.conf        # Personal profile configuration
     └── server/
-        ├── sync-map.conf                  # Map for 'server' profile
-        └── .tmux.conf                     # Lightweight config for servers
+        └── sync-map.conf        # Server profile configuration
 ```
+
+## Profile Selection Methods
+
+MountSync determines which profile to use based on the following precedence hierarchy:
+
+1. **Global Flag (`-p` / `--profile`)**: Overrides all other settings.
+2. **Environment Variable (`MOSY_PROFILE`)**: Used when no command-line flag is passed.
+3. **Default**: Fallback profile when neither the flag nor the environment variable is set.
 
 ---
 
-## Usage Examples
+## Step-by-Step Instructions
 
-### 1. Adding items to a specific profile
+### 1. Creating and Using a New Profile
+
+To set up a profile named `work`, pass `-p work` or `--profile work` to MountSync commands:
+
 ```bash
-# Add Neovim configuration to the 'work' profile
-mosy -p work add ~/.config/nvim
-
-# Add .tmux.conf to the 'server' profile
-mosy --profile server add ~/.tmux.conf
+mountsync -p work add /home/user/work-docs docs
 ```
 
-### 2. Initializing a machine with a profile
-```bash
-# On a company computer, apply only the work profile:
-mosy -p work init
+This creates the configuration file at `$MOSY_CLOUD_DIR/profiles/work/sync-map.conf` and maps `/home/user/work-docs` under the target remote location `docs`.
 
-# On a remote VPS, apply the server profile:
-mosy -p server init
+### 2. Running Commands with a Profile Flag
+
+You can target any profile explicitly for any MountSync command:
+
+```bash
+# List mapped folders in the 'work' profile
+mountsync -p work list
+
+# Synchronize files using the 'personal' profile
+mountsync --profile personal sync
+
+# Check status of the 'server' profile
+mountsync -p server status
 ```
 
-### 3. Listing and checking profile status
-```bash
-# List managed items in the 'work' profile
-mosy -p work list
+### 3. Setting a Profile via Environment Variable
 
-# Check symlink integrity for the 'personal' profile
-mosy -p personal status
+If you work continuously within a specific environment (e.g., in a terminal session dedicated to work), set `MOSY_PROFILE`:
+
+```bash
+export MOSY_PROFILE=work
 ```
 
----
+While `MOSY_PROFILE` is set, all MountSync commands automatically target the `work` profile without requiring the `-p` flag:
 
-## Common Use Cases
+```bash
+mountsync status
+mountsync sync
+```
 
-1. **Work vs. Personal**: Keep configuration keys, corporate credentials, or company dotfiles in the `work` profile without cluttering your `personal` environment.
-2. **Headless Servers / VPS**: Create a minimal `server` profile containing only `.bashrc`, `.tmux.conf`, and diagnostic scripts, avoiding synchronization of heavy GUI configurations.
-3. **Testing / Sandbox Environment**: Test new editor or shell configurations in a `testing` profile without affecting your main setup.
+### 4. Overriding Environment Variables with CLI Flags
 
----
+Command-line flags take priority over environment variables. If `MOSY_PROFILE=work` is set in your shell, you can still execute a single command for another profile:
 
-## Related Guides
+```bash
+# Executed against 'personal' profile despite MOSY_PROFILE=work
+mountsync -p personal status
+```
 
-* [Tags and Groups](TAGS_AND_GROUPS.md): Combine profiles with Tags and Groups for advanced filtering.
-* [Ignore Patterns Guide](MOSYIGNORE.md): Filter build artifacts and unneeded files across profiles.
-* [Configuration Reference](CONFIGURATION.md): Learn how to configure environment variables and preferences.
-* [CLI Reference](CLI_REFERENCE.md): View the complete list of subcommands and flags.
-* [Main README](../README.md): Return to the main page.
+### 5. Managing Profile Configurations
+
+To inspect or edit a custom profile's configuration directly, open its corresponding file:
+
+```bash
+# Edit default profile
+nano $MOSY_CLOUD_DIR/sync-map.conf
+
+# Edit work profile
+nano $MOSY_CLOUD_DIR/profiles/work/sync-map.conf
+```

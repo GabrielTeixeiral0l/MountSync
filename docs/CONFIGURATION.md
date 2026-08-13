@@ -1,56 +1,60 @@
 # Configuration Reference
 
-This document details the configuration system of **MountSync**, setting precedence order, environment variable usage, and CLI options.
-
----
-
-## Configuration File
-
-MountSync settings are saved in:
-```bash
-~/.config/mosy/config
-```
-
-This file is a simple Bash script containing environment variable declarations.
-
----
+This reference document specifies the configuration system for MountSync, detailing evaluation precedence, configuration variables, and command-line configuration management tools.
 
 ## Precedence Order
 
-MountSync resolves its configuration using the following priority order (highest to lowest):
+MountSync resolves configuration settings using a strict priority order. Values set at higher precedence levels override values set at lower levels:
 
-1. **Global CLI Flags & Temporary Environment Variables** (e.g., `mosy -p work` or `MOSY_DRY_RUN=true mosy pull`).
-2. **Local Configuration File** (`~/.config/mosy/config`).
-3. **Default Values (Internal Fallbacks)**.
+1. **Environment Variables**: Variables set in the environment or passed inline (for example, `MOSY_DRY_RUN=true`).
+2. **Configuration File**: Settings stored in `~/.config/mosy/config` (or profile-specific configuration files).
+3. **Default Values**: Internal fallbacks applied when a key is omitted from both environment variables and the configuration file.
 
----
+## Configuration Variables
 
-## Configuration Variables Table
+The following reference table documents all supported MountSync configuration variables.
 
-| Key / Environment Variable | Description | Default Value | Valid Values |
+| Environment Variable | Description | Default Value | Valid Values |
 | :--- | :--- | :--- | :--- |
-| `MOSY_REMOTE_NAME` | Name of the configured `rclone` remote | *(No default, required)* | Remote name (e.g., `gdrive:`, `dropbox:`) |
-| `MOSY_MOUNT_POINT` | Local mount point of the cloud drive | `${HOME}/GoogleDrive` | Any valid absolute path |
-| `MOSY_CLOUD_DIR` | Root vault directory inside the cloud drive | `${MOSY_MOUNT_POINT}/mosy_vault` | Any valid absolute path |
-| `MOSY_VFS_CACHE` | `rclone` VFS Cache mode | `writes` | `off`, `minimal`, `writes`, `full` |
-| `MOSY_BACKUP_EXT` | Extension for conflict backup files | `.bak` | Any extension (e.g., `.bak`, `.old`) |
-| `MOSY_LOG_LEVEL` | Verbosity level for CLI messages | `INFO` | `INFO`, `DEBUG`, `SILENT` |
-| `MOSY_DRY_RUN` | Simulates actions without modifying files | `false` | `true`, `false` |
-| `MOSY_PROFILE` | Active synchronization profile | `default` | Any valid profile name |
+| `MOSY_REMOTE_NAME` | Name of the configured `rclone` remote | None (Required) | String matching an `rclone` remote name (e.g., `gdrive:`, `dropbox:`) |
+| `MOSY_MOUNT_POINT` | Absolute path to the local mount point for cloud storage | `${HOME}/GoogleDrive` | Valid absolute filesystem path |
+| `MOSY_VFS_CACHE` | VFS cache mode passed to `rclone mount` | `writes` | `off`, `minimal`, `writes`, `full` |
+| `MOSY_CLOUD_DIR` | Root directory inside the cloud drive for MountSync storage | `${MOSY_MOUNT_POINT}/mosy_vault` | Valid absolute filesystem path |
+| `MOSY_BACKUP_EXT` | File extension appended to conflicting files during sync operations | `.bak` | File extension string (e.g., `.bak`, `.old`) |
+| `MOSY_LOG_LEVEL` | Verbosity level for CLI execution output | `INFO` | `INFO`, `DEBUG`, `SILENT` |
+| `MOSY_DRY_RUN` | Simulates file sync operations without executing changes | `false` | `true`, `false` |
+| `MOSY_PROFILE` | Active MountSync profile profile identifier | `default` | Valid profile name string |
 
----
+## Configuration File Format
 
-## Configuration Management via CLI (`mosy config`)
+The configuration file is located at `~/.config/mosy/config`. It uses POSIX shell key-value assignment syntax.
 
-The `mosy config` subcommand allows viewing and changing configuration directly from the terminal.
+### Example `~/.config/mosy/config`
 
-### 1. View Current Configuration (`mosy config`)
+```bash
+MOSY_REMOTE_NAME="gdrive:"
+MOSY_MOUNT_POINT="/home/user/GoogleDrive"
+MOSY_CLOUD_DIR="/home/user/GoogleDrive/mosy_vault"
+MOSY_VFS_CACHE="writes"
+MOSY_BACKUP_EXT=".bak"
+MOSY_LOG_LEVEL="INFO"
+MOSY_DRY_RUN="false"
+```
+
+## Configuration Management (`mosy config`)
+
+The `mosy config` subcommand provides utility tools to inspect and modify MountSync configuration settings directly.
+
+### View Current Configuration (`mosy config`)
+
+Running `mosy config` without arguments prints the current configuration state evaluated against precedence rules:
 
 ```bash
 mosy config
 ```
 
 Example output:
+
 ```text
 --- Mosy Configuration ---
 
@@ -66,37 +70,35 @@ MOSY_LOG_LEVEL       "INFO"    # Verbosity: INFO, DEBUG, SILENT (Default: INFO)
 MOSY_DRY_RUN        "false"    # If true, simulate actions without changes. (Default: false)
 ```
 
-### 2. Set an Option (`mosy config set`)
+### Modify Configuration (`mosy config set`)
+
+The `mosy config set` command writes configuration settings directly to `~/.config/mosy/config`:
+
+```bash
+mosy config set KEY VALUE
+```
+
+#### Parameters
+
+* `KEY`: The configuration key to modify (e.g., `MOSY_REMOTE_NAME`, `MOSY_LOG_LEVEL`).
+* `VALUE`: The value to assign to the key.
+
+#### Examples
+
+Set the remote drive name:
 
 ```bash
 mosy config set MOSY_REMOTE_NAME "mygdrive:"
-mosy config set MOSY_LOG_LEVEL "DEBUG"
-mosy config set MOSY_DRY_RUN "true"
 ```
 
-> [!NOTE]
-> The `config set` subcommand automatically validates allowed keys and their expected values.
-
----
-
-## Example `~/.config/mosy/config` File
+Set verbosity level to debug:
 
 ```bash
-MOSY_REMOTE_NAME="gdrive:"
-MOSY_MOUNT_POINT="/home/gabriel/GoogleDrive"
-MOSY_CLOUD_DIR="/home/gabriel/GoogleDrive/mosy_vault"
-MOSY_VFS_CACHE="writes"
-MOSY_BACKUP_EXT=".bak"
-MOSY_LOG_LEVEL="INFO"
-MOSY_DRY_RUN="false"
+mosy config set MOSY_LOG_LEVEL "DEBUG"
 ```
 
----
+Enable dry-run mode by default:
 
-## Related Guides
-
-* [Multiple Profiles Guide](PROFILES.md): Learn about the `MOSY_PROFILE` variable and profiles.
-* [Tags and Groups](TAGS_AND_GROUPS.md): Categorize managed items.
-* [Ignore Patterns Guide](MOSYIGNORE.md): Configure global and local ignore patterns.
-* [CLI Reference](CLI_REFERENCE.md): Detailed guide covering all subcommands.
-* [Main README](../README.md): Return to the main page.
+```bash
+mosy config set MOSY_DRY_RUN "true"
+```

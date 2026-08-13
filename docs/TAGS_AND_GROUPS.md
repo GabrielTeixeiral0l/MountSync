@@ -1,116 +1,141 @@
-# Tags and Groups Guide
+# How to Organize and Filter Items with Tags and Groups in MountSync
 
-MountSync provides a flexible **Tags** and **Groups** system to categorize and filter managed items. This allows you to selectively synchronize dotfiles and directories depending on the machine, working environment, or file role.
-
----
-
-## Conceptual Difference
-
-To maintain a clear organization, MountSync distinguishes between **Groups** and **Tags**:
-
-| Concept | CLI Flag | What it represents | Question it answers | Example Values |
-| :--- | :--- | :--- | :--- | :--- |
-| **Groups** | `-g`, `--group` | **Functional category / Item type** | *What is this item?* | `dotfiles`, `config`, `scripts`, `bin` |
-| **Tags** | `-t`, `--tag` | **Context or environment identifiers** | *Where/when should it be used?* | `work`, `personal`, `shell`, `dev`, `server` |
+This guide explains how to use Tags and Groups to categorize, organize, and selectively synchronize files and directories across different environments and use cases.
 
 ---
 
-## Map File Format (`sync-map.conf`)
+## Conceptual Difference: Tags vs. Groups
 
-Each item added to MountSync is registered in the profile map (`sync-map.conf`) using pipe-separated fields (`|`):
+MountSync categorizes items using two orthogonal dimensions:
+
+* **Groups (`-g`, `--group`)**: Functional categories describing what an item is or its role (e.g., `dotfiles`, `config`, `scripts`, `bin`). An item belongs to functional groups based on its structural purpose.
+* **Tags (`-t`, `--tag`)**: Contextual attributes describing where, when, or under what conditions an item should be applied (e.g., `work`, `personal`, `server`, `dev`, `shell`).
+
+| Feature | Groups (`-g`, `--group`) | Tags (`-t`, `--tag`) |
+| :--- | :--- | :--- |
+| **Core Question** | *What is this item?* | *Where or when is this item used?* |
+| **Perspective** | Structural / Functional category | Contextual / Environment label |
+| **Example Values** | `dotfiles`, `config`, `scripts`, `databases` | `work`, `personal`, `server`, `linux`, `macos` |
+
+---
+
+## The Map File Format (`sync-map.conf`)
+
+Each managed item is recorded in the profile configuration map (`sync-map.conf`) located in your storage vault. MountSync uses a 4-field format separated by pipe characters (`|`):
 
 ```text
-relative_local|relative_cloud|tags|groups
+local_path|cloud_path|tags|groups
 ```
 
-### Example `sync-map.conf` File
+### Field Definitions
+
+1. `local_path`: Relative or absolute path on the local filesystem.
+2. `cloud_path`: Relative destination path inside the vault storage.
+3. `tags`: Comma-separated list of contextual tag labels (optional).
+4. `groups`: Comma-separated list of functional group labels (optional).
+
+### Example Configuration
 
 ```text
-.bashrc|.bashrc|shell,main|dotfiles
-.config/nvim|.config/nvim|dev,editor|config
-.gitconfig|.gitconfig|main|dotfiles
-.tmux.conf|.tmux.conf|server,shell|config
+.bashrc|.bashrc|work,personal,shell|dotfiles
+.config/nvim|.config/nvim|work,dev,editor|config
+.ssh/config_work|.ssh/config_work|work,server|config
+scripts/deploy.sh|scripts/deploy.sh|work,server,dev|scripts
 ```
 
 ---
 
-## How Filtering Works
+## How Filtering Works Across Subcommands
 
-Filtering by Tags and Groups can be applied to the `init`, `pull`, `list`, and `status` subcommands.
+Filtering by `--tag` / `-t` and `--group` / `-g` is supported in the following subcommands: `add`, `init`, `pull`, `list`, and `status`.
 
-### Matching Rules:
-1. **Comma-Separated Lists**: You can specify multiple tags or groups (e.g., `--tag work,dev`). MountSync matches if the item contains **at least one** of the specified tags/groups (internal `OR` logic).
-2. **Combining Tags and Groups**: If you specify **both** `--tag` and `--group` in the same command, the item must satisfy criteria for both filters (internal `AND` logic between filters).
+### Filter Evaluation Rules
+
+1. **Multiple Values in a Single Flag (OR Logic)**: Passing comma-separated values to a flag (e.g., `--tag work,dev`) selects items that match **at least one** of the listed tags.
+2. **Combining Tags and Groups (AND Logic)**: Passing both `--tag` and `--group` in the same command requires an item to satisfy **both** tag and group criteria simultaneously.
 
 ---
 
-## Practical Examples by Subcommand
+## Practical Recipes
 
-### 1. Adding Items with Metadata (`mosy add`)
-When adding a file or directory, assign tags and groups for easier tracking:
+### Recipe 1: Adding Items with Tags and Groups (`mosy add`)
+
+Assign functional groups and contextual tags when adding items to MountSync.
 
 ```bash
-# Add Neovim configuration
+# Add Neovim config categorized under 'config' group with 'work', 'dev', and 'editor' tags
 mosy add ~/.config/nvim -g config -t work,dev,editor
 
-# Add .bashrc
-mosy add ~/.bashrc --group dotfiles --tag shell,main
+# Add .bashrc under 'dotfiles' group with 'shell' and 'work' tags
+mosy add ~/.bashrc --group dotfiles --tag shell,work
+
+# Add deployment scripts under 'scripts' group with 'server' tag
+mosy add ~/bin/deploy.sh -g scripts -t server
 ```
 
-### 2. Non-Destructive Synchronization (`mosy pull`)
-Fetch only relevant items from the cloud for the current machine:
+### Recipe 2: Synchronizing Only Work Dotfiles (`mosy pull`)
+
+When setting up or updating a work computer, fetch only configuration files tagged for work:
 
 ```bash
-# Pull only development configurations
-mosy pull --tag dev
+# Pull items tagged as 'work' belonging to the 'dotfiles' group
+mosy pull --tag work --group dotfiles
 
-# Pull only dotfiles from the 'dotfiles' group
-mosy pull -g dotfiles
+# Pull all work-related configurations regardless of group
+mosy pull -t work
 ```
 
-### 3. Selective Machine Initialization (`mosy init`)
-Provision a new machine applying only elements suitable for its usage profile:
+### Recipe 3: Selective Machine Initialization (`mosy init`)
+
+Provision a fresh installation based on the machine's role.
 
 ```bash
-# Provision a work machine
-mosy init --tag work
-
-# Provision a server (only scripts and shell configs)
+# Initialize a machine with only server scripts and configurations
 mosy init --group scripts,config --tag server
+
+# Initialize a primary workstation with work dotfiles
+mosy init -g dotfiles -t work
 ```
 
-### 4. Listing Filtered Items (`mosy list`)
-View managed files filtered by category or context:
+### Recipe 4: Checking Status of Server Configurations (`mosy status`)
+
+Inspect the synchronization status and link health for server-related items before deploying:
 
 ```bash
-# List all dotfiles
+# Check status of items tagged with 'server' inside the 'config' group
+mosy status --tag server --group config
+
+# Check status for all items tagged with 'server' or 'production'
+mosy status -t server,production
+```
+
+### Recipe 5: Listing Filtered Managed Items (`mosy list`)
+
+View specific subsets of managed items defined in your configuration:
+
+```bash
+# List all managed dotfiles
 mosy list --group dotfiles
 
-# List items tagged with 'work'
-mosy list -t work
+# List development tools tagged for work
+mosy list -t work,dev -g config
 ```
 
-Example output:
+Example command output:
+
 ```text
 Items managed by MountSync:
-- .bashrc [tags: shell,main] [groups: dotfiles]
-- .config/nvim [tags: dev,editor] [groups: config]
-```
-
-### 5. Checking Filtered Integrity (`mosy status`)
-Validate link status for a specific category:
-
-```bash
-# Check integrity of development items at work
-mosy status --tag work,dev --group config
+- .bashrc [tags: work,personal,shell] [groups: dotfiles]
+- .config/nvim [tags: work,dev,editor] [groups: config]
+- .ssh/config_work [tags: work,server] [groups: config]
 ```
 
 ---
 
-## Related Guides
+## Related Documentation
 
-* [Multiple Profiles Guide](PROFILES.md): Learn how to isolate your maps by profile.
-* [Ignore Patterns Guide](MOSYIGNORE.md): Prevent ignored files from being synced or linked.
-* [Configuration Reference](CONFIGURATION.md): Adjust environment variables and preferences.
-* [CLI Reference](CLI_REFERENCE.md): Consult all available commands and flags.
-* [Main README](../README.md): Return to the main page.
+* [Multiple Profiles Guide](PROFILES.md): Learn how to isolate map files by environment profiles.
+* [Ignore Patterns Guide](MOSYIGNORE.md): Exclude unwanted files from synchronization.
+* [Configuration Reference](CONFIGURATION.md): Environment variable specifications and options.
+* [CLI Reference](CLI_REFERENCE.md): Full command-line interface documentation.
+* [Main README](../README.md): Project overview and getting started guide.
