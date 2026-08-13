@@ -31,6 +31,7 @@ Synchronizes a new local file or directory to the cloud vault and replaces the o
   * `-g`, `--group <groups>`: Comma-separated list of groups.
 * **Behavior:**
   * The item must reside within the user home directory (`$HOME`).
+  * Automatically expunges ignored files and directories matching global (`~/.config/mosy/.mosyignore`) or local (`<dir>/.mosyignore`) rules before transferring to the cloud vault.
   * If the file already exists in the cloud vault, a backup copy of the local version is created before replacing it with the symlink.
   * Registers the entry in the `sync-map.conf` file.
 * **Example:**
@@ -48,6 +49,7 @@ Initializes a machine by recreating all symbolic links defined in `sync-map.conf
   * `-t`, `--tag <tags>`: Filters items by the specified tags.
   * `-g`, `--group <groups>`: Filters items by the specified groups.
 * **Behavior:**
+  * Evaluates `.mosyignore` pattern rules and skips creating symbolic links for ignored items.
   * If a local file already exists and is a regular file (not a symlink), MountSync automatically backs it up to `<file>.bak_<timestamp>` before creating the link.
   * If the symbolic link already exists, it is replaced.
 * **Example:**
@@ -66,6 +68,7 @@ Non-destructive incremental synchronization of missing items.
   * `-g`, `--group <groups>`: Filters items by the specified groups.
 * **Behavior:**
   * Iterates through `sync-map.conf` and creates symbolic links only for items that exist in the cloud but not on the local machine.
+  * Evaluates `.mosyignore` pattern rules and skips unlinked cloud items matching active ignore rules.
   * **Non-destructive:** If the file already exists locally (as a file or symlink), `pull` does not modify it.
 * **Example:**
   ```bash
@@ -183,5 +186,6 @@ MountSync uninstallation wizard.
 
 * [Multiple Profiles Guide](PROFILES.md): Learn how to use the `-p / --profile` argument.
 * [Tags and Groups](TAGS_AND_GROUPS.md): Details on filtering with `-t` and `-g`.
+* [Ignore Patterns Guide](MOSYIGNORE.md): Details on global and local `.mosyignore` rules and behavior.
 * [Configuration Reference](CONFIGURATION.md): Consult all supported variables.
 * [Main README](../README.md): Return to the main page.

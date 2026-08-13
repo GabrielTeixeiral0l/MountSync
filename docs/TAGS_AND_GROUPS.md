@@ -110,6 +110,7 @@ mosy status --tag work,dev --group config
 ## Related Guides
 
 * [Multiple Profiles Guide](PROFILES.md): Learn how to isolate your maps by profile.
+* [Ignore Patterns Guide](MOSYIGNORE.md): Prevent ignored files from being synced or linked.
 * [Configuration Reference](CONFIGURATION.md): Adjust environment variables and preferences.
 * [CLI Reference](CLI_REFERENCE.md): Consult all available commands and flags.
 * [Main README](../README.md): Return to the main page.

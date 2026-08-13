@@ -97,5 +97,6 @@ MOSY_DRY_RUN="false"
 
 * [Multiple Profiles Guide](PROFILES.md): Learn about the `MOSY_PROFILE` variable and profiles.
 * [Tags and Groups](TAGS_AND_GROUPS.md): Categorize managed items.
+* [Ignore Patterns Guide](MOSYIGNORE.md): Configure global and local ignore patterns.
 * [CLI Reference](CLI_REFERENCE.md): Detailed guide covering all subcommands.
 * [Main README](../README.md): Return to the main page.

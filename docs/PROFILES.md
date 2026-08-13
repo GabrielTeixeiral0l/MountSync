@@ -107,6 +107,7 @@ mosy -p personal status
 ## Related Guides
 
 * [Tags and Groups](TAGS_AND_GROUPS.md): Combine profiles with Tags and Groups for advanced filtering.
+* [Ignore Patterns Guide](MOSYIGNORE.md): Filter build artifacts and unneeded files across profiles.
 * [Configuration Reference](CONFIGURATION.md): Learn how to configure environment variables and preferences.
 * [CLI Reference](CLI_REFERENCE.md): View the complete list of subcommands and flags.
 * [Main README](../README.md): Return to the main page.

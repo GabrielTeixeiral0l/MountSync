@@ -44,6 +44,7 @@ The installer handles the entire setup process:
 * **Cloud Agnostic:** Works with any provider supported by `rclone` (Google Drive, Dropbox, S3, WebDAV, Nextcloud, etc.).
 * **Multiple Profiles:** Support for isolated profiles (e.g., `work`, `personal`, `server`), allowing separate maps and vaults for each context.
 * **Tags & Groups:** Categorize your configurations to selectively synchronize, initialize, list, or check status.
+* **Ignore Patterns (`.mosyignore`):** Global (`~/.config/mosy/.mosyignore`) and local ignore support to automatically expunge build artifacts (`node_modules`, `.git`, logs) during `add` and skip them during `init` and `pull`.
 * **Non-Destructive Incremental Sync:** The `pull` command fetches missing files from the cloud without overwriting or altering existing local files.
 * **Dry-Run Mode:** Test commands without modifying the filesystem.
 * **Security & Backups:** Automatic timestamped backups created upon file conflicts.
@@ -59,6 +60,7 @@ For in-depth guides on each feature of MountSync, consult the articles in the [`
 | :--- | :--- |
 | **[Multiple Profiles Guide](docs/PROFILES.md)** | How to use `-p / --profile`, vault directory structure (`profiles/<name>`), and use cases (`work`, `personal`, `server`). |
 | **[Tags and Groups](docs/TAGS_AND_GROUPS.md)** | Conceptual difference between Tags and Groups, `sync-map.conf` format, and filtering with `add`, `init`, `pull`, `list`, and `status`. |
+| **[Ignore Patterns Guide](docs/MOSYIGNORE.md)** | Global and local `.mosyignore` rules, default patterns, automatic expunging in `add`, and skipping in `init`/`pull`. |
 | **[Configuration Reference](docs/CONFIGURATION.md)** | Details on `~/.config/mosy/config`, `mosy config` subcommand, environment variables, and precedence order. |
 | **[Full CLI Reference](docs/CLI_REFERENCE.md)** | Detailed manual covering all subcommands, arguments, options, and global flags of `mosy`. |
 
