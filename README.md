@@ -118,10 +118,27 @@ mosy status --tag work -g dev
 
 MountSync allows you to categorize configurations for flexible environment management:
 
-- **Tags (`--tag` / `-t`):** Custom identifiers for items (e.g., `shell`, `work`, `dev`). Pass comma-separated values to specify multiple tags.
-- **Groups (`--group` / `-g`):** Higher-level categories for grouping items (e.g., `dotfiles`, `config`). Pass comma-separated values for multiple groups.
+- **Groups (`--group` / `-g`):** Represent **high-level categories** or functional types (e.g., `dotfiles`, `config`, `scripts`). Use groups to organize items by what they are.
+- **Tags (`--tag` / `-t`):** Represent **contextual identifiers** for specific environments or machines (e.g., `work`, `personal`, `shell`, `dev`). Use tags to filter items by where or when they should be synced.
+
+#### Example Scenario
+
+```bash
+# Categorize a work Neovim config (Group: config | Tags: work, editor)
+mosy add ~/.config/nvim -g config -t work,editor
+
+# Categorize a personal shell config (Group: dotfiles | Tags: personal, shell)
+mosy add ~/.bashrc -g dotfiles -t personal,shell
+
+# On a work machine, initialize only work-related items:
+mosy init --tag work
+
+# On a server, pull only shell dotfiles:
+mosy pull --group dotfiles --tag shell
+```
 
 When filtering with `--tag` or `--group` in `init`, `pull`, `list`, or `status`, MountSync matches items that contain at least one of the specified tags or groups.
+
 
 ## Architecture
 
