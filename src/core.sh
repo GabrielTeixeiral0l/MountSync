@@ -50,11 +50,7 @@ fi
 
 is_mounted() {
     local target="${1:-$MOSY_MOUNT_POINT}"
-    if command -v mountpoint >/dev/null 2>&1; then
-        mountpoint -q "$target"
-        return $?
-    fi
-    mount | grep -qE "[[:space:]]on[[:space:]]${target%/}/?[[:space:]]"
+    mountpoint -q "$target"
 }
 
 check_mount() {
