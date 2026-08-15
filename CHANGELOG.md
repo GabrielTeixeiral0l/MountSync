@@ -7,15 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-15
+
 ### Added
 - Multiple profiles support via `-p` / `--profile` flag and `MOSY_PROFILE` environment variable.
 - Categorization and conditional filtering using Tags and Groups across `add`, `init`, `pull`, `list`, and `status` commands.
 - File and directory ignore support via global (`~/.config/mosy/.mosyignore`) and local `.mosyignore` files, with automatic expunging during `add`.
 - Global `--dry-run` flag support to simulate execution without modifying the filesystem.
-- Complete documentation overhaul following the Diátaxis Framework (Tutorials, How-To Guides, Reference, Explanation).
+- Comprehensive documentation suite covering Tutorials, How-To Guides, Reference, and Architecture.
 
 ### Changed
-- Restructured `docs/` directory into four distinct Diátaxis quadrants.
+- Restructured `docs/` directory into dedicated modular documentation files.
 
 ### Refactored
 - Simplified tag and group filtering logic in `foreach_mapping`.

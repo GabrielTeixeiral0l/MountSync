@@ -239,7 +239,7 @@ Global flags must be specified before the subcommand.
 * **Output Example**:
   ```text
   $ mosy version
-  MountSync v1.0.0
+  MountSync v1.1.0
   You are running the latest version.
   ```
 * **Exit Codes**:

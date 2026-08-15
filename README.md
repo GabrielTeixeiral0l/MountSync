@@ -35,16 +35,16 @@ mosy status
 
 ---
 
-## Documentation (Diátaxis Framework)
+## Documentation
 
-MountSync documentation is structured according to the Diátaxis framework, dividing learning and reference materials into four distinct quadrants:
+Explore the detailed guides, tutorials, and technical references available for MountSync:
 
-| Quadrant | Purpose | Document Links |
+| Category | Purpose | Document Links |
 | :--- | :--- | :--- |
-| **Tutorial** | Learning-oriented step-by-step introduction for beginners | [Quickstart Tutorial](docs/TUTORIAL_QUICKSTART.md) |
+| **Tutorial** | Step-by-step introduction for beginners | [Quickstart Tutorial](docs/TUTORIAL_QUICKSTART.md) |
 | **How-to Guides** | Task-oriented recipes solving practical real-world problems | [Multiple Profiles Guide](docs/PROFILES.md)<br>[Tags & Groups Guide](docs/TAGS_AND_GROUPS.md)<br>[Ignore Patterns Guide](docs/MOSYIGNORE.md) |
-| **Reference** | Information-oriented technical descriptions of CLI and configuration | [CLI Reference](docs/CLI_REFERENCE.md)<br>[Configuration Reference](docs/CONFIGURATION.md) |
-| **Explanation** | Understanding-oriented background context and architecture design | [Architecture Explanation](docs/EXPLANATION_ARCHITECTURE.md) |
+| **Reference** | Exhaustive technical descriptions of CLI commands and configuration | [CLI Reference](docs/CLI_REFERENCE.md)<br>[Configuration Reference](docs/CONFIGURATION.md) |
+| **Architecture** | System design, mental model, and data flow specifications | [Architecture & Design](docs/EXPLANATION_ARCHITECTURE.md) |
 
 ---
 

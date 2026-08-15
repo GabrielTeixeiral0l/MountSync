@@ -1,8 +1,6 @@
-# MountSync Architecture Explanation
+# MountSync Architecture & Design
 
-This document explains the design principles, core mental model, data flow, safety mechanisms, system integrations, and codebase structure of **MountSync** (`mosy`).
-
-It is structured according to the **Diátaxis framework** for *Explanation* (understanding-oriented content), helping developers and system administrators build a comprehensive mental model of how MountSync operates.
+This document explains the design principles, core mental model, data flow, safety mechanisms, system integrations, and codebase structure of **MountSync** (`mosy`), helping developers and system administrators build a comprehensive understanding of how MountSync operates.
 
 ---
 
