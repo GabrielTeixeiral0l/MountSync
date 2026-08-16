@@ -2,24 +2,18 @@
 
 cmd_add() {
     check_mount
-    local TAGS=""
-    local ITEM_GROUPS=""
     local RAW_TARGET=""
+    parse_filter_flags "$@"
+    local TAGS="$MOSY_FILTER_TAG"
+    local ITEM_GROUPS="$MOSY_FILTER_GROUP"
 
     while [ $# -gt 0 ]; do
         case "$1" in
-            --tag|-t)
-                TAGS="$2"
-                shift 2
-                ;;
-            --group|-g)
-                ITEM_GROUPS="$2"
+            --tag|-t|--group|-g)
                 shift 2
                 ;;
             *)
-                if [ -z "$RAW_TARGET" ]; then
-                    RAW_TARGET="$1"
-                fi
+                [ -z "$RAW_TARGET" ] && RAW_TARGET="$1"
                 shift
                 ;;
         esac

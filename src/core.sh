@@ -39,6 +39,26 @@ if ! load_settings; then
     exit 1
 fi
 
+parse_filter_flags() {
+    export MOSY_FILTER_TAG=""
+    export MOSY_FILTER_GROUP=""
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --tag|-t)
+                MOSY_FILTER_TAG="$2"
+                shift 2
+                ;;
+            --group|-g)
+                MOSY_FILTER_GROUP="$2"
+                shift 2
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+}
+
 is_mounted() {
     local target="${1:-$MOSY_MOUNT_POINT}"
     mountpoint -q "$target"
