@@ -29,12 +29,7 @@ cmd_remove() {
     fi
 
     echo "Reverting $REL_PATH to local file..."
-    # Copy to a local temporary name first to ensure success before deleting the link
-    if [ -d "$SOURCE" ]; then
-        cp -r "$SOURCE" "${TARGET}.new" || { echo "Error: Failed to copy from cloud."; exit 1; }
-    else
-        cp "$SOURCE" "${TARGET}.new" || { echo "Error: Failed to copy from cloud."; exit 1; }
-    fi
+    cp -r "$SOURCE" "${TARGET}.new" || { echo "Error: Failed to copy from cloud."; exit 1; }
 
     # Atomic-like swap
     rm "$TARGET"
