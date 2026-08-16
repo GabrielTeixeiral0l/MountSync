@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Refactored
+- Centralized `--tag` and `--group` CLI argument parsing across commands into a reusable `parse_filter_flags` helper in `src/core.sh`.
+- Streamlined configuration loading and environment precedence in `load_settings` without reflection arrays.
+- Simplified `mosy remove` file and directory copy handling into an unconditional recursive copy (`cp -r`).
+- Replaced subshell map manipulation in `mosy remove` with standard in-place `sed -i` deletion.
+- Simplified `.mosyignore` line whitespace trimming in `src/ignore.sh`.
+
 ## [1.1.0] - 2026-08-15
 
 ### Added
