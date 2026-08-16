@@ -1,20 +1,11 @@
 load_settings() {
     local config_file="${HOME}/.config/mosy/config"
     
-    # Save preset environment variables before sourcing config file
-    local keys=(MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN MOSY_PROFILE)
-    local env_saved=()
-    for k in "${keys[@]}"; do
-        if [ -n "${!k+x}" ]; then
-            env_saved+=("$k=${!k}")
-        fi
-    done
-
-    [ -f "$config_file" ] && . "$config_file"
-
-    for env_setting in "${env_saved[@]}"; do
-        export "$env_setting"
-    done
+    if [ -f "$config_file" ]; then
+        while IFS='=' read -r key val; do
+            [[ "$key" =~ ^[A-Z_]+$ ]] && [ -z "${!key+x}" ] && eval "export $key=$val"
+        done < "$config_file"
+    fi
 
     export MOSY_REMOTE_NAME="${MOSY_REMOTE_NAME:-}"
     export MOSY_MOUNT_POINT="${MOSY_MOUNT_POINT:-${HOME}/GoogleDrive}"
