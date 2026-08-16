@@ -14,9 +14,7 @@ DEFAULT_IGNORE_PATTERNS=(
 _read_ignore_file() {
     local file="$1"
     [ -f "$file" ] || return 0
-    while IFS= read -r line || [ -n "$line" ]; do
-        line="${line#"${line%%[![:space:]]*}"}"
-        line="${line%"${line##*[![:space:]]}"}"
+    while read -r line || [ -n "$line" ]; do
         [[ -z "$line" || "$line" =~ ^# ]] && continue
         patterns+=("$line")
     done < "$file"
