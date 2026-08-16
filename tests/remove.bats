@@ -71,3 +71,33 @@ setup() {
     assert_failure
     assert_output --partial "is not a symbolic link managed by MountSync"
 }
+
+@test "Remove: in-place map deletion preserves other entries without blank lines" {
+    mkdir -p "$MOSY_CLOUD_DIR"
+    printf "item1|item1\nitem2|item2\nitem3|item3\n" > "$MOSY_CLOUD_DIR/sync-map.conf"
+
+    touch "$MOSY_CLOUD_DIR/item2"
+    ln -s "$MOSY_CLOUD_DIR/item2" "$HOME/item2"
+
+    run mosy remove "$HOME/item2"
+    assert_success
+
+    run cat "$MOSY_CLOUD_DIR/sync-map.conf"
+    assert_output "item1|item1
+item3|item3"
+}
+
+@test "Remove: reverts nested directory with multiple subfolders and files" {
+    mkdir -p "$MOSY_CLOUD_DIR/deep/nested/pkg"
+    echo "deep code" > "$MOSY_CLOUD_DIR/deep/nested/pkg/main.js"
+    echo "deep/nested|deep/nested" > "$MOSY_CLOUD_DIR/sync-map.conf"
+
+    mkdir -p "$HOME/deep"
+    ln -s "$MOSY_CLOUD_DIR/deep/nested" "$HOME/deep/nested"
+
+    run mosy remove "$HOME/deep/nested"
+    assert_success
+
+    [ ! -L "$HOME/deep/nested" ]
+    [ -f "$HOME/deep/nested/pkg/main.js" ]
+}

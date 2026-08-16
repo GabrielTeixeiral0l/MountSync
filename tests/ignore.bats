@@ -64,3 +64,25 @@ setup() {
     [ -f "$MOSY_CLOUD_DIR/large_project/src/components/component_1.js" ]
     [ -f "$MOSY_CLOUD_DIR/large_project/src/components/component_50.js" ]
 }
+
+@test "ignore: trims leading and trailing whitespace and ignores comments in .mosyignore" {
+    mkdir -p "$TEST_HOME/.config/mosy"
+    cat << 'EOF' > "$TEST_HOME/.config/mosy/.mosyignore"
+   # Leading spaces comment
+    ignored_file.txt    
+	tab_ignored.log	
+EOF
+
+    local target_dir="$TEST_HOME/test_trim"
+    mkdir -p "$target_dir"
+    echo "data" > "$target_dir/ignored_file.txt"
+    echo "data" > "$target_dir/tab_ignored.log"
+    echo "keep" > "$target_dir/kept.txt"
+
+    run ./mosy add "$target_dir"
+    [ "$status" -eq 0 ]
+
+    [ ! -f "$MOSY_CLOUD_DIR/test_trim/ignored_file.txt" ]
+    [ ! -f "$MOSY_CLOUD_DIR/test_trim/tab_ignored.log" ]
+    [ -f "$MOSY_CLOUD_DIR/test_trim/kept.txt" ]
+}

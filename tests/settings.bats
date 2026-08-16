@@ -63,3 +63,19 @@ setup() {
     [ "$status" -eq 0 ]
     [ "$output" == "work|/tmp/vault/profiles/work/sync-map.conf" ]
 }
+
+@test "settings: ignores comments, preserves existing env and falls back correctly" {
+    unset MOSY_REMOTE_NAME
+    mkdir -p "$HOME/.config/mosy"
+    cat << 'EOF' > "$HOME/.config/mosy/config"
+# This is a comment
+MOSY_REMOTE_NAME="cloud_remote"
+MOSY_VFS_CACHE="off"
+MOSY_LOG_LEVEL="DEBUG"
+EOF
+
+    export MOSY_LOG_LEVEL="SILENT"
+    run bash -c "source src/core.sh && load_settings && echo \"\$MOSY_REMOTE_NAME|\$MOSY_VFS_CACHE|\$MOSY_LOG_LEVEL\""
+    [ "$status" -eq 0 ]
+    [ "$output" == "cloud_remote|off|SILENT" ]
+}

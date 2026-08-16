@@ -45,3 +45,34 @@ EOF
   assert_output --partial "L:local1 C:cloud1"
   assert_output --partial "L:local2 C:cloud2"
 }
+
+@test "Core: parse_filter_flags parses long tags and groups correctly" {
+  local test_script="${BATS_TMPDIR}/test_flags.sh"
+  cat << 'EOF' > "$test_script"
+source src/core.sh
+parse_filter_flags --tag work,dev --group workstation extra_arg
+echo "$MOSY_FILTER_TAG|$MOSY_FILTER_GROUP"
+EOF
+
+  run bash "$test_script"
+  assert_success
+  assert_output "work,dev|workstation"
+}
+
+@test "Core: parse_filter_flags handles short flags -t and -g and resets properly" {
+  local test_script="${BATS_TMPDIR}/test_flags_short.sh"
+  cat << 'EOF' > "$test_script"
+source src/core.sh
+export MOSY_FILTER_TAG="old"
+export MOSY_FILTER_GROUP="old"
+parse_filter_flags -t personal -g home
+echo "$MOSY_FILTER_TAG|$MOSY_FILTER_GROUP"
+parse_filter_flags
+echo "reset:$MOSY_FILTER_TAG|$MOSY_FILTER_GROUP"
+EOF
+
+  run bash "$test_script"
+  assert_success
+  assert_output "personal|home
+reset:|"
+}
