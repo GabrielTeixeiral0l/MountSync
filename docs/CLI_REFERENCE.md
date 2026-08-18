@@ -35,7 +35,7 @@ Global flags must be specified before the subcommand.
 
 ### 1. `add`
 
-* **Purpose**: Adds a local file or directory to MountSync management. It cleans ignored files according to `.mosyignore` patterns, moves the file/directory into the cloud vault, creates a symbolic link in the home directory pointing to the cloud location, and appends the entry to `sync-map.conf`.
+* **Purpose**: Adds a local file or directory to MountSync management. For directories, it performs granular synchronization by preserving the local physical directory structure, moving only non-ignored files into the cloud vault and symlinking them individually. All ignored files (such as `.git`, `.env`, `node_modules`, or rules in `.mosyignore`) remain safely on the local disk without deletion. The item is appended to `sync-map.conf`.
 * **Syntax**:
   ```text
   mosy [-p PROFILE] add FILE_OR_DIRECTORY [-t|--tag TAGS] [-g|--group GROUPS]

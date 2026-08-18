@@ -181,11 +181,11 @@ The following sequence diagram outlines the exact execution flow when a user add
    |                    |                      |-- is_mounted? ------>|
    |                    |                      |<-- true -------------|
    |                    |                                             |
-   |                    |-- expunge_ignored_patterns (ignore.sh) ---->|
+   |                    |-- is_ignored? (preserves local ignored) ---->|
    |                    |-- mkdir -p vault_dir ---------------------->|
-   |                    |-- mv $HOME/PATH -> vault/ ----------------->|
-   |                    |-- ln -sf vault/PATH $HOME/PATH ------------>|
-   |                    |-- append_to_sync_map ---------------------->|
+   |                    |-- mv non-ignored files -> vault/ ----------->|
+   |                    |-- ln -sf vault/files -> local/ ------------->|
+   |                    |-- update_map (sync-map.conf) --------------->|
    |<-- Success Message-|                                             |
 ```
 

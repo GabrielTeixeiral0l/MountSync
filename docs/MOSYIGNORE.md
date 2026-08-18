@@ -91,24 +91,19 @@ build/
 
 The ignore rules interact differently with MountSync subcommands.
 
-### Automatic Expunging during `mosy add`
+### Granular Directory Synchronization & Local Preservation (Zero Data Loss)
 
 When you add a directory using `mosy add DIRECTORY`:
 
-1. MountSync checks for local `.mosyignore` files and loads both global and local ignore patterns.
-2. MountSync scans the directory recursively (`clean_ignored_files`) before moving it to the Cloud Vault.
-3. Every file or subdirectory matching an active ignore pattern is **expunged (deleted)** from the local filesystem prior to vault migration.
-4. The cleaned directory is moved to the vault and linked back to your home directory.
-> [!WARNING]
-> **Permanent Deletion:** `mosy add` permanently expunges matching files (such as `node_modules` or `.git`) from local disk before transferring the directory to the Cloud Vault. Verify your ignore patterns to avoid losing critical files.
+1. MountSync checks for `.mosyignore` files by traversing the directory tree up to `$HOME` and merges them with global rules (`~/.config/mosy/.mosyignore` or defaults).
+2. The local directory remains a **regular physical directory**.
+3. Every file inside the directory is evaluated against active ignore patterns:
+   - **Ignored items** (such as `.git`, `node_modules`, `.env`, logs, or files matching `.mosyignore`): **Remain completely untouched on the local filesystem**. They are never deleted and never uploaded to the cloud.
+   - **Valid items**: Moved to the Cloud Vault and replaced with individual symbolic links.
+4. MountSync registers the directory in `sync-map.conf`.
 
-### Symlink Skipping during `mosy init`
-
-When you add a directory using `mosy add DIRECTORY`:
-
-1. MountSync checks for `DIRECTORY/.mosyignore` (local rules) and `~/.config/mosy/.mosyignore` (global rules).
-2. All files matching active patterns are permanently expunged from the local directory before it is moved to the cloud vault.
-3. This guarantees that build artifacts (`node_modules`, `.cache`) are never uploaded or synced to cloud storage.
+> [!NOTE]
+> **Zero Data Loss Guarantee:** Unlike previous versions, MountSync **never deletes or expunges** local files. Ignored files stay safely on your local disk as regular files, ensuring secrets, Git histories, and caches remain private and intact.
 
 ---
 
@@ -117,7 +112,9 @@ When you add a directory using `mosy add DIRECTORY`:
 When executing `mosy init` or `mosy pull` on another machine:
 
 1. MountSync reads `sync-map.conf` to discover cloud vault items.
-2. Unlinked cloud items matching an active ignore pattern are skipped without altering local files, logging: `Skipping ignored item: PATH`.
+2. For directories, MountSync recreates the local directory structure and links only non-ignored files available in the cloud vault.
+3. Private local files that were ignored on the source machine are not present in the cloud, allowing the destination machine to maintain independent local secrets/configurations without conflict.
+4. Unlinked cloud items matching an active ignore pattern are skipped without altering local files, logging: `Skipping ignored item: PATH`.
 
 ---
 
