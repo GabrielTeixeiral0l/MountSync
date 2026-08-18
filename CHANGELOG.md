@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-18
+
 ### Added
 - Granular directory synchronization: `mosy add <directory>` now synchronizes individual valid files while preserving the root folder as a real local directory.
 - End-to-End Multi-Machine testing suite (`tests/e2e_multi_machine.bats`) covering multi-environment workflows, bidirectional live sync, conflict backups, and independent removals.

@@ -69,8 +69,9 @@ setup() {
 
 @test "Version: Displays current version" {
   run mosy version
+  
   assert_success
-  assert_output --partial "MountSync v1.1.0"
+  assert_output --partial "MountSync v1.2.0"
 }
 
 @test "Update: Fails if no installation repo" {
