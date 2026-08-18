@@ -15,6 +15,9 @@ _read_ignore_file() {
     local file="$1"
     [ -f "$file" ] || return 0
     while read -r line || [ -n "$line" ]; do
+        # trim leading/trailing whitespace with native bash parameter expansion
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
         [[ -z "$line" || "$line" =~ ^# ]] && continue
         patterns+=("$line")
     done < "$file"
@@ -34,28 +37,22 @@ is_ignored() {
         patterns=("${DEFAULT_IGNORE_PATTERNS[@]}")
     fi
 
-    if [ -d "$target_path" ] && [ -f "$target_path/.mosyignore" ]; then
-        _read_ignore_file "$target_path/.mosyignore"
-    fi
+    local curr_dir
+    curr_dir=$(dirname "$target_path")
+    while [[ -n "$curr_dir" && "$curr_dir" == "$HOME"* && "$curr_dir" != "/" ]]; do
+        if [ -f "$curr_dir/.mosyignore" ]; then
+            _read_ignore_file "$curr_dir/.mosyignore"
+        fi
+        [ "$curr_dir" = "$HOME" ] && break
+        curr_dir=$(dirname "$curr_dir")
+    done
 
     for pattern in "${patterns[@]}"; do
         local clean_pat="${pattern%/}"
-        if [[ "$base_name" == $clean_pat || "$target_path" == *"/$clean_pat"* || "$target_path" == *"/$pattern"* ]]; then
+        if [[ "$base_name" == $clean_pat || "$base_name" == $pattern || "$target_path" == *"/$clean_pat/"* || "$target_path" == *"/$clean_pat" || "$target_path" == *"/$pattern" || "$target_path" == *"/$pattern/"* ]]; then
             return 0
         fi
     done
 
     return 1
-}
-
-clean_ignored_files() {
-    local dir="$1"
-    [ ! -d "$dir" ] && return 0
-
-    find "$dir" -mindepth 1 | while read -r item; do
-        if is_ignored "$item"; then
-            log_info "Expunging ignored item: $item"
-            rm -rf "$item"
-        fi
-    done
 }
