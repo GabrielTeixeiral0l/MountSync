@@ -35,6 +35,26 @@ status_callback() {
             echo -e "${RED}[ERR]${NC} $local_rel (Wrong target: points to $target)"
             ((ERR++))
         fi
+    elif [ -d "$local_path" ] && [ -d "$cloud_path" ]; then
+        # Check integrity of symlinks within granularly managed directories
+        local dir_ok=true
+        local broken_links=0
+        while IFS= read -r -d '' link; do
+            local target
+            target=$(readlink "$link")
+            if [[ "$target" == "$MOSY_PROFILE_DIR"* ]] && [ ! -e "$target" ]; then
+                dir_ok=false
+                ((broken_links++))
+            fi
+        done < <(find "$local_path" -type l -print0)
+
+        if [ "$dir_ok" = true ]; then
+            echo -e "${GREEN}[OK]${NC} $local_rel (directory)"
+            ((OK++))
+        else
+            echo -e "${RED}[ERR]${NC} $local_rel ($broken_links broken links inside directory)"
+            ((ERR++))
+        fi
     else
         if [ -e "$cloud_path" ]; then
             echo -e "${YELLOW}[WARN]${NC} $local_rel (Missing link: cloud source exists)"

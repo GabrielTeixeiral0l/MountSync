@@ -33,7 +33,8 @@ setup() {
   assert_success
   [ -d "$MOSY_CLOUD_DIR/testdir" ]
   [ -f "$MOSY_CLOUD_DIR/testdir/file1" ]
-  [ -L "$HOME/testdir" ]
+  [ -L "$HOME/testdir/file1" ]
+  [ -d "$HOME/testdir" ]
 }
 
 @test "Init: Recreates links from sync map" {

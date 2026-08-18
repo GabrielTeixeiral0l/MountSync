@@ -42,29 +42,51 @@ cmd_add() {
 
     REL_PATH=$(get_relative_home_path "$RAW_TARGET")
     CLOUD_DEST="$MOSY_PROFILE_DIR/$REL_PATH"
-    CLOUD_DEST_DIR=$(dirname "$CLOUD_DEST")
-
-    mkdir -p "$CLOUD_DEST_DIR"
 
     echo "Syncing $REL_PATH..."
+
     if [ -d "$TARGET" ]; then
-        clean_ignored_files "$TARGET"
-    fi
+        # Sync directory granularly without modifying or deleting local ignored files
+        mkdir -p "$CLOUD_DEST"
+        
+        while IFS= read -r -d '' file; do
+            local rel_file="${file#$TARGET/}"
+            local cloud_file="$CLOUD_DEST/$rel_file"
 
-    if [ -e "$CLOUD_DEST" ]; then
-        echo "Warning: A version already exists in the cloud at $REL_PATH. Backing up local copy."
-        mosy_backup "$TARGET" || exit 1
+            if is_ignored "$file"; then
+                log_debug "Ignoring local file: $rel_file"
+                continue
+            fi
+
+            if [ -L "$file" ]; then
+                continue
+            fi
+
+            mkdir -p "$(dirname "$cloud_file")"
+            if [ -e "$cloud_file" ]; then
+                echo "Warning: Cloud version already exists at $rel_file. Backing up local copy."
+                mosy_backup "$file" || continue
+            else
+                mv "$file" "$cloud_file" || continue
+            fi
+            ln -s "$cloud_file" "$file"
+        done < <(find "$TARGET" -type f -print0)
     else
-        mv "$TARGET" "$CLOUD_DEST" || exit 1
-    fi
+        local CLOUD_DEST_DIR
+        CLOUD_DEST_DIR=$(dirname "$CLOUD_DEST")
+        mkdir -p "$CLOUD_DEST_DIR"
 
-    ln -s "$CLOUD_DEST" "$TARGET"
+        if [ -e "$CLOUD_DEST" ]; then
+            echo "Warning: A version already exists in the cloud at $REL_PATH. Backing up local copy."
+            mosy_backup "$TARGET" || exit 1
+        else
+            mv "$TARGET" "$CLOUD_DEST" || exit 1
+        fi
+        ln -s "$CLOUD_DEST" "$TARGET"
+    fi
 
     touch "$MOSY_MAP_FILE"
-    if grep -q "^$REL_PATH|" "$MOSY_MAP_FILE"; then
-        # Remove existing line if replacing
-        sed -i "/^${REL_PATH//\//\\/}|/d" "$MOSY_MAP_FILE"
-    fi
+    update_map_remove_entry "$REL_PATH"
     echo "$REL_PATH|$REL_PATH|$TAGS|$ITEM_GROUPS" >> "$MOSY_MAP_FILE"
 
     echo "Success! $REL_PATH is now synced."
