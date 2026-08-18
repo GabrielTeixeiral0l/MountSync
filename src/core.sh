@@ -150,3 +150,12 @@ get_relative_home_path() {
 log_error() {
     echo "$@" >&2
 }
+
+update_map_remove_entry() {
+    local rel_path="$1"
+    [ -f "$MOSY_MAP_FILE" ] || return 0
+    local tmp="/tmp/mosy_map_$$.tmp"
+    grep -v "^${rel_path}|" "$MOSY_MAP_FILE" > "$tmp" 2>/dev/null || true
+    cat "$tmp" > "$MOSY_MAP_FILE"
+    rm -f "$tmp"
+}
