@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - End-to-End Multi-Machine testing suite (`tests/e2e_multi_machine.bats`) covering multi-environment workflows, bidirectional live sync, conflict backups, and independent removals.
 - Real application integration test suite (`tests/real_app_system.bats`) verifying CLI tool execution, installation order precedence, and config discovery.
 - Nested secrets test suite (`tests/nested_secrets_e2e.bats`) verifying deeply nested ignored secrets and caches.
+- Dedicated unit and regression test coverage across settings precedence, edge cases, logging, and map iteration (`tests/`).
 
 ### Fixed
 - **Zero Data Loss**: Removed destructive `clean_ignored_files` routine (`rm -rf`) to prevent accidental deletion of local ignored files (`.git`, `node_modules`, `.env`).
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleaned up internal comments to focus strictly on architectural decisions.
 - Centralized `--tag` and `--group` CLI argument parsing across commands into a reusable `parse_filter_flags` helper in `src/core.sh`.
 - Streamlined configuration loading and environment precedence in `load_settings` without reflection arrays.
+- Simplified `.mosyignore` line whitespace trimming in `src/ignore.sh` using native Bash parameter expansion.
 
 ## [1.1.0] - 2026-08-15
 
