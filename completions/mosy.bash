@@ -3,7 +3,7 @@ _mosy_completions() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="add init pull list status remove uninstall config version update"
+    opts="add init pull list status doctor remove uninstall config version update"
 
     if [ $COMP_CWORD -eq 1 ]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -11,6 +11,11 @@ _mosy_completions() {
     fi
 
     case "${COMP_WORDS[1]}" in
+        doctor)
+            if [ $COMP_CWORD -eq 2 ]; then
+                COMPREPLY=( $(compgen -W "--fix" -- "$cur") )
+            fi
+            ;;
         config)
             if [ $COMP_CWORD -eq 2 ]; then
                 COMPREPLY=( $(compgen -W "set" -- "$cur") )
