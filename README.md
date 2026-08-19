@@ -57,6 +57,7 @@ Explore the detailed guides, tutorials, and technical references available for M
 | **`pull`** | `mosy pull -g config` | Non-destructively pulls missing items from the cloud vault. | [Details](docs/CLI_REFERENCE.md#pull) |
 | **`list`** | `mosy list --tag dev` | Lists all managed files along with their tags and groups. | [Details](docs/CLI_REFERENCE.md#list) |
 | **`status`** | `mosy status` | Inspects cloud mount state, Systemd service status, and link validity. | [Details](docs/CLI_REFERENCE.md#status) |
+| **`doctor`** | `mosy doctor --fix` | Deep system diagnostics and automatic remediation of setup issues. | [Details](docs/CLI_REFERENCE.md#doctor) |
 | **`remove`** | `mosy remove ~/.bashrc` | Reverts symlink to a regular file and removes it from the sync map. | [Details](docs/CLI_REFERENCE.md#remove) |
 | **`config`** | `mosy config set MOSY_LOG_LEVEL DEBUG` | Views or updates MountSync configuration settings. | [Details](docs/CONFIGURATION.md) |
 | **`version`** | `mosy version` | Displays the installed version and checks for updates. | [Details](docs/CLI_REFERENCE.md#version) |

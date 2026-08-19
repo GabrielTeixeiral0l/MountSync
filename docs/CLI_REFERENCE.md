@@ -1,6 +1,6 @@
 # CLI Reference (`mosy`)
 
-This reference manual provides exhaustive details on the `mosy` command-line interface, including global flags and all 10 subcommands. `mosy` is the command-line utility for MountSync, enabling user-space cloud vault synchronization using symbolic links and rclone virtual file system mounts.
+This reference manual provides exhaustive details on the `mosy` command-line interface, including global flags and all 11 subcommands. `mosy` is the command-line utility for MountSync, enabling user-space cloud vault synchronization using symbolic links and rclone virtual file system mounts.
 
 ---
 
@@ -159,7 +159,84 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 6. `remove`
+### 6. `doctor`
+
+* **Purpose**: Performs a deep diagnostic audit of the entire MountSync infrastructure, dependencies, mount points, background services, cloud connectivity, token authentication, vault storage permissions, and symlink integrity. When invoked with `--fix`, automatically remediates resolvable issues safely and non-destructively.
+* **Syntax**:
+  ```text
+  mosy [-p PROFILE] doctor [--fix]
+  ```
+* **Arguments**: None.
+* **Options/Flags**:
+  * `--fix, -f`: Attempts automatic safe remediation of detected issues (e.g. creating missing mount directories, starting inactive systemd services, recreating valid missing symlinks, and correcting configuration permissions).
+* **Output Example**:
+  * Diagnostic check:
+    ```text
+    $ mosy doctor
+    --- Dependencies & Environment ---
+    [OK] rclone: found (/usr/bin/rclone)
+    [OK] mountpoint: found
+    [OK] POSIX utilities: all essential tools present
+    [OK] Service manager: systemctl (systemd)
+    [OK] Configuration directory: ~/.config/mosy
+
+    --- Mount Point & Services ---
+    [OK] Systemd service (mosy-mount): ACTIVE
+    [OK] Mount Point (/home/user/GoogleDrive): MOUNTED
+    [OK] rclone process: RUNNING
+
+    --- Cloud Connectivity & Storage ---
+    [OK] Cloud connectivity (gdrive:): REACHABLE & AUTHENTICATED
+    [OK] Vault storage (/home/user/GoogleDrive/mosy_vault): READ/WRITE
+    [OK] Storage free space: 42G available
+
+    --- Mapping & Symlink Integrity ---
+    [OK] .bashrc
+    [OK] .config/nvim
+
+    --- Doctor Summary ---
+    Total checks: 12
+    OK: 12
+    Warnings: 0
+    Errors: 0
+    ```
+  * Auto-remediation with `--fix`:
+    ```text
+    $ mosy doctor --fix
+    --- Dependencies & Environment ---
+    [OK] rclone: found (/usr/bin/rclone)
+    [OK] mountpoint: found
+    [OK] POSIX utilities: all essential tools present
+    [OK] Service manager: systemctl (systemd)
+    [OK] Configuration directory: ~/.config/mosy
+
+    --- Mount Point & Services ---
+    [FIXED] Started mosy-mount.service
+    [OK] Mount Point (/home/user/GoogleDrive): MOUNTED
+    [OK] rclone process: RUNNING
+
+    --- Cloud Connectivity & Storage ---
+    [OK] Cloud connectivity (gdrive:): REACHABLE & AUTHENTICATED
+    [OK] Vault storage (/home/user/GoogleDrive/mosy_vault): READ/WRITE
+    [OK] Storage free space: 42G available
+
+    --- Mapping & Symlink Integrity ---
+    [FIXED] Recreated symlink for .tmux.conf
+
+    --- Doctor Summary ---
+    Total checks: 12
+    OK: 12
+    Warnings: 0
+    Errors: 0
+    Fixed: 2
+    ```
+* **Exit Codes**:
+  * `0`: Success (all checks passed or all errors remediated).
+  * `1`: One or more diagnostic errors detected (or remediation failed).
+
+---
+
+### 7. `remove`
 
 * **Purpose**: Removes an item from MountSync management by restoring the target as a standalone local file/directory copied back from the cloud vault, removing its entry from `sync-map.conf`. The original cloud vault copy remains preserved.
 * **Syntax**:
@@ -182,7 +259,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 7. `config`
+### 8. `config`
 
 * **Purpose**: Views all MountSync configuration settings or updates a specific configuration key in `~/.config/mosy/config`.
 * **Syntax**:
@@ -227,7 +304,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 8. `version`
+### 9. `version`
 
 * **Purpose**: Displays the installed version of MountSync and queries the GitHub API to check for available updates.
 * **Syntax**:
@@ -247,7 +324,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 9. `update`
+### 10. `update`
 
 * **Purpose**: Updates MountSync to the latest version by pulling the main branch from GitHub and executing the update installer with automatic rollback on failure.
 * **Syntax**:
@@ -268,7 +345,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 10. `uninstall`
+### 11. `uninstall`
 
 * **Purpose**: Interactive uninstallation wizard that prompts to revert managed items to local files, unmount the cloud drive, disable and remove the systemd user service, and delete binary and completion files.
 * **Syntax**:
