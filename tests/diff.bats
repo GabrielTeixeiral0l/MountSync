@@ -94,3 +94,89 @@ setup() {
     assert_failure
     assert_output --partial "Error: Backup snapshot matching '999999' not found"
 }
+
+@test "Diff: Respects custom MOSY_BACKUP_EXT configuration" {
+    export MOSY_BACKUP_EXT=".custombak"
+    echo "active version" > "$HOME/custom_doc"
+    run mosy add "$HOME/custom_doc"
+    assert_success
+
+    echo "backup version" > "$HOME/custom_doc.custombak_20260821_170000"
+
+    run mosy diff custom_doc
+    assert_success
+    assert_output --partial "custom_doc.custombak_20260821_170000"
+    assert_output --partial "-backup version"
+    assert_output --partial "+active version"
+}
+
+@test "Diff: Direct backup filepath passed to -b flag" {
+    echo "active text" > "$HOME/direct_file"
+    run mosy add "$HOME/direct_file"
+    assert_success
+
+    echo "legacy text" > "$HOME/arbitrary_snapshot.bak"
+
+    run mosy diff direct_file -b "$HOME/arbitrary_snapshot.bak"
+    assert_success
+    assert_output --partial "arbitrary_snapshot.bak"
+    assert_output --partial "-legacy text"
+    assert_output --partial "+active text"
+}
+
+@test "Diff: Filtering with --tag and --group in all-items mode" {
+    echo "doc1" > "$HOME/doc1"
+    echo "doc2" > "$HOME/doc2"
+    run mosy add "$HOME/doc1" --tag dev --group docs
+    assert_success
+    run mosy add "$HOME/doc2" --tag prod --group ops
+    assert_success
+
+    echo "old doc1" > "$HOME/doc1.bak_20260821_111111"
+    echo "old doc2" > "$HOME/doc2.bak_20260821_222222"
+
+    run mosy diff --tag dev
+    assert_success
+    assert_output --partial "doc1.bak_20260821_111111"
+    refute_output --partial "doc2.bak_20260821_222222"
+
+    run mosy diff --group ops
+    assert_success
+    assert_output --partial "doc2.bak_20260821_222222"
+    refute_output --partial "doc1.bak_20260821_111111"
+}
+
+@test "Diff: Handles no matches in filter criteria and missing map file" {
+    echo "item" > "$HOME/item"
+    run mosy add "$HOME/item" --tag alpha
+    assert_success
+
+    run mosy diff --tag non_existent_tag
+    assert_success
+    assert_output --partial "No managed items matched filter criteria"
+
+    rm -f "$MOSY_CLOUD_DIR/sync-map.conf"
+    run mosy diff
+    assert_success
+    assert_output --partial "No items are currently being managed"
+}
+
+@test "Diff: Cross-profile errors when file missing in active or target profile" {
+    mkdir -p "$MOSY_CLOUD_DIR/profiles/work"
+    echo "content" > "$MOSY_CLOUD_DIR/profiles/work/only_work.txt"
+    ln -s "$MOSY_CLOUD_DIR/profiles/work/only_work.txt" "$HOME/only_work.txt"
+
+    run mosy -p work diff only_work.txt -c default
+    assert_failure
+    assert_output --partial "Error: File only_work.txt not found in target profile (default)"
+
+    run mosy diff non_existent.txt -c work
+    assert_failure
+    assert_output --partial "Error: File non_existent.txt not found in active profile (default)"
+}
+
+@test "Diff: Rejects unknown flags" {
+    run mosy diff --unknown-flag
+    assert_failure
+    assert_output --partial "Unknown flag: --unknown-flag"
+}
