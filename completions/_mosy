@@ -18,6 +18,7 @@ _mosy() {
                 'status:Show system and file integrity status'
                 'doctor:Diagnose system health and auto-repair issues'
                 'info:Show environment and managed items overview'
+                'diff:Inspect differences against backups or vault'
                 'remove:Stop syncing an item and make it local'
                 'uninstall:Remove MountSync from your system'
                 'config:Manage configuration'
@@ -50,6 +51,18 @@ _mosy() {
                     _arguments \
                         '--json[Output information in JSON format]' \
                         '-j[Output information in JSON format]'
+                    ;;
+                diff)
+                    _arguments \
+                        '--backup[Compare against specific or latest backup snapshot]:backup timestamp:' \
+                        '-b[Compare against specific or latest backup snapshot]:backup timestamp:' \
+                        '--compare-profile[Compare against another profile]:target profile:' \
+                        '-c[Compare against another profile]:target profile:' \
+                        '--tag[Filter by tags]:tags:' \
+                        '-t[Filter by tags]:tags:' \
+                        '--group[Filter by groups]:groups:' \
+                        '-g[Filter by groups]:groups:' \
+                        '1:managed file:_files'
                     ;;
                 config)
                     _arguments \
