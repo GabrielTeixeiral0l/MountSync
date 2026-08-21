@@ -14,6 +14,7 @@ load_settings() {
     export MOSY_BACKUP_EXT="${MOSY_BACKUP_EXT:-.bak}"
     export MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-INFO}"
     export MOSY_DRY_RUN="${MOSY_DRY_RUN:-false}"
+    export MOSY_SCAN_SECRETS="${MOSY_SCAN_SECRETS:-false}"
     export MOSY_PROFILE="${MOSY_PROFILE:-default}"
 
     if [ -z "$MOSY_REMOTE_NAME" ]; then
@@ -27,10 +28,14 @@ load_settings() {
     fi
     export MOSY_MAP_FILE="$MOSY_PROFILE_DIR/sync-map.conf"
 
-    # Source ignore helper
+    # Source helpers
     local src_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     if [ -f "$src_dir/ignore.sh" ]; then
         . "$src_dir/ignore.sh"
+    fi
+    if [ -f "$src_dir/secrets.sh" ]; then
+        . "$src_dir/secrets.sh"
+        load_custom_secret_patterns
     fi
 }
 
