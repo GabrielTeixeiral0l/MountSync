@@ -1,6 +1,6 @@
 # CLI Reference (`mosy`)
 
-This reference manual provides exhaustive details on the `mosy` command-line interface, including global flags and all 12 subcommands. `mosy` is the command-line utility for MountSync, enabling user-space cloud vault synchronization using symbolic links and rclone virtual file system mounts.
+This reference manual provides exhaustive details on the `mosy` command-line interface, including global flags and all 13 subcommands. `mosy` is the command-line utility for MountSync, enabling user-space cloud vault synchronization using symbolic links and rclone virtual file system mounts.
 
 ---
 
@@ -42,11 +42,12 @@ Global flags must be specified before the subcommand.
 | [`status`](#5-status) | `mosy status [options]` | Show cloud mount health, systemd service state, and symlink integrity |
 | [`doctor`](#6-doctor) | `mosy doctor [--fix]` | Run system diagnostics and automatically remediate broken links and services |
 | [`info`](#7-info) | `mosy info [--json]` | Display environment overview dashboard and managed dotfile metrics |
-| [`remove`](#8-remove) | `mosy remove <path>` | Stop syncing an item and revert symlink back to a standalone local file |
-| [`config`](#9-config) | `mosy config [set <k> <v>]` | View current settings or update configuration key-value pairs |
-| [`version`](#10-version) | `mosy version` | Display installed version and check GitHub for latest updates |
-| [`update`](#11-update) | `mosy update` | Update MountSync to the latest version |
-| [`uninstall`](#12-uninstall) | `mosy uninstall` | Interactive wizard to revert links and cleanly remove MountSync |
+| [`diff`](#8-diff) | `mosy diff [path] [options]` | Inspect differences against safety backups, physical vault copies, or profiles |
+| [`remove`](#9-remove) | `mosy remove <path>` | Stop syncing an item and revert symlink back to a standalone local file |
+| [`config`](#10-config) | `mosy config [set <k> <v>]` | View current settings or update configuration key-value pairs |
+| [`version`](#11-version) | `mosy version` | Display installed version and check GitHub for latest updates |
+| [`update`](#12-update) | `mosy update` | Update MountSync to the latest version |
+| [`uninstall`](#13-uninstall) | `mosy uninstall` | Interactive wizard to revert links and cleanly remove MountSync |
 
 ---
 
@@ -332,7 +333,49 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 8. `remove`
+### 8. `diff`
+
+* **Purpose**: Inspects differences between managed dotfiles and their safety backups (`.bak_*`), physical unlinked local files and cloud vault counterparts, or cross-profile file versions. Automatically utilizes colored output (`diff --color=always`, `delta`, or ANSI color wrapper).
+* **Syntax**:
+  ```text
+  mosy [-p PROFILE] diff [PATH] [-b|--backup [TIMESTAMP]] [-c|--compare-profile PROFILE] [-t|--tag TAGS] [-g|--group GROUPS]
+  ```
+* **Arguments**:
+  * `PATH`: (Optional) File or directory path to inspect. If omitted, diffs all managed items matching active filters.
+* **Options/Flags**:
+  * `-b, --backup [TIMESTAMP]`: Compare against a specific timestamped backup snapshot, or latest `.bak_*` if timestamp omitted.
+  * `-c, --compare-profile, --profile-target PROFILE`: Compare the active profile's file against another profile.
+  * `-t, --tag TAGS`: Filter items by tags when diffing all items.
+  * `-g, --group GROUPS`: Filter items by groups when diffing all items.
+* **Output Example**:
+  * Diff against latest safety backup:
+    ```text
+    $ mosy diff ~/.bashrc
+    === Diff: Backup (.bashrc.bak_20260821_120000) vs Current (.bashrc) ===
+    --- .bashrc.bak_20260821_120000
+    +++ current:.bashrc
+    @@ -10,3 +10,4 @@
+     alias ll='ls -la'
+    +export EDITOR=nvim
+    ```
+  * Cross-profile diff:
+    ```text
+    $ mosy -p work diff ~/.gitconfig --compare-profile default
+    === Diff: Profile 'work' vs Profile 'default' for .gitconfig ===
+    --- work:.gitconfig
+    +++ default:.gitconfig
+    @@ -1,4 +1,4 @@
+     [user]
+    -    email = dev@company.com
+    +    email = dev@personal.me
+    ```
+* **Exit Codes**:
+  * `0`: Success (including when differences are found or no backups exist).
+  * `1`: Failure (target file or requested backup not found).
+
+---
+
+### 9. `remove`
 
 * **Purpose**: Removes an item from MountSync management by restoring the target as a standalone local file/directory copied back from the cloud vault, removing its entry from `sync-map.conf`. The original cloud vault copy remains preserved.
 * **Syntax**:
@@ -355,7 +398,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 9. `config`
+### 10. `config`
 
 * **Purpose**: Views all MountSync configuration settings or updates a specific configuration key in `~/.config/mosy/config`.
 * **Syntax**:
@@ -400,7 +443,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 10. `version`
+### 11. `version`
 
 * **Purpose**: Displays the installed version of MountSync and queries the GitHub API to check for available updates.
 * **Syntax**:
@@ -420,7 +463,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 11. `update`
+### 12. `update`
 
 * **Purpose**: Updates MountSync to the latest version by pulling the main branch from GitHub and executing the update installer with automatic rollback on failure.
 * **Syntax**:
@@ -441,7 +484,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 12. `uninstall`
+### 13. `uninstall`
 
 * **Purpose**: Interactive uninstallation wizard that prompts to revert managed items to local files, unmount the cloud drive, disable and remove the systemd user service, and delete binary and completion files.
 * **Syntax**:
