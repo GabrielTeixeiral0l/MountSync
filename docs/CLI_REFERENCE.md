@@ -1,6 +1,6 @@
 # CLI Reference (`mosy`)
 
-This reference manual provides exhaustive details on the `mosy` command-line interface, including global flags and all 11 subcommands. `mosy` is the command-line utility for MountSync, enabling user-space cloud vault synchronization using symbolic links and rclone virtual file system mounts.
+This reference manual provides exhaustive details on the `mosy` command-line interface, including global flags and all 12 subcommands. `mosy` is the command-line utility for MountSync, enabling user-space cloud vault synchronization using symbolic links and rclone virtual file system mounts.
 
 ---
 
@@ -32,6 +32,23 @@ Global flags must be specified before the subcommand.
 ---
 
 ## Subcommands Reference
+
+| Command | Syntax | Description |
+| :--- | :--- | :--- |
+| [`add`](#1-add) | `mosy add <path> [options]` | Add a file or directory to cloud vault with granular symlinking and secret scanning |
+| [`init`](#2-init) | `mosy init [options]` | Recreate all managed symlinks on local machine from `sync-map.conf` |
+| [`pull`](#3-pull) | `mosy pull [options]` | Link missing cloud items without overwriting existing local files |
+| [`list`](#4-list) | `mosy list [options]` | List all managed dotfiles with associated tags and groups |
+| [`status`](#5-status) | `mosy status [options]` | Show cloud mount health, systemd service state, and symlink integrity |
+| [`doctor`](#6-doctor) | `mosy doctor [--fix]` | Run system diagnostics and automatically remediate broken links and services |
+| [`info`](#7-info) | `mosy info [--json]` | Display environment overview dashboard and managed dotfile metrics |
+| [`remove`](#8-remove) | `mosy remove <path>` | Stop syncing an item and revert symlink back to a standalone local file |
+| [`config`](#9-config) | `mosy config [set <k> <v>]` | View current settings or update configuration key-value pairs |
+| [`version`](#10-version) | `mosy version` | Display installed version and check GitHub for latest updates |
+| [`update`](#11-update) | `mosy update` | Update MountSync to the latest version |
+| [`uninstall`](#12-uninstall) | `mosy uninstall` | Interactive wizard to revert links and cleanly remove MountSync |
+
+---
 
 ### 1. `add`
 
@@ -239,7 +256,83 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 7. `remove`
+### 7. `info`
+
+* **Purpose**: Displays a comprehensive environment overview dashboard containing system facts, active MountSync configuration, cloud mount and background service health, and managed item statistics. Supports `--json` for machine-readable output and status bar integrations.
+* **Syntax**:
+  ```text
+  mosy [-p PROFILE] info [--json|-j]
+  ```
+* **Arguments**: None.
+* **Options/Flags**:
+  * `--json, -j`: Output full environment overview and metrics formatted as JSON.
+* **Output Example**:
+  * Default human-readable output:
+    ```text
+    $ mosy info
+    === MountSync Environment Overview ===
+
+    --- System ---
+    Hostname:          archlinux
+    OS:                Linux 6.6.10-arch1-1 (x86_64)
+    Architecture:      x86_64
+
+    --- Configuration ---
+    Active Profile:    default
+    Cloud Remote:      gdrive:
+    Mount Point:       /home/user/GoogleDrive [MOUNTED]
+    Service Status:    ACTIVE
+    Vault Path:        /home/user/GoogleDrive/mosy_vault
+    Sync Map:          /home/user/GoogleDrive/mosy_vault/sync-map.conf
+    VFS Cache Mode:    writes
+
+    --- Managed Items ---
+    Total Managed:     4
+    Valid Links:       3
+    Broken Links:      0
+    Missing Links:     1
+    Unique Tags:       2
+    Unique Groups:     1
+    ```
+  * JSON output:
+    ```text
+    $ mosy info --json
+    {
+      "system": {
+        "hostname": "archlinux",
+        "os": "Linux",
+        "os_details": "Linux 6.6.10-arch1-1 (x86_64)",
+        "kernel": "6.6.10-arch1-1",
+        "architecture": "x86_64"
+      },
+      "configuration": {
+        "profile": "default",
+        "remote_name": "gdrive:",
+        "mount_point": "/home/user/GoogleDrive",
+        "mount_status": "MOUNTED",
+        "is_mounted": true,
+        "service_status": "active",
+        "vault_path": "/home/user/GoogleDrive/mosy_vault",
+        "sync_map_file": "/home/user/GoogleDrive/mosy_vault/sync-map.conf",
+        "vfs_cache": "writes"
+      },
+      "metrics": {
+        "total_managed": 4,
+        "valid_links": 3,
+        "broken_links": 0,
+        "missing_links": 1,
+        "lost_items": 0,
+        "unique_tags": 2,
+        "unique_groups": 1
+      }
+    }
+    ```
+* **Exit Codes**:
+  * `0`: Success (including when mount point is unmounted or sync map is empty).
+
+---
+
+### 8. `remove`
 
 * **Purpose**: Removes an item from MountSync management by restoring the target as a standalone local file/directory copied back from the cloud vault, removing its entry from `sync-map.conf`. The original cloud vault copy remains preserved.
 * **Syntax**:
@@ -262,7 +355,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 8. `config`
+### 9. `config`
 
 * **Purpose**: Views all MountSync configuration settings or updates a specific configuration key in `~/.config/mosy/config`.
 * **Syntax**:
@@ -307,7 +400,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 9. `version`
+### 10. `version`
 
 * **Purpose**: Displays the installed version of MountSync and queries the GitHub API to check for available updates.
 * **Syntax**:
@@ -327,7 +420,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 10. `update`
+### 11. `update`
 
 * **Purpose**: Updates MountSync to the latest version by pulling the main branch from GitHub and executing the update installer with automatic rollback on failure.
 * **Syntax**:
@@ -348,7 +441,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 11. `uninstall`
+### 12. `uninstall`
 
 * **Purpose**: Interactive uninstallation wizard that prompts to revert managed items to local files, unmount the cloud drive, disable and remove the systemd user service, and delete binary and completion files.
 * **Syntax**:
