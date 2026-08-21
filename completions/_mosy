@@ -27,6 +27,19 @@ _mosy() {
             ;;
         args)
             case $line[1] in
+                add)
+                    _arguments \
+                        '--tag[Filter tags]:tags:' \
+                        '-t[Filter tags]:tags:' \
+                        '--group[Filter groups]:groups:' \
+                        '-g[Filter groups]:groups:' \
+                        '--force[Bypass secret confirmation prompts and force syncing]' \
+                        '-f[Bypass secret confirmation prompts and force syncing]' \
+                        '--scan-secrets[Scan target for secrets before adding]' \
+                        '--scan[Scan target for secrets before adding]' \
+                        '--no-scan[Skip scanning for secrets]' \
+                        '1:file or directory:_files'
+                    ;;
                 doctor)
                     _arguments \
                         '--fix[Automatically fix detected issues where safe]'
@@ -34,7 +47,7 @@ _mosy() {
                 config)
                     _arguments \
                         '1: :(set)' \
-                        '2: :(MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN)'
+                        '2: :(MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN MOSY_SCAN_SECRETS)'
                     ;;
             esac
             ;;
