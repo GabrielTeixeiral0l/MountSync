@@ -23,6 +23,7 @@ The following reference table documents all supported MountSync configuration va
 | `MOSY_BACKUP_EXT` | File extension appended to conflicting files during sync operations | `.bak` | File extension string (e.g., `.bak`, `.old`) |
 | `MOSY_LOG_LEVEL` | Verbosity level for CLI execution output | `INFO` | `INFO`, `DEBUG`, `SILENT` |
 | `MOSY_DRY_RUN` | Simulates file sync operations without executing changes | `false` | `true`, `false` |
+| `MOSY_SCAN_SECRETS` | Scans for unencrypted credentials before adding files | `false` | `true`, `false` |
 | `MOSY_PROFILE` | Active MountSync profile profile identifier | `default` | Valid profile name string |
 
 ## Configuration File Format
@@ -39,7 +40,15 @@ MOSY_VFS_CACHE="writes"
 MOSY_BACKUP_EXT=".bak"
 MOSY_LOG_LEVEL="INFO"
 MOSY_DRY_RUN="false"
+MOSY_SCAN_SECRETS="false"
 ```
+
+## Custom Secret Patterns (`~/.config/mosy/secrets.conf`)
+
+You can extend secret scanning patterns by creating `~/.config/mosy/secrets.conf`.
+- Lines starting with `file:` define sensitive filename patterns (e.g. `file:custom_secret.conf`, `file:*.pfx`).
+- Other non-empty lines define regular expressions matched against file contents (e.g. `MY_COMPANY_API_KEY_[0-9]+`).
+- Lines starting with `#` are treated as comments.
 
 ## Configuration Management (`mosy config`)
 

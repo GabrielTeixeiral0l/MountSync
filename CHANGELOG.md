@@ -10,9 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - System diagnostics and health inspection command (`mosy doctor`) covering dependencies, mount status, systemd/launchd services, remote connectivity, vault permissions, and symlink integrity.
 - Automated self-healing and remediation mode (`mosy doctor --fix` / `-f`) for non-destructive link recreation, mount directory creation, and service restarts.
-- Shell completions for `doctor` and `--fix` in Bash (`completions/mosy.bash`) and Zsh (`completions/_mosy`).
-- Comprehensive BATS test suite for system diagnostics (`tests/doctor.bats`).
-- CLI Reference and documentation for `mosy doctor` in `docs/CLI_REFERENCE.md` and `README.md`.
+- Proactive Secret Leak Prevention on `mosy add` (`src/secrets.sh`) inspecting files for unencrypted private keys (RSA, OpenSSH, EC, DSA, PGP), cloud API tokens (AWS, GitHub, Slack, Stripe), and sensitive filename patterns (`.env*`, `id_rsa`, `*.pem`, `credentials.json`).
+- Interactive safety prompts for single files (`[y/N]`) and directory additions (`[y]es / [s]kip (keep local) / [n]o`).
+- Configurable via `MOSY_SCAN_SECRETS` (defaults to `false`), on-demand scanning with `mosy add --scan-secrets` / `--scan`, `--no-scan` bypass, and `--force` / `-f` override.
+- User-extensible secret patterns file support (`~/.config/mosy/secrets.conf`).
+- Shell completions for `add` flags (`--scan-secrets`, `--scan`, `--no-scan`, `--force`, `-f`) and `doctor` `--fix` in Bash and Zsh.
+- Comprehensive BATS test suites for diagnostics (`tests/doctor.bats`) and secret leak prevention (`tests/secrets.bats`).
+- CLI Reference and documentation for `mosy doctor` and secret scanning in `docs/CLI_REFERENCE.md`, `docs/CONFIGURATION.md`, and `README.md`.
 
 ## [1.2.0] - 2026-08-18
 

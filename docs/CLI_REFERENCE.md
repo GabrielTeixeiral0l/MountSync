@@ -38,13 +38,16 @@ Global flags must be specified before the subcommand.
 * **Purpose**: Adds a local file or directory to MountSync management. For directories, it performs granular synchronization by preserving the local physical directory structure, moving only non-ignored files into the cloud vault and symlinking them individually. All ignored files (such as `.git`, `.env`, `node_modules`, or rules in `.mosyignore`) remain safely on the local disk without deletion. The item is appended to `sync-map.conf`.
 * **Syntax**:
   ```text
-  mosy [-p PROFILE] add FILE_OR_DIRECTORY [-t|--tag TAGS] [-g|--group GROUPS]
+  mosy [-p PROFILE] add FILE_OR_DIRECTORY [-t|--tag TAGS] [-g|--group GROUPS] [--scan-secrets|--scan] [--no-scan] [-f|--force]
   ```
 * **Arguments**:
   * `FILE_OR_DIRECTORY`: Path to a file or directory inside the user's home directory (`$HOME`). Relative paths are automatically resolved relative to `$HOME`.
 * **Options/Flags**:
   * `-t, --tag TAGS`: Comma-separated list of tags to associate with the item (e.g., `work,dev`).
   * `-g, --group GROUPS`: Comma-separated list of groups to associate with the item (e.g., `dotfiles,configs`).
+  * `--scan-secrets`, `--scan`: Enable pre-vaulting regex inspection for unencrypted credentials, tokens, and private keys.
+  * `--no-scan`: Bypass secret scanning even if `MOSY_SCAN_SECRETS=true` is enabled in configuration.
+  * `-f, --force`: Bypass interactive secret confirmation prompts and force synchronization.
 * **Output Example**:
   ```text
   $ mosy add ~/.bashrc --tag shell,main --group dotfiles
@@ -53,7 +56,7 @@ Global flags must be specified before the subcommand.
   ```
 * **Exit Codes**:
   * `0`: Success, or item is already a symbolic link.
-  * `1`: Failure (cloud drive not mounted, target missing, target outside `$HOME`, or backup/move failure).
+  * `1`: Failure (cloud drive not mounted, target missing, target outside `$HOME`, secret detected in non-interactive mode or rejected by user, or backup/move failure).
 
 ---
 
