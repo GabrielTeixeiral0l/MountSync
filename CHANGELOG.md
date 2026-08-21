@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shell completions for `add` flags (`--scan-secrets`, `--scan`, `--no-scan`, `--force`, `-f`) and `doctor` `--fix` in Bash and Zsh.
 - Comprehensive BATS test suites for diagnostics (`tests/doctor.bats`) and secret leak prevention (`tests/secrets.bats`).
 - CLI Reference and documentation for `mosy doctor` and secret scanning in `docs/CLI_REFERENCE.md`, `docs/CONFIGURATION.md`, and `README.md`.
+- Environment overview dashboard command (`mosy info`) reporting system facts (OS, kernel, arch, hostname), configuration details, cloud mount health, and managed dotfile metrics.
+- Machine-readable JSON output format support via `mosy info --json` / `-j`.
+- Shell completions for `info` and `--json` / `-j` in Bash and Zsh.
+- Comprehensive BATS test suite for environment overview dashboard (`tests/info.bats`).
+- Subcommands quick index table in `docs/CLI_REFERENCE.md`.
 
 ## [1.2.0] - 2026-08-18
 
