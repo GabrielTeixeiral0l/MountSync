@@ -103,7 +103,7 @@ When you add a directory using `mosy add DIRECTORY`:
 4. MountSync registers the directory in `sync-map.conf`.
 
 > [!NOTE]
-> **Zero Data Loss Guarantee:** Unlike previous versions, MountSync **never deletes or expunges** local files. Ignored files stay safely on your local disk as regular files, ensuring secrets, Git histories, and caches remain private and intact.
+> **Zero Data Loss Guarantee:** MountSync **never deletes or expunges** local files. Ignored files stay safely on your local disk as regular files, ensuring secrets, Git histories, and caches remain private and intact.
 
 ---
 
@@ -120,8 +120,8 @@ When executing `mosy init` or `mosy pull` on another machine:
 
 ## Related Guides
 
-* [CLI Reference](CLI_REFERENCE.md): Detailed information on `mosy add`, `mosy init`, and `mosy pull` command flags.
-* [Configuration Guide](CONFIGURATION.md): Learn how global configuration paths are structured.
-* [Profiles Guide](PROFILES.md): Manage isolated configuration profiles with MountSync.
-* [Tags and Groups Guide](TAGS_AND_GROUPS.md): Filter items when executing MountSync commands.
-* [Main Documentation](../README.md): Return to the main project page.
+* [CLI Reference](../reference/cli.md): Detailed information on `mosy add`, `mosy init`, and `mosy pull` command flags.
+* [Configuration Guide](../reference/configuration.md): Learn how global configuration paths are structured.
+* [Profiles Guide](profiles.md): Manage isolated configuration profiles with MountSync.
+* [Tags and Groups Guide](tags-and-groups.md): Filter items when executing MountSync commands.
+* [Documentation Portal](../README.md): Return to the main project documentation index.

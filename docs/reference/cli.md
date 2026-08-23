@@ -221,36 +221,6 @@ Global flags must be specified before the subcommand.
     Warnings: 0
     Errors: 0
     ```
-  * Auto-remediation with `--fix`:
-    ```text
-    $ mosy doctor --fix
-    --- Dependencies & Environment ---
-    [OK] rclone: found (/usr/bin/rclone)
-    [OK] mountpoint: found
-    [OK] POSIX utilities: all essential tools present
-    [OK] Service manager: systemctl (systemd)
-    [OK] Configuration directory: ~/.config/mosy
-
-    --- Mount Point & Services ---
-    [FIXED] Started mosy-mount.service
-    [OK] Mount Point (/home/user/GoogleDrive): MOUNTED
-    [OK] rclone process: RUNNING
-
-    --- Cloud Connectivity & Storage ---
-    [OK] Cloud connectivity (gdrive:): REACHABLE & AUTHENTICATED
-    [OK] Vault storage (/home/user/GoogleDrive/mosy_vault): READ/WRITE
-    [OK] Storage free space: 42G available
-
-    --- Mapping & Symlink Integrity ---
-    [FIXED] Recreated symlink for .tmux.conf
-
-    --- Doctor Summary ---
-    Total checks: 12
-    OK: 12
-    Warnings: 0
-    Errors: 0
-    Fixed: 2
-    ```
 * **Exit Codes**:
   * `0`: Success (all checks passed or all errors remediated).
   * `1`: One or more diagnostic errors detected (or remediation failed).
@@ -412,7 +382,7 @@ Global flags must be specified before the subcommand.
     ```
 * **Arguments**:
   * `set`: Subcommand action to modify a setting.
-  * `KEY`: Configuration parameter name. Valid keys: `MOSY_REMOTE_NAME`, `MOSY_MOUNT_POINT`, `MOSY_VFS_CACHE`, `MOSY_CLOUD_DIR`, `MOSY_BACKUP_EXT`, `MOSY_LOG_LEVEL`, `MOSY_DRY_RUN`.
+  * `KEY`: Configuration parameter name. Valid keys: `MOSY_REMOTE_NAME`, `MOSY_MOUNT_POINT`, `MOSY_VFS_CACHE`, `MOSY_CLOUD_DIR`, `MOSY_BACKUP_EXT`, `MOSY_LOG_LEVEL`, `MOSY_DRY_RUN`, `MOSY_SCAN_SECRETS`.
   * `VALUE`: New value for the configuration key.
 * **Options/Flags**: None.
 * **Output Example**:
@@ -431,6 +401,7 @@ Global flags must be specified before the subcommand.
     MOSY_BACKUP_EXT      ".bak"    # Extension for conflict backups. (Default: .bak)
     MOSY_LOG_LEVEL       "INFO"    # Verbosity: INFO, DEBUG, SILENT (Default: INFO)
     MOSY_DRY_RUN         "false"    # If true, simulate actions without changes. (Default: false)
+    MOSY_SCAN_SECRETS    "false"    # Scan for secrets on add. (Default: false)
     ```
   * Set config:
     ```text
@@ -512,7 +483,14 @@ Global flags must be specified before the subcommand.
 
 ## Related Documents
 
-* [Multiple Profiles Guide](PROFILES.md)
-* [Tags and Groups Guide](TAGS_AND_GROUPS.md)
-* [Ignore Patterns Guide](MOSYIGNORE.md)
-* [Configuration Reference](CONFIGURATION.md)
+* [Quickstart Tutorial](../tutorials/quickstart.md)
+* [Multiple Profiles Guide](../how-to/profiles.md)
+* [Tags and Groups Guide](../how-to/tags-and-groups.md)
+* [Ignore Patterns Guide](../how-to/mosyignore.md)
+* [Diagnostics & Auto-Remediation Guide](../how-to/doctor-and-diagnostics.md)
+* [Diff and Backups Inspection Guide](../how-to/diff-and-backups.md)
+* [Secret Leak Prevention Guide](../how-to/secrets-prevention.md)
+* [Multi-Machine Synchronization Guide](../how-to/multi-machine-sync.md)
+* [Configuration Reference](configuration.md)
+* [Architecture & Design](../explanation/architecture.md)
+* [Documentation Portal](../README.md)

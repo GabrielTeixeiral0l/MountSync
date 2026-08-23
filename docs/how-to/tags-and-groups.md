@@ -47,7 +47,7 @@ scripts/deploy.sh|scripts/deploy.sh|work,server,dev|scripts
 
 ## How Filtering Works Across Subcommands
 
-Filtering by `--tag` / `-t` and `--group` / `-g` is supported in the following subcommands: `add`, `init`, `pull`, `list`, and `status`.
+Filtering by `--tag` / `-t` and `--group` / `-g` is supported in the following subcommands: `add`, `init`, `pull`, `list`, `diff`, and `status`.
 
 ### Filter Evaluation Rules
 
@@ -60,7 +60,7 @@ Filtering by `--tag` / `-t` and `--group` / `-g` is supported in the following s
 
 ### Recipe 1: Adding Items with Tags and Groups (`mosy add`)
 
-Assign functional groups and contextual tags when adding items to MountSync.
+Assign functional groups and contextual tags when adding items to MountSync:
 
 ```bash
 # Add Neovim config categorized under 'config' group with 'work', 'dev', and 'editor' tags
@@ -87,7 +87,7 @@ mosy pull -t work
 
 ### Recipe 3: Selective Machine Initialization (`mosy init`)
 
-Provision a fresh installation based on the machine's role.
+Provision a fresh installation based on the machine's role:
 
 ```bash
 # Initialize a machine with only server scripts and configurations
@@ -121,21 +121,13 @@ mosy list --group dotfiles
 mosy list -t work,dev -g config
 ```
 
-Example command output:
-
-```text
-Items managed by MountSync:
-- .bashrc [tags: work,personal,shell] [groups: dotfiles]
-- .config/nvim [tags: work,dev,editor] [groups: config]
-- .ssh/config_work [tags: work,server] [groups: config]
-```
-
 ---
 
 ## Related Documentation
 
-* [Multiple Profiles Guide](PROFILES.md): Learn how to isolate map files by environment profiles.
-* [Ignore Patterns Guide](MOSYIGNORE.md): Exclude unwanted files from synchronization.
-* [Configuration Reference](CONFIGURATION.md): Environment variable specifications and options.
-* [CLI Reference](CLI_REFERENCE.md): Full command-line interface documentation.
-* [Main README](../README.md): Project overview and getting started guide.
+* [Multiple Profiles Guide](profiles.md): Learn how to isolate map files by environment profiles.
+* [Ignore Patterns Guide](mosyignore.md): Exclude unwanted files from synchronization.
+* [Multi-Machine Sync Guide](multi-machine-sync.md): Replicate configurations across devices.
+* [Configuration Reference](../reference/configuration.md): Environment variable specifications.
+* [CLI Reference](../reference/cli.md): Full command-line interface documentation.
+* [Documentation Portal](../README.md): Return to documentation index.

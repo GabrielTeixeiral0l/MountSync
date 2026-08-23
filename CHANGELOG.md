@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change inspection command (`mosy diff`) supporting colored visual diffs against local `.bak_*` safety backups, physical unlinked local files vs cloud vault copies, and cross-profile comparisons (`-c` / `--compare-profile`).
 - Shell completions for `diff` flags (`--backup`, `-b`, `--compare-profile`, `-c`, `--tag`, `-t`, `--group`, `-g`) in Bash and Zsh.
 - Comprehensive BATS test suite for change inspection (`tests/diff.bats`).
+- Expanded Diataxis documentation suite: System Diagnostics Guide (`docs/DOCTOR_AND_DIAGNOSTICS.md`), Change Inspection Guide (`docs/DIFF_AND_BACKUPS.md`), Secret Leak Prevention Guide (`docs/SECRETS_PREVENTION.md`), and Multi-Machine Synchronization Guide (`docs/MULTI_MACHINE_SYNC.md`).
 
 ## [1.2.0] - 2026-08-18
 

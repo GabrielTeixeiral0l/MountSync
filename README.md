@@ -37,14 +37,14 @@ mosy status
 
 ## Documentation
 
-Explore the detailed guides, tutorials, and technical references available for MountSync:
+Explore the detailed guides, tutorials, and technical references available in the [MountSync Documentation Portal](docs/README.md):
 
 | Category | Purpose | Document Links |
 | :--- | :--- | :--- |
-| **Tutorial** | Step-by-step introduction for beginners | [Quickstart Tutorial](docs/TUTORIAL_QUICKSTART.md) |
-| **How-to Guides** | Task-oriented recipes solving practical real-world problems | [Multiple Profiles Guide](docs/PROFILES.md)<br>[Tags & Groups Guide](docs/TAGS_AND_GROUPS.md)<br>[Ignore Patterns Guide](docs/MOSYIGNORE.md) |
-| **Reference** | Exhaustive technical descriptions of CLI commands and configuration | [CLI Reference](docs/CLI_REFERENCE.md)<br>[Configuration Reference](docs/CONFIGURATION.md) |
-| **Architecture** | System design, mental model, and data flow specifications | [Architecture & Design](docs/EXPLANATION_ARCHITECTURE.md) |
+| **Tutorial** | Step-by-step introduction for beginners | [Quickstart Tutorial](docs/tutorials/quickstart.md) |
+| **How-to Guides** | Task-oriented recipes solving practical real-world problems | [Multiple Profiles Guide](docs/how-to/profiles.md)<br>[Tags & Groups Guide](docs/how-to/tags-and-groups.md)<br>[Ignore Patterns Guide](docs/how-to/mosyignore.md)<br>[Diagnostics & Auto-Remediation Guide](docs/how-to/doctor-and-diagnostics.md)<br>[Diff & Backups Inspection Guide](docs/how-to/diff-and-backups.md)<br>[Secret Leak Prevention Guide](docs/how-to/secrets-prevention.md)<br>[Multi-Machine Sync Guide](docs/how-to/multi-machine-sync.md) |
+| **Reference** | Exhaustive technical descriptions of CLI commands and configuration | [CLI Reference](docs/reference/cli.md)<br>[Configuration Reference](docs/reference/configuration.md) |
+| **Architecture** | System design, mental model, and data flow specifications | [Architecture & Design](docs/explanation/architecture.md) |
 
 ---
 
@@ -52,17 +52,19 @@ Explore the detailed guides, tutorials, and technical references available for M
 
 | Command | Example Syntax | Description | Reference Link |
 | :--- | :--- | :--- | :--- |
-| **`add`** | `mosy add ~/.bashrc -g dotfiles -t main` | Adds an item to the vault and replaces the local file with a symlink. | [Details](docs/CLI_REFERENCE.md#add) |
-| **`init`** | `mosy init --tag work` | Rebuilds local symlinks based on the synchronization map. | [Details](docs/CLI_REFERENCE.md#init) |
-| **`pull`** | `mosy pull -g config` | Non-destructively pulls missing items from the cloud vault. | [Details](docs/CLI_REFERENCE.md#pull) |
-| **`list`** | `mosy list --tag dev` | Lists all managed files along with their tags and groups. | [Details](docs/CLI_REFERENCE.md#list) |
-| **`status`** | `mosy status` | Inspects cloud mount state, Systemd service status, and link validity. | [Details](docs/CLI_REFERENCE.md#status) |
-| **`doctor`** | `mosy doctor --fix` | Deep system diagnostics and automatic remediation of setup issues. | [Details](docs/CLI_REFERENCE.md#doctor) |
-| **`remove`** | `mosy remove ~/.bashrc` | Reverts symlink to a regular file and removes it from the sync map. | [Details](docs/CLI_REFERENCE.md#remove) |
-| **`config`** | `mosy config set MOSY_LOG_LEVEL DEBUG` | Views or updates MountSync configuration settings. | [Details](docs/CONFIGURATION.md) |
-| **`version`** | `mosy version` | Displays the installed version and checks for updates. | [Details](docs/CLI_REFERENCE.md#version) |
-| **`update`** | `mosy update` | Updates MountSync to the latest released version. | [Details](docs/CLI_REFERENCE.md#update) |
-| **`uninstall`** | `mosy uninstall` | Removes MountSync and optionally restores original files. | [Details](docs/CLI_REFERENCE.md#uninstall) |
+| **`add`** | `mosy add ~/.bashrc -g dotfiles -t main` | Adds an item to the vault and replaces the local file with a symlink. | [Details](docs/reference/cli.md#1-add) |
+| **`init`** | `mosy init --tag work` | Rebuilds local symlinks based on the synchronization map. | [Details](docs/reference/cli.md#2-init) |
+| **`pull`** | `mosy pull -g config` | Non-destructively pulls missing items from the cloud vault. | [Details](docs/reference/cli.md#3-pull) |
+| **`list`** | `mosy list --tag dev` | Lists all managed files along with their tags and groups. | [Details](docs/reference/cli.md#4-list) |
+| **`status`** | `mosy status` | Inspects cloud mount state, Systemd service status, and link validity. | [Details](docs/reference/cli.md#5-status) |
+| **`doctor`** | `mosy doctor --fix` | Deep system diagnostics and automatic remediation of setup issues. | [Details](docs/reference/cli.md#6-doctor) |
+| **`info`** | `mosy info --json` | Environment overview dashboard and managed dotfile metrics. | [Details](docs/reference/cli.md#7-info) |
+| **`diff`** | `mosy diff ~/.bashrc -b` | Inspects differences against safety backups, vault copies, or profiles. | [Details](docs/reference/cli.md#8-diff) |
+| **`remove`** | `mosy remove ~/.bashrc` | Reverts symlink to a regular file and removes it from the sync map. | [Details](docs/reference/cli.md#9-remove) |
+| **`config`** | `mosy config set MOSY_LOG_LEVEL DEBUG` | Views or updates MountSync configuration settings. | [Details](docs/reference/cli.md#10-config) |
+| **`version`** | `mosy version` | Displays the installed version and checks for updates. | [Details](docs/reference/cli.md#11-version) |
+| **`update`** | `mosy update` | Updates MountSync to the latest released version. | [Details](docs/reference/cli.md#12-update) |
+| **`uninstall`** | `mosy uninstall` | Removes MountSync and optionally restores original files. | [Details](docs/reference/cli.md#13-uninstall) |
 
 ---
 
@@ -80,18 +82,13 @@ MountSync follows a clean core-and-command architecture designed for simplicity 
 
 ### Cloud Drive Not Mounted
 If MountSync reports that the cloud drive is not mounted:
-1. Verify systemd service status: `systemctl --user status mosy-mount.service`
-2. Check mount point directly: `mountpoint /path/to/mount`
-3. Verify that your remote configuration in `~/.config/mosy/config` matches `rclone config`.
+1. Run system diagnostics: `mosy doctor --fix`
+2. Verify service status: `systemctl --user status mosy-mount.service`
+3. Check mount point directly: `mountpoint /path/to/mount`
+4. Verify that your remote configuration in `~/.config/mosy/config` matches `rclone config`.
 
 ### Symlink Conflicts
 MountSync does not overwrite existing local files during `pull` operations. If a conflict occurs, the file is skipped with a warning. Use `mosy init` (which generates timestamped backups) or resolve the local file manually.
-
----
-
-## Support and Donations
-
-* **Bitcoin (BTC):** `bc1qcxkrqtqmpal3fdauakk36ykl9ukurd072j4rfj`
 
 ---
 

@@ -1,6 +1,6 @@
 # MountSync Quickstart Tutorial
 
-Welcome to MountSync! This tutorial is a step-by-step guide designed for complete beginners. By following this guide, you will learn how MountSync works by setting up system requirements, installing the tool, managing your first configuration file (`~/.bashrc`), inspecting system status, and simulating how to replicate your environment on a second machine.
+Welcome to MountSync. This tutorial is a step-by-step guide designed for complete beginners. By following this guide, you will learn how MountSync works by setting up system requirements, installing the tool, managing your first configuration file (`~/.bashrc`), inspecting system status, and simulating how to replicate your environment on a second machine.
 
 ---
 
@@ -174,7 +174,7 @@ You can also selectively initialize specific subsets of your configuration using
 mosy init -t main -g dotfiles
 ```
 
-Congratulations! You have completed the Quickstart Tutorial. You now know how to install MountSync, manage dotfiles using `mosy add`, inspect system status with `mosy list` and `mosy status`, and replicate your setup across machines with `mosy init`.
+Congratulations. You have completed the Quickstart Tutorial. You now know how to install MountSync, manage dotfiles using `mosy add`, inspect system status with `mosy list` and `mosy status`, and replicate your setup across machines with `mosy init`.
 
 ---
 
@@ -182,6 +182,8 @@ Congratulations! You have completed the Quickstart Tutorial. You now know how to
 
 To explore more advanced features of MountSync, consult the following documentation:
 
-- [Tags and Groups Guide](TAGS_AND_GROUPS.md): Learn how to organize configurations for different environments.
-- [Multiple Profiles Guide](PROFILES.md): Manage separate work and personal vaults.
-- [CLI Reference](CLI_REFERENCE.md): View detailed parameter listings for all `mosy` commands.
+- [Tags and Groups Guide](../how-to/tags-and-groups.md): Learn how to organize configurations for different environments.
+- [Multiple Profiles Guide](../how-to/profiles.md): Manage separate work and personal vaults.
+- [Multi-Machine Sync Guide](../how-to/multi-machine-sync.md): Replicate configurations across multiple devices.
+- [CLI Reference](../reference/cli.md): View detailed parameter listings for all `mosy` commands.
+- [Documentation Portal](../README.md): Return to the documentation index.

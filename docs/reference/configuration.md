@@ -2,6 +2,8 @@
 
 This reference document specifies the configuration system for MountSync, detailing evaluation precedence, configuration variables, and command-line configuration management tools.
 
+---
+
 ## Precedence Order
 
 MountSync resolves configuration settings using a strict priority order. Values set at higher precedence levels override values set at lower levels:
@@ -9,6 +11,8 @@ MountSync resolves configuration settings using a strict priority order. Values 
 1. **Environment Variables**: Variables set in the environment or passed inline (for example, `MOSY_DRY_RUN=true`).
 2. **Configuration File**: Settings stored in `~/.config/mosy/config` (or profile-specific configuration files).
 3. **Default Values**: Internal fallbacks applied when a key is omitted from both environment variables and the configuration file.
+
+---
 
 ## Configuration Variables
 
@@ -25,6 +29,8 @@ The following reference table documents all supported MountSync configuration va
 | `MOSY_DRY_RUN` | Simulates file sync operations without executing changes | `false` | `true`, `false` |
 | `MOSY_SCAN_SECRETS` | Scans for unencrypted credentials before adding files | `false` | `true`, `false` |
 | `MOSY_PROFILE` | Active MountSync profile profile identifier | `default` | Valid profile name string |
+
+---
 
 ## Configuration File Format
 
@@ -43,12 +49,16 @@ MOSY_DRY_RUN="false"
 MOSY_SCAN_SECRETS="false"
 ```
 
+---
+
 ## Custom Secret Patterns (`~/.config/mosy/secrets.conf`)
 
 You can extend secret scanning patterns by creating `~/.config/mosy/secrets.conf`.
 - Lines starting with `file:` define sensitive filename patterns (e.g. `file:custom_secret.conf`, `file:*.pfx`).
 - Other non-empty lines define regular expressions matched against file contents (e.g. `MY_COMPANY_API_KEY_[0-9]+`).
 - Lines starting with `#` are treated as comments.
+
+---
 
 ## Configuration Management (`mosy config`)
 
@@ -76,7 +86,8 @@ MOSY_CLOUD_DIR       "/home/user/GoogleDrive/mosy_vault"    # Root folder inside
 [Behavior]
 MOSY_BACKUP_EXT      ".bak"    # Extension for conflict backups. (Default: .bak)
 MOSY_LOG_LEVEL       "INFO"    # Verbosity: INFO, DEBUG, SILENT (Default: INFO)
-MOSY_DRY_RUN        "false"    # If true, simulate actions without changes. (Default: false)
+MOSY_DRY_RUN         "false"    # If true, simulate actions without changes. (Default: false)
+MOSY_SCAN_SECRETS    "false"    # Scan for secrets on add. (Default: false)
 ```
 
 ### Modify Configuration (`mosy config set`)
@@ -89,7 +100,7 @@ mosy config set KEY VALUE
 
 #### Parameters
 
-* `KEY`: The configuration key to modify (e.g., `MOSY_REMOTE_NAME`, `MOSY_LOG_LEVEL`).
+* `KEY`: The configuration key to modify (e.g., `MOSY_REMOTE_NAME`, `MOSY_LOG_LEVEL`, `MOSY_SCAN_SECRETS`).
 * `VALUE`: The value to assign to the key.
 
 #### Examples
@@ -111,3 +122,20 @@ Enable dry-run mode by default:
 ```bash
 mosy config set MOSY_DRY_RUN "true"
 ```
+
+Enable secret scanning by default:
+
+```bash
+mosy config set MOSY_SCAN_SECRETS "true"
+```
+
+---
+
+## Related Documents
+
+* [CLI Reference](cli.md)
+* [Profiles Guide](../how-to/profiles.md)
+* [Ignore Patterns Guide](../how-to/mosyignore.md)
+* [Secret Leak Prevention Guide](../how-to/secrets-prevention.md)
+* [Architecture & Design](../explanation/architecture.md)
+* [Documentation Portal](../README.md)

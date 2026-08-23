@@ -12,7 +12,7 @@ MountSync provides seamless dotfile and workspace synchronization by combining L
 
 MountSync establishes a four-tier path mapping model for every managed item:
 
-```
+```text
 +-------------------+      symlink      +-----------------------+
 |  Local Path       |  -------------->  |  Local Mount Point    |
 |  (~/.bashrc)      |                   |  (~/GoogleDrive/...)  |
@@ -41,7 +41,7 @@ Each record defines:
 - **Tags** (comma-separated tags for conditional filtering)
 - **Groups** (comma-separated environment or machine groups)
 
-```
+```text
 .bashrc|.bashrc|dotfiles,shell|desktop,laptop
 .config/nvim|.config/nvim|editor|dev-machine
 ```
@@ -63,7 +63,7 @@ When executing `mosy init` or `mosy pull`:
 
 Before replacing a conflicting local item, MountSync invokes `mosy_backup()`, which renames the conflicting file or directory using the configured extension (`MOSY_BACKUP_EXT`) appended with an ISO-style timestamp (`YYYYMMDD_HHMMSS`).
 
-```
+```text
 Target Path:     ~/.bashrc
 Backup Created:  ~/.bashrc.bak_20260813_165234
 ```
@@ -116,16 +116,20 @@ Direct writes to network mounts can cause latency or failures in applications ex
 
 MountSync is engineered around modular shell scripting principles: a lean executable frontend delegating to modular core routines and subcommand scripts.
 
-```
-/home/user/Projects/mountsync/
+```text
+mountsync/
 ├── mosy                      # Main CLI entry point
 ├── install.sh                # Interactive installer & systemd service setup
 ├── src/
 │   ├── core.sh               # Core initialization, settings, logging, backup routines
+│   ├── secrets.sh            # Secret leak prevention and credential pattern scanner
 │   ├── ignore.sh             # Custom ignore pattern matching (.mosyignore)
 │   └── commands/             # Individual subcommand handlers
 │       ├── add.sh            # Adds local file/dir to cloud vault & symlinks
 │       ├── config.sh         # Manages configuration & profile settings
+│       ├── diff.sh           # Change inspection (backups, vault, profiles)
+│       ├── doctor.sh         # Deep diagnostics & automated remediation (--fix)
+│       ├── info.sh           # Environment overview dashboard & metrics (--json)
 │       ├── init.sh           # Links all items in manifest for setup
 │       ├── list.sh           # Formats & outputs managed files
 │       ├── pull.sh           # Links missing items from sync map
@@ -134,7 +138,12 @@ MountSync is engineered around modular shell scripting principles: a lean execut
 │       ├── uninstall.sh      # Cleanly removes MountSync & unwraps links
 │       ├── update.sh         # Updates repository to latest version
 │       └── version.sh        # Displays version information
-└── docs/                     # Comprehensive project documentation
+└── docs/                     # Diataxis-structured documentation suite
+    ├── README.md             # Documentation portal index
+    ├── tutorials/            # Learning-oriented guides
+    ├── how-to/               # Problem-oriented recipes
+    ├── reference/            # Technical manuals and specifications
+    └── explanation/          # Architecture and mental models
 ```
 
 ### 4.1 Single Entry Point (`mosy`)
@@ -144,31 +153,18 @@ The `mosy` script acts as the entry parser:
 2. **Environment Loading**: Sources `src/core.sh`, which loads `~/.config/mosy/config` and enforces default environment parameters (`MOSY_REMOTE_NAME`, `MOSY_MOUNT_POINT`, `MOSY_CLOUD_DIR`, `MOSY_PROFILE_DIR`).
 3. **Subcommand Dispatch**: Dynamically sources the matching command file from `src/commands/${command}.sh` and executes `cmd_${command}` passing remaining arguments.
 
-### 4.2 Core Architecture (`src/core.sh` & `src/ignore.sh`)
+### 4.2 Core Architecture (`src/core.sh`, `src/secrets.sh`, `src/ignore.sh`)
 
 - **`load_settings`**: Loads configuration files while respecting pre-set environment overrides. Resolves active profiles and sync map file locations (`sync-map.conf`).
 - **`check_mount`**: Ensures the cloud mount point is currently active via `mountpoint -q`.
 - **`foreach_mapping`**: Iterator function that reads `sync-map.conf`, evaluates tags/groups filters (`MOSY_FILTER_TAG`, `MOSY_FILTER_GROUP`), and passes matching entries to callback functions.
 - **`mosy_backup`**: Implements safety backups for local path collisions.
-- **`ignore.sh`**: Handles pattern matchEach command file in `src/commands/` defines a primary entry function named `cmd_SUBCOMMAND`:
-
-```text
-mosy (entry script)
-  |
-  +--> source src/core.sh (load settings, environment, maps)
-  |
-  +--> source src/commands/add.sh -> cmd_add()
-  +--> source src/commands/init.sh -> cmd_init()
-  +--> source src/commands/pull.sh -> cmd_pull()
-```
-
-This ensures isolation: modifying `cmd_add` logic has zero side-effects on `cmd_pull` or `cmd_status`.
+- **`ignore.sh`**: Handles ignore pattern evaluation and hierarchical traversal up to `$HOME`.
+- **`secrets.sh`**: Inspects files for sensitive credentials, keys, and tokens prior to cloud staging.
 
 ---
 
 ## 5. Sequence Diagram: Data Flow During `mosy add`
-
-The following sequence diagram outlines the exact execution flow when a user adds a new dotfile to MountSync management:
 
 ```text
 +------+             +------+            +-----------+         +-------------+
@@ -193,8 +189,6 @@ The following sequence diagram outlines the exact execution flow when a user add
 
 ## 6. Sequence Diagram: Conflict Resolution During `mosy init`
 
-When running `mosy init` on a machine that already contains local files at target symlink locations:
-
 ```text
 +------+             +------+            +-----------+         +-------------+
 | User |             | mosy |            |  core.sh  |         | Cloud Vault |
@@ -214,129 +208,11 @@ When running `mosy init` on a machine that already contains local files at targe
    |<-- Output Log -----|                                             |
 ```
 
-### 6.1 Subcommand Execution Pattern
-
-Each command file in `src/commands/` defines a primary entry function named `cmd_SUBCOMMAND`:
-- **`cmd_add`**: Moves local path into `$MOSY_CLOUD_DIR`, updates `sync-map.conf`, and replaces original path with a symlink.
-- **`cmd_init`**: Re-creates missing symlinks on local system based on `sync-map.conf`.
-- **`cmd_pull`**: Non-destructively pulls missing items from cloud vault without overwriting existing files.
-- **`cmd_list`**: Reads `sync-map.conf` and formats output.
-- **`cmd_status`**: Validates mount status, systemd service, and symlink integrity.
-
 ---
 
-## 7. Memory & File State Lifecycle
+## Related Documentation
 
-The life of a managed item follows this clear progression:
-
-```text
-+-----------------------+
-|  Local File / Folder  |
-|   $HOME/PATH          |
-+-----------------------+
-            |
-            | (mosy add)
-            v
-+-----------------------+      (rclone mount)      +-----------------------+
-|  Cloud Vault Copy     | =======================> |  Remote Storage       |
-|  $MOSY_CLOUD_DIR/PATH |                          |  GoogleDrive/Dropbox  |
-+-----------------------+                          +-----------------------+
-            ^
-            | (symlink creation)
-            |
-+-----------------------+
-|  Symlink              |
-|  $HOME/PATH           |
-|  -> Cloud Vault Copy  |
-+-----------------------+
-```
-
-When a conflict occurs during `mosy init`:
-
-```text
-+-----------------------+   (mosy_backup)   +-----------------------------+
-|  Existing Local File  | ================> |  Backup File                |
-|  $HOME/PATH           |                   |  PATH.bak_TIMESTAMP         |
-+-----------------------+                   +-----------------------------+
-```
-
----
-
-## 5. Architectural Data Flow Diagrams
-
-### 5.1 `mosy add` Command Lifecycle
-
-```
-[User invokes: mosy add ~/.bashrc]
-                    |
-                    v
-          +-------------------+
-          | Check Mount Point |
-          +-------------------+
-                    |
-       Mounted?     |
-          +---------+---------+
-          |                   |
-         YES                  NO
-          |                   |
-          v                   v
-+-------------------+   +--------------------+
-|  Copy ~/.bashrc   |   | Exit with Error:   |
-|  to Cloud Vault   |   | "Drive Not Mounted"|
-+-------------------+   +--------------------+
-          |
-          v
-+-------------------+
-|  Append entry to  |
-|   sync-map.conf   |
-+-------------------+
-          |
-          v
-+-------------------+
-|  Replace ~/.bashrc|
-|   with Symlink    |
-+-------------------+
-```
-
-### 5.2 `mosy pull` Conflict Resolution Lifecycle
-
-```
-[User invokes: mosy pull]
-                    |
-                    v
-          +-------------------+
-          | Read sync-map.conf|
-          +-------------------+
-                    |
-                    v
-       For each entry in manifest:
-                    |
-                    v
-          +-------------------+
-          | Inspect target at |
-          |   $HOME/<path>    |
-          +-------------------+
-                    |
-     +--------------+--------------+
-     |              |              |
-Does not exist   Is correct    Conflict: Real file
-     |           symlink       or different link
-     |              |              |
-     v              v              v
-+----------+   +----------+   +-----------------------+
-| Create   |   | Skip     |   | Invoke mosy_backup(): |
-| Symlink  |   | (No-op)  |   | Move file to          |
-+----------+   +----------+   | <path>.bak_TIMESTAMP  |
-                               +-----------------------+
-                                           |
-                                           v
-                               +-----------------------+
-                               | Create Symlink        |
-                               +-----------------------+
-```
-
----
-
-## 6. Summary
-
-MountSync's architecture combines the simplicity of Linux symbolic links, the stability of `rclone` FUSE mounts, and a strictly non-destructive fallback policy. By decoupling file synchronization mechanics into independent subcommands backed by core utility functions, MountSync provides lightweight, safe, and transparent environment synchronization across systems.
+* [Quickstart Tutorial](../tutorials/quickstart.md)
+* [CLI Reference](../reference/cli.md)
+* [Configuration Reference](../reference/configuration.md)
+* [Documentation Portal](../README.md)
