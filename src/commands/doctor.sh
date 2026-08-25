@@ -323,6 +323,145 @@ _doctor_check_mappings() {
     fi
 }
 
+_doctor_check_safety_item() {
+    local local_rel=$1
+    local cloud_rel=$2
+    local local_path="${HOME}/${local_rel}"
+    local cloud_path="${MOSY_PROFILE_DIR}/${cloud_rel}"
+
+    if [ -L "$local_path" ] && [ -d "$local_path" ]; then
+        local flagged_files=()
+        while IFS= read -r -d '' file; do
+            if scan_file_for_safety "$file"; then
+                local sub_rel="${file#$local_path/}"
+                flagged_files+=("$sub_rel|$MOSY_SAFETY_REASON")
+            fi
+        done < <(find "$local_path/" -maxdepth 2 \( -type f -o -type s -o -type p \) -print0 2>/dev/null)
+
+        if [ ${#flagged_files[@]} -gt 0 ]; then
+            ((TOTAL++))
+            echo -e "${YELLOW}[WARN]${NC} $local_rel: Monolithic directory mounted over FUSE contains ${#flagged_files[@]} database/lock/volatile file(s):"
+            local display_count=0
+            for item in "${flagged_files[@]}"; do
+                if [ $display_count -lt 3 ]; then
+                    echo -e "      - ${item%%|*} (${item#*|})"
+                    ((display_count++))
+                fi
+            done
+            if [ ${#flagged_files[@]} -gt 3 ]; then
+                echo -e "      ... and $(( ${#flagged_files[@]} - 3 )) more."
+            fi
+
+            if [ "$FIX_MODE" = true ]; then
+                local revert_prompt="   Do you want to safely revert ~/$local_rel to a local directory? [y/N]: "
+                local reply=""
+                if [ -t 0 ]; then
+                    read -r -p "$revert_prompt" reply
+                else
+                    if ! read -r reply; then
+                        reply="n"
+                    fi
+                fi
+                case "$reply" in
+                    [Yy]*)
+                        echo -e "   Reverting $local_rel to local directory..."
+                        local source_dir
+                        source_dir=$(readlink -f "$local_path")
+                        if [ -e "$source_dir" ] && rm "$local_path" && cp -r "$source_dir" "$local_path"; then
+                            update_map_remove_entry "$local_rel"
+                            echo -e "${GREEN}[FIXED]${NC} Reverted $local_rel to local directory (unmanaged from FUSE)"
+                            ((FIXED++))
+                            ((OK++))
+                        else
+                            echo -e "${RED}[ERR]${NC} Failed to revert $local_rel"
+                            ((ERR++))
+                        fi
+                        ;;
+                    *)
+                        echo -e "      Recommendation: Run 'mosy remove ~/$local_rel' to keep volatile data local."
+                        ((WARN++))
+                        ;;
+                esac
+            else
+                ((WARN++))
+            fi
+        fi
+    elif [ -L "$local_path" ]; then
+        if scan_file_for_safety "$cloud_path"; then
+            ((TOTAL++))
+            echo -e "${YELLOW}[WARN]${NC} $local_rel: $MOSY_SAFETY_REASON mounted over FUSE"
+            if [ "$FIX_MODE" = true ]; then
+                local revert_prompt="   Do you want to safely revert ~/$local_rel to a local file? [y/N]: "
+                local reply=""
+                if [ -t 0 ]; then
+                    read -r -p "$revert_prompt" reply
+                else
+                    if ! read -r reply; then
+                        reply="n"
+                    fi
+                fi
+                case "$reply" in
+                    [Yy]*)
+                        echo -e "   Reverting $local_rel to local file..."
+                        local source_file
+                        source_file=$(readlink -f "$local_path")
+                        if [ -e "$source_file" ] && rm "$local_path" && cp -a "$source_file" "$local_path"; then
+                            update_map_remove_entry "$local_rel"
+                            echo -e "${GREEN}[FIXED]${NC} Reverted $local_rel to local file (unmanaged from FUSE)"
+                            ((FIXED++))
+                            ((OK++))
+                        else
+                            echo -e "${RED}[ERR]${NC} Failed to revert $local_rel"
+                            ((ERR++))
+                        fi
+                        ;;
+                    *)
+                        echo -e "      Recommendation: Run 'mosy remove ~/$local_rel' to keep volatile data local."
+                        ((WARN++))
+                        ;;
+                esac
+            else
+                ((WARN++))
+            fi
+        fi
+    elif [ -d "$local_path" ] && [ -d "$cloud_path" ]; then
+        local flagged_links=()
+        while IFS= read -r -d '' link; do
+            local target
+            target=$(readlink "$link")
+            if scan_file_for_safety "$target"; then
+                local sub_rel="${link#$HOME/}"
+                flagged_links+=("$sub_rel ($MOSY_SAFETY_REASON)")
+            fi
+        done < <(find "$local_path" -type l -print0 2>/dev/null)
+
+        if [ ${#flagged_links[@]} -gt 0 ]; then
+            ((TOTAL++))
+            echo -e "${YELLOW}[WARN]${NC} $local_rel (directory): contains ${#flagged_links[@]} volatile symlink(s) mounted over FUSE:"
+            for item in "${flagged_links[@]}"; do
+                echo -e "      - $item"
+            done
+            if [ "$FIX_MODE" = true ]; then
+                echo -e "      Recommendation: Remove unsafe symlinks or add them to .mosyignore."
+            fi
+            ((WARN++))
+        fi
+    fi
+}
+
+_doctor_check_safety_audit() {
+    echo -e "\n--- Database & Lockfile Safety Audit ---"
+    local initial_warn=$WARN
+    if [ -f "$MOSY_MAP_FILE" ]; then
+        foreach_mapping _doctor_check_safety_item
+    fi
+    if [ "$WARN" -eq "$initial_warn" ]; then
+        ((TOTAL++))
+        echo -e "${GREEN}[OK]${NC} No active databases, sockets, or lockfiles detected over FUSE"
+        ((OK++))
+    fi
+}
+
 cmd_doctor() {
     FIX_MODE=false
     while [ $# -gt 0 ]; do
@@ -347,6 +486,7 @@ cmd_doctor() {
     _doctor_check_mount_services
     _doctor_check_cloud_storage
     _doctor_check_mappings
+    _doctor_check_safety_audit
 
     echo -e "\n--- Doctor Summary ---"
     echo -e "Total checks: $TOTAL"
