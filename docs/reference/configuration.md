@@ -28,6 +28,7 @@ The following reference table documents all supported MountSync configuration va
 | `MOSY_LOG_LEVEL` | Verbosity level for CLI execution output | `INFO` | `INFO`, `DEBUG`, `SILENT` |
 | `MOSY_DRY_RUN` | Simulates file sync operations without executing changes | `false` | `true`, `false` |
 | `MOSY_SCAN_SECRETS` | Scans for unencrypted credentials before adding files | `false` | `true`, `false` |
+| `MOSY_SAFETY_GUARD` | Safety guard for DBs, locks & churn on add/doctor | `true` | `true`, `false` |
 | `MOSY_PROFILE` | Active MountSync profile profile identifier | `default` | Valid profile name string |
 
 ---
@@ -47,6 +48,7 @@ MOSY_BACKUP_EXT=".bak"
 MOSY_LOG_LEVEL="INFO"
 MOSY_DRY_RUN="false"
 MOSY_SCAN_SECRETS="false"
+MOSY_SAFETY_GUARD="true"
 ```
 
 ---

@@ -38,6 +38,13 @@ node_modules/*
 .DS_Store
 *.tmp
 *.log
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm
+*.db-journal
+*.sock
+*.lock
 ```
 
 If a global ignore file exists, its rules override the built-in defaults. When adding a directory that contains a local `.mosyignore` file, the local rules are appended to the active pattern set.

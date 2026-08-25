@@ -20,12 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Environment overview dashboard command (`mosy info`) reporting system facts (OS, kernel, arch, hostname), configuration details, cloud mount health, and managed dotfile metrics.
 - Machine-readable JSON output format support via `mosy info --json` / `-j`.
 - Shell completions for `info` and `--json` / `-j` in Bash and Zsh.
-- Comprehensive BATS test suite for environment overview dashboard (`tests/info.bats`).
-- Subcommands quick index table in `docs/CLI_REFERENCE.md`.
 - Change inspection command (`mosy diff`) supporting colored visual diffs against local `.bak_*` safety backups, physical unlinked local files vs cloud vault copies, and cross-profile comparisons (`-c` / `--compare-profile`).
 - Shell completions for `diff` flags (`--backup`, `-b`, `--compare-profile`, `-c`, `--tag`, `-t`, `--group`, `-g`) in Bash and Zsh.
 - Comprehensive BATS test suite for change inspection (`tests/diff.bats`).
-- Expanded Diataxis documentation suite: System Diagnostics Guide (`docs/DOCTOR_AND_DIAGNOSTICS.md`), Change Inspection Guide (`docs/DIFF_AND_BACKUPS.md`), Secret Leak Prevention Guide (`docs/SECRETS_PREVENTION.md`), and Multi-Machine Synchronization Guide (`docs/MULTI_MACHINE_SYNC.md`).
+- High-Churn, Database & Lockfile Safety Guard (`src/safety.sh`) protecting against FUSE lock contention and database corruption by detecting embedded databases (`*.sqlite`, `*.db`, `*.duckdb`, `*.kdbx`, `*.ldb`, `*.rdb`), runtime locks/sockets (`*.lock`, `*.sock`, `*.pid`, `*.ipc`), and volatile caches/logs.
+- Smart auto-ignore presets for SQLite WAL/journal files (`*.sqlite-wal`, `*.sqlite-shm`, `*.db-wal`, `*.db-shm`, `*.db-journal`) and lock/socket files in default ignore list.
+- Safety audit check and interactive remediation in `mosy doctor` and `mosy doctor --fix` detecting and safely unmanaging volatile databases mounted over FUSE.
+- Configurable via `MOSY_SAFETY_GUARD` (defaults to `true`), with `--guard`, `--no-guard`, and `--force` / `-f` CLI overrides.
+- Shell completions for safety flags in Bash and Zsh, and BATS test suite in `tests/safety.bats`.
+- Restructured documentation portal into full Diataxis framework (`docs/README.md`, tutorials, how-to guides, reference manuals, and architecture explanations).
 
 ## [1.2.0] - 2026-08-18
 

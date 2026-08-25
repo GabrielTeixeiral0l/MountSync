@@ -53,10 +53,10 @@ Global flags must be specified before the subcommand.
 
 ### 1. `add`
 
-* **Purpose**: Adds a local file or directory to MountSync management. For directories, it performs granular synchronization by preserving the local physical directory structure, moving only non-ignored files into the cloud vault and symlinking them individually. All ignored files (such as `.git`, `.env`, `node_modules`, or rules in `.mosyignore`) remain safely on the local disk without deletion. The item is appended to `sync-map.conf`.
+* **Purpose**: Adds a local file or directory to MountSync management. For directories, it performs granular synchronization by preserving the local physical directory structure, moving only non-ignored files into the cloud vault and symlinking them individually. All ignored files (such as `.git`, `.env`, `node_modules`, or rules in `.mosyignore`) and volatile files skipped via the Safety Guard (such as active SQLite databases, runtime locks, sockets, or cache dirs) remain safely on the local disk without deletion. The item is appended to `sync-map.conf`.
 * **Syntax**:
   ```text
-  mosy [-p PROFILE] add FILE_OR_DIRECTORY [-t|--tag TAGS] [-g|--group GROUPS] [--scan-secrets|--scan] [--no-scan] [-f|--force]
+  mosy [-p PROFILE] add FILE_OR_DIRECTORY [-t|--tag TAGS] [-g|--group GROUPS] [--scan-secrets|--scan] [--no-scan] [--guard|--no-guard] [-f|--force]
   ```
 * **Arguments**:
   * `FILE_OR_DIRECTORY`: Path to a file or directory inside the user's home directory (`$HOME`). Relative paths are automatically resolved relative to `$HOME`.
@@ -65,7 +65,9 @@ Global flags must be specified before the subcommand.
   * `-g, --group GROUPS`: Comma-separated list of groups to associate with the item (e.g., `dotfiles,configs`).
   * `--scan-secrets`, `--scan`: Enable pre-vaulting regex inspection for unencrypted credentials, tokens, and private keys.
   * `--no-scan`: Bypass secret scanning even if `MOSY_SCAN_SECRETS=true` is enabled in configuration.
-  * `-f, --force`: Bypass interactive secret confirmation prompts and force synchronization.
+  * `--guard`: Explicitly enable the high-churn, database & lockfile safety guard inspection.
+  * `--no-guard`: Disable safety guard scanning even if `MOSY_SAFETY_GUARD=true` is enabled.
+  * `-f, --force`: Bypass interactive secret and safety confirmation prompts and force synchronization.
 * **Output Example**:
   ```text
   $ mosy add ~/.bashrc --tag shell,main --group dotfiles
@@ -215,9 +217,12 @@ Global flags must be specified before the subcommand.
     [OK] .bashrc
     [OK] .config/nvim
 
+    --- Database & Lockfile Safety Audit ---
+    [OK] No active databases, sockets, or lockfiles detected over FUSE
+
     --- Doctor Summary ---
-    Total checks: 12
-    OK: 12
+    Total checks: 13
+    OK: 13
     Warnings: 0
     Errors: 0
     ```
@@ -382,7 +387,7 @@ Global flags must be specified before the subcommand.
     ```
 * **Arguments**:
   * `set`: Subcommand action to modify a setting.
-  * `KEY`: Configuration parameter name. Valid keys: `MOSY_REMOTE_NAME`, `MOSY_MOUNT_POINT`, `MOSY_VFS_CACHE`, `MOSY_CLOUD_DIR`, `MOSY_BACKUP_EXT`, `MOSY_LOG_LEVEL`, `MOSY_DRY_RUN`, `MOSY_SCAN_SECRETS`.
+  * `KEY`: Configuration parameter name. Valid keys: `MOSY_REMOTE_NAME`, `MOSY_MOUNT_POINT`, `MOSY_VFS_CACHE`, `MOSY_CLOUD_DIR`, `MOSY_BACKUP_EXT`, `MOSY_LOG_LEVEL`, `MOSY_DRY_RUN`, `MOSY_SCAN_SECRETS`, `MOSY_SAFETY_GUARD`.
   * `VALUE`: New value for the configuration key.
 * **Options/Flags**: None.
 * **Output Example**:
@@ -402,6 +407,7 @@ Global flags must be specified before the subcommand.
     MOSY_LOG_LEVEL       "INFO"    # Verbosity: INFO, DEBUG, SILENT (Default: INFO)
     MOSY_DRY_RUN         "false"    # If true, simulate actions without changes. (Default: false)
     MOSY_SCAN_SECRETS    "false"    # Scan for secrets on add. (Default: false)
+    MOSY_SAFETY_GUARD    "true"     # Safety guard for DBs, locks & churn on mosy add. (Default: true)
     ```
   * Set config:
     ```text

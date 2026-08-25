@@ -42,6 +42,7 @@ The diagnostic engine evaluates six core functional categories:
 | **Vault Storage** | Inspects read and write permissions on `MOSY_CLOUD_DIR`. Checks for minimum free disk space (at least 50 MB required for staging operations). | Error / Warning |
 | **Configuration Files** | Validates existence and readable permissions of `~/.config/mosy/config`, `~/.config/mosy/.mosyignore`, and custom secrets configuration (`~/.config/mosy/secrets.conf`). | Warning |
 | **Symlink Integrity** | Scans every mapping in `sync-map.conf`. Checks for valid links, broken/dangling targets, and files that have reverted to unlinked physical copies. | Error / Warning |
+| **Database & Lockfile Audit** | Inspeciona links gerenciados à procura de bancos de dados embutidos (SQLite, DuckDB, KDBX), sockets ou lockfiles montados sobre FUSE para prevenir corrupção e deadlocks. | Warning |
 
 ---
 
@@ -50,7 +51,7 @@ The diagnostic engine evaluates six core functional categories:
 The output categorizes findings using standard severity indicators:
 
 - `[OK]`: Component is healthy and operating within parameters.
-- `[WARN]`: Non-critical condition (e.g. optional service manager missing, optional config file absent).
+- `[WARN]`: Non-critical condition (e.g. optional service manager missing, embedded DB mounted over FUSE).
 - `[ERR]`: Critical failure preventing normal synchronization (e.g. mount inactive, missing required binary).
 - `[FIXED]`: Issue resolved automatically during `--fix` execution.
 
@@ -79,16 +80,15 @@ The output categorizes findings using standard severity indicators:
 [OK] Vault write permissions: OK
 [OK] Vault free space: 42 GB available
 
---- Configuration Files ---
-[OK] Configuration file: ~/.config/mosy/config (valid)
-[OK] Sync map file: /home/user/GoogleDrive/mosy_vault/sync-map.conf (2 items)
-
---- Managed Symlink Integrity ---
+--- Mapping & Symlink Integrity ---
 [OK] .bashrc -> /home/user/GoogleDrive/mosy_vault/.bashrc
 [OK] .config/nvim -> /home/user/GoogleDrive/mosy_vault/.config/nvim
 
+--- Database & Lockfile Safety Audit ---
+[OK] No active databases, sockets, or lockfiles detected over FUSE
+
 ==================================================
-Summary: 14 checks | 14 OK | 0 Warnings | 0 Errors
+Summary: 15 checks | 15 OK | 0 Warnings | 0 Errors
 Status: System is healthy.
 ```
 
