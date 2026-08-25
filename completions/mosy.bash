@@ -13,7 +13,7 @@ _mosy_completions() {
     case "${COMP_WORDS[1]}" in
         add)
             if [[ "$cur" == -* ]]; then
-                COMPREPLY=( $(compgen -W "--tag -t --group -g --force -f --scan-secrets --scan --no-scan" -- "$cur") )
+                COMPREPLY=( $(compgen -W "--tag -t --group -g --force -f --scan-secrets --scan --no-scan --guard --no-guard" -- "$cur") )
             fi
             ;;
         doctor)
@@ -35,7 +35,7 @@ _mosy_completions() {
             if [ $COMP_CWORD -eq 2 ]; then
                 COMPREPLY=( $(compgen -W "set" -- "$cur") )
             elif [ $COMP_CWORD -eq 3 ] && [ "$prev" == "set" ]; then
-                local keys="MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN MOSY_SCAN_SECRETS"
+                local keys="MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN MOSY_SCAN_SECRETS MOSY_SAFETY_GUARD"
                 COMPREPLY=( $(compgen -W "$keys" -- "$cur") )
             fi
             ;;

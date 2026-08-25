@@ -40,6 +40,8 @@ _mosy() {
                         '--scan-secrets[Scan target for secrets before adding]' \
                         '--scan[Scan target for secrets before adding]' \
                         '--no-scan[Skip scanning for secrets]' \
+                        '--guard[Enable safety guard scanning for DBs and locks]' \
+                        '--no-guard[Disable safety guard scanning for DBs and locks]' \
                         '1:file or directory:_files'
                     ;;
                 doctor)
@@ -67,7 +69,7 @@ _mosy() {
                 config)
                     _arguments \
                         '1: :(set)' \
-                        '2: :(MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN MOSY_SCAN_SECRETS)'
+                        '2: :(MOSY_REMOTE_NAME MOSY_MOUNT_POINT MOSY_VFS_CACHE MOSY_CLOUD_DIR MOSY_BACKUP_EXT MOSY_LOG_LEVEL MOSY_DRY_RUN MOSY_SCAN_SECRETS MOSY_SAFETY_GUARD)'
                     ;;
             esac
             ;;
