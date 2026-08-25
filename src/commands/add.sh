@@ -5,6 +5,7 @@ cmd_add() {
     local RAW_TARGET=""
     local FORCE=false
     local SCAN_SECRETS_OVERRIDE=""
+    local SAFETY_GUARD_OVERRIDE=""
     parse_filter_flags "$@"
     local TAGS="$MOSY_FILTER_TAG"
     local ITEM_GROUPS="$MOSY_FILTER_GROUP"
@@ -26,6 +27,14 @@ cmd_add() {
                 SCAN_SECRETS_OVERRIDE="false"
                 shift
                 ;;
+            --guard)
+                SAFETY_GUARD_OVERRIDE="true"
+                shift
+                ;;
+            --no-guard)
+                SAFETY_GUARD_OVERRIDE="false"
+                shift
+                ;;
             *)
                 [ -z "$RAW_TARGET" ] && RAW_TARGET="$1"
                 shift
@@ -34,7 +43,7 @@ cmd_add() {
     done
 
     if [ -z "$RAW_TARGET" ]; then
-        echo "Usage: mosy add <file_or_directory> [--tag <tags>] [--group <groups>] [--scan-secrets] [--force]"
+        echo "Usage: mosy add <file_or_directory> [--tag <tags>] [--group <groups>] [--scan-secrets] [--no-guard] [--force]"
         exit 1
     fi
 
@@ -43,7 +52,7 @@ cmd_add() {
         exit 0
     fi
 
-    if [ ! -e "$RAW_TARGET" ]; then
+    if [ ! -e "$RAW_TARGET" ] && [ ! -S "$RAW_TARGET" ] && [ ! -p "$RAW_TARGET" ]; then
         echo "Error: $RAW_TARGET does not exist."
         exit 1
     fi
@@ -58,13 +67,17 @@ cmd_add() {
     CLOUD_DEST="$MOSY_PROFILE_DIR/$REL_PATH"
 
     local SHOULD_SCAN="${SCAN_SECRETS_OVERRIDE:-$MOSY_SCAN_SECRETS}"
+    local SHOULD_GUARD="${SAFETY_GUARD_OVERRIDE:-$MOSY_SAFETY_GUARD}"
 
     echo "Syncing $REL_PATH..."
 
     if [ -d "$TARGET" ]; then
-        local skipped_files=()
-        if [ "$SHOULD_SCAN" = "true" ] && [ "$FORCE" != "true" ]; then
-            local flagged_items=()
+        local skipped_safety_files=()
+        local skipped_secret_files=()
+
+        # 1. Safety Guard scan (Databases, Locks, Sockets, Caches)
+        if [ "$SHOULD_GUARD" = "true" ] && [ "$FORCE" != "true" ]; then
+            local flagged_safety_items=()
             while IFS= read -r -d '' file; do
                 if is_ignored "$file"; then
                     continue
@@ -72,25 +85,62 @@ cmd_add() {
                 if [ -L "$file" ]; then
                     continue
                 fi
-                if scan_file_for_secrets "$file"; then
+                if scan_file_for_safety "$file"; then
                     local rel_file="${file#$TARGET/}"
-                    flagged_items+=("$rel_file|$MOSY_SECRET_REASON")
+                    flagged_safety_items+=("$rel_file|$MOSY_SAFETY_REASON")
                 fi
-            done < <(find "$TARGET" -type f -print0)
+            done < <(find "$TARGET" \( -type f -o -type s -o -type p \) -print0 2>/dev/null)
 
-            if [ ${#flagged_items[@]} -gt 0 ]; then
-                MOSY_DIR_SECRET_ACTION=""
-                prompt_secret_directory "$TARGET" "${flagged_items[@]}"
-                if [ "$MOSY_DIR_SECRET_ACTION" = "skip" ]; then
-                    for item in "${flagged_items[@]}"; do
+            if [ ${#flagged_safety_items[@]} -gt 0 ]; then
+                MOSY_DIR_SAFETY_ACTION=""
+                prompt_safety_directory "$TARGET" "${flagged_safety_items[@]}"
+                if [ "$MOSY_DIR_SAFETY_ACTION" = "skip" ]; then
+                    for item in "${flagged_safety_items[@]}"; do
                         local sfile="${item%%|*}"
-                        skipped_files+=("$sfile")
+                        skipped_safety_files+=("$sfile")
                     done
                 fi
             fi
         fi
 
-        # Sync directory granularly without modifying or deleting local ignored files
+        # 2. Secret Leak scan
+        if [ "$SHOULD_SCAN" = "true" ] && [ "$FORCE" != "true" ]; then
+            local flagged_secret_items=()
+            while IFS= read -r -d '' file; do
+                if is_ignored "$file"; then
+                    continue
+                fi
+                if [ -L "$file" ]; then
+                    continue
+                fi
+                local rel_file="${file#$TARGET/}"
+                local already_skipped=false
+                for sf in "${skipped_safety_files[@]}"; do
+                    if [ "$rel_file" = "$sf" ]; then
+                        already_skipped=true
+                        break
+                    fi
+                done
+                [ "$already_skipped" = true ] && continue
+
+                if scan_file_for_secrets "$file"; then
+                    flagged_secret_items+=("$rel_file|$MOSY_SECRET_REASON")
+                fi
+            done < <(find "$TARGET" -type f -print0 2>/dev/null)
+
+            if [ ${#flagged_secret_items[@]} -gt 0 ]; then
+                MOSY_DIR_SECRET_ACTION=""
+                prompt_secret_directory "$TARGET" "${flagged_secret_items[@]}"
+                if [ "$MOSY_DIR_SECRET_ACTION" = "skip" ]; then
+                    for item in "${flagged_secret_items[@]}"; do
+                        local sfile="${item%%|*}"
+                        skipped_secret_files+=("$sfile")
+                    done
+                fi
+            fi
+        fi
+
+        # Sync directory granularly without modifying or deleting local ignored/skipped files
         mkdir -p "$CLOUD_DEST"
         
         while IFS= read -r -d '' file; do
@@ -102,15 +152,27 @@ cmd_add() {
                 continue
             fi
 
-            # Check if file was skipped during secret detection
-            local is_skipped=false
-            for sf in "${skipped_files[@]}"; do
+            # Check if file was skipped during safety guard or secret detection
+            local is_skipped_safety=false
+            for sf in "${skipped_safety_files[@]}"; do
                 if [ "$rel_file" = "$sf" ]; then
-                    is_skipped=true
+                    is_skipped_safety=true
                     break
                 fi
             done
-            if [ "$is_skipped" = true ]; then
+            if [ "$is_skipped_safety" = true ]; then
+                log_info "Keeping file local (skipped): $rel_file"
+                continue
+            fi
+
+            local is_skipped_secret=false
+            for sf in "${skipped_secret_files[@]}"; do
+                if [ "$rel_file" = "$sf" ]; then
+                    is_skipped_secret=true
+                    break
+                fi
+            done
+            if [ "$is_skipped_secret" = true ]; then
                 log_info "Skipping secret file (kept local): $rel_file"
                 continue
             fi
@@ -127,8 +189,14 @@ cmd_add() {
                 mv "$file" "$cloud_file" || continue
             fi
             ln -s "$cloud_file" "$file"
-        done < <(find "$TARGET" -type f -print0)
+        done < <(find "$TARGET" \( -type f -o -type s -o -type p \) -print0 2>/dev/null)
     else
+        if [ "$SHOULD_GUARD" = "true" ] && [ "$FORCE" != "true" ]; then
+            if scan_file_for_safety "$TARGET"; then
+                prompt_safety_single "$TARGET" "$MOSY_SAFETY_CATEGORY" "$MOSY_SAFETY_REASON"
+            fi
+        fi
+
         if [ "$SHOULD_SCAN" = "true" ] && [ "$FORCE" != "true" ]; then
             if scan_file_for_secrets "$TARGET"; then
                 prompt_secret_single "$TARGET" "$MOSY_SECRET_REASON"

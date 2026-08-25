@@ -9,6 +9,13 @@ DEFAULT_IGNORE_PATTERNS=(
     ".DS_Store"
     "*.tmp"
     "*.log"
+    "*.sqlite-wal"
+    "*.sqlite-shm"
+    "*.db-wal"
+    "*.db-shm"
+    "*.db-journal"
+    "*.sock"
+    "*.lock"
 )
 
 _read_ignore_file() {

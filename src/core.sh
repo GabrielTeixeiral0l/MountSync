@@ -15,6 +15,7 @@ load_settings() {
     export MOSY_LOG_LEVEL="${MOSY_LOG_LEVEL:-INFO}"
     export MOSY_DRY_RUN="${MOSY_DRY_RUN:-false}"
     export MOSY_SCAN_SECRETS="${MOSY_SCAN_SECRETS:-false}"
+    export MOSY_SAFETY_GUARD="${MOSY_SAFETY_GUARD:-true}"
     export MOSY_PROFILE="${MOSY_PROFILE:-default}"
 
     if [ -z "$MOSY_REMOTE_NAME" ]; then
@@ -36,6 +37,9 @@ load_settings() {
     if [ -f "$src_dir/secrets.sh" ]; then
         . "$src_dir/secrets.sh"
         load_custom_secret_patterns
+    fi
+    if [ -f "$src_dir/safety.sh" ]; then
+        . "$src_dir/safety.sh"
     fi
 }
 

@@ -26,6 +26,7 @@ _config_list() {
     printf "%-20s \"%s\"    # Verbosity: INFO, DEBUG, SILENT (Default: INFO)\n" "MOSY_LOG_LEVEL" "$MOSY_LOG_LEVEL"
     printf "%-20s \"%s\"    # If true, simulate actions without changes. (Default: false)\n" "MOSY_DRY_RUN" "$MOSY_DRY_RUN"
     printf "%-20s \"%s\"    # Scan for secrets on mosy add. (Default: false)\n" "MOSY_SCAN_SECRETS" "$MOSY_SCAN_SECRETS"
+    printf "%-20s \"%s\"    # Safety guard for DBs, locks & churn on mosy add. (Default: true)\n" "MOSY_SAFETY_GUARD" "$MOSY_SAFETY_GUARD"
 }
 
 _config_set() {
@@ -39,7 +40,7 @@ _config_set() {
 
     # Validate key
     case "$key" in
-        MOSY_REMOTE_NAME|MOSY_MOUNT_POINT|MOSY_VFS_CACHE|MOSY_CLOUD_DIR|MOSY_BACKUP_EXT|MOSY_LOG_LEVEL|MOSY_DRY_RUN|MOSY_SCAN_SECRETS)
+        MOSY_REMOTE_NAME|MOSY_MOUNT_POINT|MOSY_VFS_CACHE|MOSY_CLOUD_DIR|MOSY_BACKUP_EXT|MOSY_LOG_LEVEL|MOSY_DRY_RUN|MOSY_SCAN_SECRETS|MOSY_SAFETY_GUARD)
             ;;
         *)
             log_error "Error: Unknown configuration key '$key'"
@@ -55,7 +56,7 @@ _config_set() {
                 exit 1
             fi
             ;;
-        MOSY_DRY_RUN|MOSY_SCAN_SECRETS)
+        MOSY_DRY_RUN|MOSY_SCAN_SECRETS|MOSY_SAFETY_GUARD)
             if [[ "$val" != "true" && "$val" != "false" ]]; then
                 log_error "Error: Invalid value for $key (expected true or false)"
                 exit 1
