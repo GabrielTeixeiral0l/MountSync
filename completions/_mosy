@@ -21,6 +21,8 @@ _mosy() {
                 'diff:Inspect differences against backups or vault'
                 'history:List timestamped backup snapshots'
                 'rollback:Restore a previous backup snapshot'
+                'backup:Create timestamped safety backup snapshots'
+                'snapshot:Alias for backup command'
                 'remove:Stop syncing an item and make it local'
                 'uninstall:Remove MountSync from your system'
                 'config:Manage configuration'
@@ -84,6 +86,14 @@ _mosy() {
                         '-f[Skip confirmation and force rollback]' \
                         '1:target file:_files' \
                         '2:snapshot timestamp or index:'
+                    ;;
+                backup|snapshot)
+                    _arguments \
+                        '--tag[Filter by tags]:tags:' \
+                        '-t[Filter by tags]:tags:' \
+                        '--group[Filter by groups]:groups:' \
+                        '-g[Filter by groups]:groups:' \
+                        '1:managed file:_files'
                     ;;
                 config)
                     _arguments \
