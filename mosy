@@ -18,9 +18,13 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 source "${SCRIPT_DIR}/src/core.sh"
 
 case "$1" in
-    add|init|pull|list|status|doctor|info|diff|history|rollback|remove|uninstall|config|version|update)
+    add|init|pull|list|status|doctor|info|diff|history|rollback|backup|remove|uninstall|config|version|update)
         source "${SCRIPT_DIR}/src/commands/${1}.sh"
         "cmd_${1}" "${@:2}"
+        ;;
+    snapshot)
+        source "${SCRIPT_DIR}/src/commands/backup.sh"
+        cmd_snapshot "${@:2}"
         ;;
     *)
         echo "Usage: mosy [-p|--profile <name>] <command> [args]"
@@ -35,6 +39,8 @@ case "$1" in
         echo "  diff [path] [options]   Inspect differences against backups or vault"
         echo "  history [path] [--json] List timestamped backup snapshots"
         echo "  rollback <path> [time]  Restore a previous backup snapshot"
+        echo "  backup [path] [options] Create timestamped safety backup snapshots"
+        echo "  snapshot [path]         Alias for backup command"
         echo "  remove <path>           Stop syncing an item and make it local"
         echo "  uninstall               Remove MountSync from your system"
         echo "  config                  Manage configuration"
