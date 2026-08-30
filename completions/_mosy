@@ -19,6 +19,8 @@ _mosy() {
                 'doctor:Diagnose system health and auto-repair issues'
                 'info:Show environment and managed items overview'
                 'diff:Inspect differences against backups or vault'
+                'history:List timestamped backup snapshots'
+                'rollback:Restore a previous backup snapshot'
                 'remove:Stop syncing an item and make it local'
                 'uninstall:Remove MountSync from your system'
                 'config:Manage configuration'
@@ -65,6 +67,23 @@ _mosy() {
                         '--group[Filter by groups]:groups:' \
                         '-g[Filter by groups]:groups:' \
                         '1:managed file:_files'
+                    ;;
+                history)
+                    _arguments \
+                        '--json[Output history in JSON format]' \
+                        '-j[Output history in JSON format]' \
+                        '--tag[Filter by tags]:tags:' \
+                        '-t[Filter by tags]:tags:' \
+                        '--group[Filter by groups]:groups:' \
+                        '-g[Filter by groups]:groups:' \
+                        '1:managed file:_files'
+                    ;;
+                rollback)
+                    _arguments \
+                        '--force[Skip confirmation and force rollback]' \
+                        '-f[Skip confirmation and force rollback]' \
+                        '1:target file:_files' \
+                        '2:snapshot timestamp or index:'
                     ;;
                 config)
                     _arguments \

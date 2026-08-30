@@ -3,7 +3,7 @@ _mosy_completions() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="add init pull list status doctor info diff remove uninstall config version update"
+    opts="add init pull list status doctor info diff history rollback remove uninstall config version update"
 
     if [ $COMP_CWORD -eq 1 ]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -29,6 +29,16 @@ _mosy_completions() {
         diff)
             if [[ "$cur" == -* ]]; then
                 COMPREPLY=( $(compgen -W "--backup -b --compare-profile -c --tag -t --group -g" -- "$cur") )
+            fi
+            ;;
+        history)
+            if [[ "$cur" == -* ]]; then
+                COMPREPLY=( $(compgen -W "--json -j --tag -t --group -g" -- "$cur") )
+            fi
+            ;;
+        rollback)
+            if [[ "$cur" == -* ]]; then
+                COMPREPLY=( $(compgen -W "--force -f" -- "$cur") )
             fi
             ;;
         config)
