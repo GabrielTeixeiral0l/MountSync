@@ -157,12 +157,28 @@ mosy rollback ~/.bashrc 1
 # Restore a specific snapshot by timestamp identifier
 mosy rollback ~/.bashrc 20260820_100000
 
-# Non-interactive force rollback to latest snapshot
-mosy rollback ~/.bashrc --force
+---
+
+## Step 8: Create On-Demand Snapshots (`mosy backup` / `mosy snapshot`)
+
+Before making major manual edits to your configuration, you can create timestamped safety snapshots:
+
+```bash
+# Create snapshot for a specific dotfile
+mosy backup ~/.bashrc
+
+# Using the snapshot alias
+mosy snapshot ~/.config/nvim/init.lua
+
+# Create snapshots for all managed dotfiles in the active profile
+mosy backup
+
+# Filter batch snapshots by tags or groups
+mosy backup -t work -g shell
 ```
 
-> [!NOTE]
-> `mosy rollback` automatically creates a safety snapshot of the current state before applying the rollback, ensuring **Zero Data Loss**.
+> [!TIP]
+> The active symlink remains intact and functional after taking a backup snapshot. Snapshots are immediately visible in `mosy history` and ready for recovery via `mosy rollback`.
 
 ---
 
