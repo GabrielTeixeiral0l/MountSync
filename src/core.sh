@@ -133,11 +133,24 @@ log_info() {
     fi
 }
 
+generate_backup_path() {
+    local target="$1"
+    local timestamp
+    timestamp=$(date +%Y%m%d_%H%M%S)
+    local backup_path="${target}${MOSY_BACKUP_EXT}_${timestamp}"
+    local counter=1
+    while [ -e "$backup_path" ] || [ -L "$backup_path" ]; do
+        backup_path="${target}${MOSY_BACKUP_EXT}_${timestamp}_${counter}"
+        ((counter++))
+    done
+    echo "$backup_path"
+}
+
 mosy_backup() {
     local target="$1"
-    if [ -e "$target" ]; then
-        local timestamp=$(date +%Y%m%d_%H%M%S)
-        local backup_path="${target}${MOSY_BACKUP_EXT}_${timestamp}"
+    if [ -e "$target" ] || [ -L "$target" ]; then
+        local backup_path
+        backup_path=$(generate_backup_path "$target")
         log_info "Backing up $target to $(basename "$backup_path")..."
         mv "$target" "$backup_path"
     fi

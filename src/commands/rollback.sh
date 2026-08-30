@@ -132,9 +132,8 @@ cmd_rollback() {
 
     # 1. Create pre-rollback safety backup of current state
     if [ -e "$local_path" ] || [ -L "$local_path" ]; then
-        local ts
-        ts=$(date +%Y%m%d_%H%M%S)
-        local pre_rollback_backup="${local_path}${MOSY_BACKUP_EXT}_${ts}"
+        local pre_rollback_backup
+        pre_rollback_backup=$(generate_backup_path "$local_path")
         if [ -L "$local_path" ]; then
             local cloud_target
             cloud_target=$(readlink -f "$local_path" 2>/dev/null || true)
