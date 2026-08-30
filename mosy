@@ -18,7 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 source "${SCRIPT_DIR}/src/core.sh"
 
 case "$1" in
-    add|init|pull|list|status|doctor|info|diff|remove|uninstall|config|version|update)
+    add|init|pull|list|status|doctor|info|diff|history|rollback|remove|uninstall|config|version|update)
         source "${SCRIPT_DIR}/src/commands/${1}.sh"
         "cmd_${1}" "${@:2}"
         ;;
@@ -33,6 +33,8 @@ case "$1" in
         echo "  doctor [--fix]          Diagnose system health and auto-repair issues"
         echo "  info [--json]           Show environment and managed items overview"
         echo "  diff [path] [options]   Inspect differences against backups or vault"
+        echo "  history [path] [--json] List timestamped backup snapshots"
+        echo "  rollback <path> [time]  Restore a previous backup snapshot"
         echo "  remove <path>           Stop syncing an item and make it local"
         echo "  uninstall               Remove MountSync from your system"
         echo "  config                  Manage configuration"
