@@ -27,7 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Smart auto-ignore presets for SQLite WAL/journal files (`*.sqlite-wal`, `*.sqlite-shm`, `*.db-wal`, `*.db-shm`, `*.db-journal`) and lock/socket files in default ignore list.
 - Safety audit check and interactive remediation in `mosy doctor` and `mosy doctor --fix` detecting and safely unmanaging volatile databases mounted over FUSE.
 - Configurable via `MOSY_SAFETY_GUARD` (defaults to `true`), with `--guard`, `--no-guard`, and `--force` / `-f` CLI overrides.
-- Shell completions for safety flags in Bash and Zsh, and BATS test suite in `tests/safety.bats`.
+- Backup history inspection command (`mosy history`) listing timestamped snapshots (`.bak_YYYYMMDD_HHMMSS`) in reverse chronological order with formatted dates, file sizes, and machine-readable `--json` format.
+- Snapshot rollback command (`mosy rollback`) safely restoring previous snapshots to local files and cloud vault with automatic pre-rollback safety backup generation.
+- Shell completions for `history` and `rollback` in Bash and Zsh.
+- Comprehensive BATS test suite for snapshot recovery (`tests/history_rollback.bats`).
 - Restructured documentation portal into full Diataxis framework (`docs/README.md`, tutorials, how-to guides, reference manuals, and architecture explanations).
 
 ## [1.2.0] - 2026-08-18

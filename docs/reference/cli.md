@@ -43,11 +43,13 @@ Global flags must be specified before the subcommand.
 | [`doctor`](#6-doctor) | `mosy doctor [--fix]` | Run system diagnostics and automatically remediate broken links and services |
 | [`info`](#7-info) | `mosy info [--json]` | Display environment overview dashboard and managed dotfile metrics |
 | [`diff`](#8-diff) | `mosy diff [path] [options]` | Inspect differences against safety backups, physical vault copies, or profiles |
-| [`remove`](#9-remove) | `mosy remove <path>` | Stop syncing an item and revert symlink back to a standalone local file |
-| [`config`](#10-config) | `mosy config [set <k> <v>]` | View current settings or update configuration key-value pairs |
-| [`version`](#11-version) | `mosy version` | Display installed version and check GitHub for latest updates |
-| [`update`](#12-update) | `mosy update` | Update MountSync to the latest version |
-| [`uninstall`](#13-uninstall) | `mosy uninstall` | Interactive wizard to revert links and cleanly remove MountSync |
+| [`history`](#9-history) | `mosy history [path] [--json]` | List timestamped backup snapshots for managed dotfiles in reverse chronological order |
+| [`rollback`](#10-rollback) | `mosy rollback <path> [time]` | Safely restore a previous backup snapshot with automated pre-rollback safety backup |
+| [`remove`](#11-remove) | `mosy remove <path>` | Stop syncing an item and revert symlink back to a standalone local file |
+| [`config`](#12-config) | `mosy config [set <k> <v>]` | View current settings or update configuration key-value pairs |
+| [`version`](#13-version) | `mosy version` | Display installed version and check GitHub for latest updates |
+| [`update`](#14-update) | `mosy update` | Update MountSync to the latest version |
+| [`uninstall`](#15-uninstall) | `mosy uninstall` | Interactive wizard to revert links and cleanly remove MountSync |
 
 ---
 
@@ -350,7 +352,56 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 9. `remove`
+### 9. `history`
+
+* **Purpose**: Lists timestamped safety backup snapshots (`.bak_YYYYMMDD_HHMMSS`) associated with a specific dotfile or across all managed items, displayed in reverse chronological order with formatted dates and file sizes.
+* **Syntax**:
+  ```text
+  mosy [-p PROFILE] history [PATH] [-j|--json] [-t|--tag TAGS] [-g|--group GROUPS]
+  ```
+* **Arguments**:
+  * `PATH`: (Optional) Path to a specific managed file or directory. If omitted, lists snapshots for all managed items in the profile.
+* **Options/Flags**:
+  * `-j, --json`: Format output as a JSON array of snapshot objects (suitable for scripts and bar integrations).
+  * `-t, --tag TAGS`: Filter items by tags when viewing global history.
+  * `-g, --group GROUPS`: Filter items by groups when viewing global history.
+* **Output Example**:
+  ```text
+  $ mosy history ~/.bashrc
+  Backup History for ~/.bashrc:
+    [1] 2026-08-25 16:30:15 (1.2 KB)  /home/user/.bashrc.bak_20260825_163015
+    [2] 2026-08-20 10:00:00 (1.1 KB)  /home/user/.bashrc.bak_20260820_100000
+  ```
+* **Exit Codes**:
+  * `0`: Success.
+
+---
+
+### 10. `rollback`
+
+* **Purpose**: Safely restores a previous backup snapshot to the local system and cloud vault. Before performing the restoration, it automatically generates a pre-rollback safety backup of the current state, ensuring complete non-destructiveness (**Zero Data Loss**).
+* **Syntax**:
+  ```text
+  mosy [-p PROFILE] rollback PATH [TIMESTAMP_OR_INDEX] [-f|--force]
+  ```
+* **Arguments**:
+  * `PATH`: The managed file or directory to restore.
+  * `TIMESTAMP_OR_INDEX`: (Optional) Specific backup timestamp string (e.g. `20260825_163015`), substring, or 1-based index (e.g. `1`, `2`). If omitted in interactive terminal, prompts with a numbered selection menu; in non-interactive mode, restores the most recent snapshot.
+* **Options/Flags**:
+  * `-f, --force`: Bypass interactive selection prompt and restore the latest snapshot immediately.
+* **Output Example**:
+  ```text
+  $ mosy rollback ~/.bashrc 1
+  Rolling back ~/.bashrc to .bashrc.bak_20260825_163015...
+  Success! Rolled back ~/.bashrc to .bashrc.bak_20260825_163015.
+  ```
+* **Exit Codes**:
+  * `0`: Success.
+  * `1`: Failure (missing path, no backup snapshots available, or invalid timestamp/index).
+
+---
+
+### 11. `remove`
 
 * **Purpose**: Removes an item from MountSync management by restoring the target as a standalone local file/directory copied back from the cloud vault, removing its entry from `sync-map.conf`. The original cloud vault copy remains preserved.
 * **Syntax**:
@@ -373,7 +424,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 10. `config`
+### 12. `config`
 
 * **Purpose**: Views all MountSync configuration settings or updates a specific configuration key in `~/.config/mosy/config`.
 * **Syntax**:
@@ -407,7 +458,7 @@ Global flags must be specified before the subcommand.
     MOSY_LOG_LEVEL       "INFO"    # Verbosity: INFO, DEBUG, SILENT (Default: INFO)
     MOSY_DRY_RUN         "false"    # If true, simulate actions without changes. (Default: false)
     MOSY_SCAN_SECRETS    "false"    # Scan for secrets on add. (Default: false)
-    MOSY_SAFETY_GUARD    "true"     # Safety guard for DBs, locks & churn on mosy add. (Default: true)
+    MOSY_SAFETY_GUARD    "true"     # Scan for SQLite DBs, locks, sockets, and caches on add. (Default: true)
     ```
   * Set config:
     ```text
@@ -416,33 +467,27 @@ Global flags must be specified before the subcommand.
     ```
 * **Exit Codes**:
   * `0`: Success.
-  * `1`: Failure (invalid syntax, unsupported key, or invalid value).
+  * `1`: Failure (invalid key or value).
 
 ---
 
-### 11. `version`
+### 13. `version`
 
-* **Purpose**: Displays the installed version of MountSync and queries the GitHub API to check for available updates.
+* **Purpose**: Displays the currently installed MountSync version, commit hash, and checks GitHub Releases for new updates.
 * **Syntax**:
   ```text
   mosy version
   ```
 * **Arguments**: None.
 * **Options/Flags**: None.
-* **Output Example**:
-  ```text
-  $ mosy version
-  MountSync v1.2.0
-  You are running the latest version.
-  ```
 * **Exit Codes**:
   * `0`: Success.
 
 ---
 
-### 12. `update`
+### 14. `update`
 
-* **Purpose**: Updates MountSync to the latest version by pulling the main branch from GitHub and executing the update installer with automatic rollback on failure.
+* **Purpose**: Fetches and applies the latest updates from the MountSync GitHub repository, updating the installed scripts and completion files.
 * **Syntax**:
   ```text
   mosy update
@@ -461,7 +506,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 13. `uninstall`
+### 15. `uninstall`
 
 * **Purpose**: Interactive uninstallation wizard that prompts to revert managed items to local files, unmount the cloud drive, disable and remove the systemd user service, and delete binary and completion files.
 * **Syntax**:

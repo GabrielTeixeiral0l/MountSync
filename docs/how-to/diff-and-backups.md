@@ -117,9 +117,52 @@ Output example:
 +alias dev="cd ~/projects"
 ```
 
-To resolve the divergence:
-- Run `mosy add ~/.bashrc` to update the cloud vault with local changes.
-- Run `mosy init` to restore the symlink from the cloud vault.
+---
+
+## Step 6: View Backup History (`mosy history`)
+
+To view all safety backups created for a dotfile in reverse chronological order:
+
+```bash
+# View backup history for a specific dotfile
+mosy history ~/.bashrc
+
+# View history for all managed dotfiles
+mosy history
+
+# Output history as JSON for scripts
+mosy history --json
+```
+
+Output example:
+```text
+Backup History for ~/.bashrc:
+  [1] 2026-08-25 16:30:15 (1.2 KB)  /home/user/.bashrc.bak_20260825_163015
+  [2] 2026-08-20 10:00:00 (1.1 KB)  /home/user/.bashrc.bak_20260820_100000
+```
+
+---
+
+## Step 7: Restore Snapshots with `mosy rollback`
+
+To restore a previous backup snapshot to the local file and cloud vault:
+
+```bash
+# Interactively select a snapshot to restore
+mosy rollback ~/.bashrc
+
+# Restore a specific snapshot by index (1 = latest)
+mosy rollback ~/.bashrc 1
+
+# Restore a specific snapshot by timestamp identifier
+mosy rollback ~/.bashrc 20260820_100000
+
+# Non-interactive force rollback to latest snapshot
+mosy rollback ~/.bashrc --force
+```
+
+> [!NOTE]
+> `mosy rollback` automatically creates a safety snapshot of the current state before applying the rollback, ensuring **Zero Data Loss**.
 
 ---
 
