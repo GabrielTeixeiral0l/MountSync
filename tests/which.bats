@@ -130,3 +130,18 @@ setup() {
     assert_success
     assert_output --partial "Managed:      Yes (Profile: work)"
 }
+
+@test "Which: Counts snapshots with custom MOSY_BACKUP_EXT" {
+    export MOSY_BACKUP_EXT=".custombak"
+    echo "test" > "$HOME/custom.conf"
+    run mosy add "$HOME/custom.conf"
+    assert_success
+
+    # Create backups with custom extension and legacy extension
+    touch "$HOME/custom.conf.custombak_20260831_120000"
+    touch "$HOME/custom.conf.backup_20260831_110000"
+
+    run mosy which "$HOME/custom.conf"
+    assert_success
+    assert_output --partial "Snapshots:    2 in history"
+}

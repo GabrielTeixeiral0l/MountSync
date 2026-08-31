@@ -106,7 +106,7 @@ cmd_which() {
     local snap_base
     snap_base=$(basename "$local_path")
     if [ -d "$snap_dir" ]; then
-        snapshot_count=$(find "$snap_dir" -maxdepth 1 \( -name "${snap_base}.bak_*" -o -name "${snap_base}.backup_*" \) 2>/dev/null | wc -l)
+        snapshot_count=$(find "$snap_dir" -maxdepth 1 \( -name "${snap_base}.bak_*" -o -name "${snap_base}.backup_*" -o -name "${snap_base}${MOSY_BACKUP_EXT}_*" \) 2>/dev/null | sort -u | wc -l)
     fi
 
     [ -z "$item_tags" ] && item_tags="none"
