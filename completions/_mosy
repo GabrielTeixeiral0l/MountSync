@@ -26,6 +26,7 @@ _mosy() {
                 'edit:Open managed dotfile in EDITOR with auto-backup'
                 'which:Inspect if a local path is managed by MountSync'
                 'clean:Purge obsolete backup snapshots'
+                'tree:Render visual hierarchy tree of managed items'
                 'remove:Stop syncing an item and make it local'
                 'uninstall:Remove MountSync from your system'
                 'config:Manage configuration'
@@ -125,6 +126,18 @@ _mosy() {
                         '--group[Filter by groups]:groups:' \
                         '-g[Filter by groups]:groups:' \
                         '1:managed file or directory:_files'
+                    ;;
+                tree)
+                    _arguments \
+                        '--all-profiles[Show tree for all configured profiles]' \
+                        '-a[Show tree for all configured profiles]' \
+                        '--by-group[Group tree by groups and tags]' \
+                        '--no-color[Disable ANSI color output]' \
+                        '--json[Output tree in JSON format]' \
+                        '--tag[Filter by tags]:tags:' \
+                        '-t[Filter by tags]:tags:' \
+                        '--group[Filter by groups]:groups:' \
+                        '-g[Filter by groups]:groups:'
                     ;;
                 config)
                     _arguments \
