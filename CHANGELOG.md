@@ -32,8 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - On-demand backup command (`mosy backup`) and alias (`mosy snapshot`) to manually create timestamped snapshots for single files, directories, or batch managed items before editing.
 - Instant config editor command (`mosy edit`) locating managed dotfiles via exact path or fuzzy substring search, automatically generating pre-edit safety snapshots before launching `$EDITOR`.
 - Dotfile inspector command (`mosy which`) checking whether local paths are managed, resolving active profile, vault target, symlink health status, tags, groups, snapshot count, and machine-readable `--json` format.
-- Shell completions for `history`, `rollback`, `backup`, `snapshot`, `edit`, and `which` in Bash and Zsh.
-- Comprehensive BATS test suite for snapshot recovery, on-demand backups, config editor, and dotfile inspector (`tests/history_rollback.bats`, `tests/backup.bats`, `tests/edit.bats`, and `tests/which.bats`).
+- Backup housekeeping command (`mosy clean`) purging obsolete backup snapshots with duration filters (`--older-than`), simulation mode (`--dry-run`), and tag/group filtering.
+- Shell completions for `history`, `rollback`, `backup`, `snapshot`, `edit`, `which`, and `clean` in Bash and Zsh.
+- Comprehensive BATS test suite for snapshot recovery, on-demand backups, config editor, dotfile inspector, and backup housekeeping (`tests/history_rollback.bats`, `tests/backup.bats`, `tests/edit.bats`, `tests/which.bats`, and `tests/clean.bats`).
 - Restructured documentation portal into full Diataxis framework (`docs/README.md`, tutorials, how-to guides, reference manuals, and architecture explanations).
 
 ## [1.2.0] - 2026-08-18

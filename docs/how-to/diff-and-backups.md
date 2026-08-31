@@ -177,14 +177,31 @@ mosy backup
 mosy backup -t work -g shell
 ```
 
-> [!TIP]
-> The active symlink remains intact and functional after taking a backup snapshot. Snapshots are immediately visible in `mosy history` and ready for recovery via `mosy rollback`.
+---
+
+## Step 9: Backup Housekeeping (`mosy clean`)
+
+To prevent obsolete snapshots from accumulating and consuming disk space, use `mosy clean`:
+
+```bash
+# Preview snapshots that would be removed without deleting anything
+mosy clean --older-than 30d --dry-run
+
+# Purge backups older than 30 days for all managed dotfiles
+mosy clean --older-than 30d
+
+# Purge backups for a specific dotfile without confirmation prompt
+mosy clean ~/.bashrc --older-than 7d --force
+```
+
+> [!NOTE]
+> `mosy clean` only removes timestamped snapshot copies (`.bak_*`, `.backup_*`). Active symlinks and physical files are never touched.
 
 ---
 
 ## Related Documentation
 
-- [CLI Reference](../reference/cli.md): Full syntax reference for `mosy diff`.
+- [CLI Reference](../reference/cli.md): Full syntax reference for `mosy diff`, `mosy history`, `mosy rollback`, `mosy backup`, and `mosy clean`.
 - [Profiles Guide](profiles.md): Multi-profile configuration workflows.
 - [Tags and Groups Guide](tags-and-groups.md): Filtering items by tags and groups.
 - [Architecture & Design](../explanation/architecture.md): Timestamped backup strategies.
