@@ -23,6 +23,7 @@ _mosy() {
                 'rollback:Restore a previous backup snapshot'
                 'backup:Create timestamped safety backup snapshots'
                 'snapshot:Alias for backup command'
+                'edit:Open managed dotfile in EDITOR with auto-backup'
                 'remove:Stop syncing an item and make it local'
                 'uninstall:Remove MountSync from your system'
                 'config:Manage configuration'
@@ -89,6 +90,15 @@ _mosy() {
                     ;;
                 backup|snapshot)
                     _arguments \
+                        '--tag[Filter by tags]:tags:' \
+                        '-t[Filter by tags]:tags:' \
+                        '--group[Filter by groups]:groups:' \
+                        '-g[Filter by groups]:groups:' \
+                        '1:managed file:_files'
+                    ;;
+                edit)
+                    _arguments \
+                        '--no-backup[Skip pre-edit safety snapshot creation]' \
                         '--tag[Filter by tags]:tags:' \
                         '-t[Filter by tags]:tags:' \
                         '--group[Filter by groups]:groups:' \
