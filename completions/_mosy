@@ -24,6 +24,7 @@ _mosy() {
                 'backup:Create timestamped safety backup snapshots'
                 'snapshot:Alias for backup command'
                 'edit:Open managed dotfile in EDITOR with auto-backup'
+                'which:Inspect if a local path is managed by MountSync'
                 'remove:Stop syncing an item and make it local'
                 'uninstall:Remove MountSync from your system'
                 'config:Manage configuration'
@@ -104,6 +105,12 @@ _mosy() {
                         '--group[Filter by groups]:groups:' \
                         '-g[Filter by groups]:groups:' \
                         '1:managed file:_files'
+                    ;;
+                which)
+                    _arguments \
+                        '--json[Output inspection result in JSON format]' \
+                        '-j[Output inspection result in JSON format]' \
+                        '1:target path:_files'
                     ;;
                 config)
                     _arguments \
