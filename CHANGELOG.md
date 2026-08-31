@@ -30,8 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backup history inspection command (`mosy history`) listing timestamped snapshots (`.bak_YYYYMMDD_HHMMSS`) in reverse chronological order with formatted dates, file sizes, and machine-readable `--json` format.
 - Snapshot rollback command (`mosy rollback`) safely restoring previous snapshots to local files and cloud vault with automatic pre-rollback safety backup generation.
 - On-demand backup command (`mosy backup`) and alias (`mosy snapshot`) to manually create timestamped snapshots for single files, directories, or batch managed items before editing.
-- Shell completions for `history`, `rollback`, `backup`, and `snapshot` in Bash and Zsh.
-- Comprehensive BATS test suite for snapshot recovery and on-demand backups (`tests/history_rollback.bats` and `tests/backup.bats`).
+- Instant config editor command (`mosy edit`) locating managed dotfiles via exact path or fuzzy substring search, automatically generating pre-edit safety snapshots before launching `$EDITOR`.
+- Shell completions for `history`, `rollback`, `backup`, `snapshot`, and `edit` in Bash and Zsh.
+- Comprehensive BATS test suite for snapshot recovery, on-demand backups, and config editor (`tests/history_rollback.bats`, `tests/backup.bats`, and `tests/edit.bats`).
 - Restructured documentation portal into full Diataxis framework (`docs/README.md`, tutorials, how-to guides, reference manuals, and architecture explanations).
 
 ## [1.2.0] - 2026-08-18

@@ -46,11 +46,12 @@ Global flags must be specified before the subcommand.
 | [`history`](#9-history) | `mosy history [path] [--json]` | List timestamped backup snapshots for managed dotfiles in reverse chronological order |
 | [`rollback`](#10-rollback) | `mosy rollback <path> [time]` | Safely restore a previous backup snapshot with automated pre-rollback safety backup |
 | [`backup`](#11-backup) | `mosy backup [path] [options]` | Create on-demand timestamped safety backup snapshots for dotfiles |
-| [`remove`](#12-remove) | `mosy remove <path>` | Stop syncing an item and revert symlink back to a standalone local file |
-| [`config`](#13-config) | `mosy config [set <k> <v>]` | View current settings or update configuration key-value pairs |
-| [`version`](#14-version) | `mosy version` | Display installed version and check GitHub for latest updates |
-| [`update`](#15-update) | `mosy update` | Update MountSync to the latest version |
-| [`uninstall`](#16-uninstall) | `mosy uninstall` | Interactive wizard to revert links and cleanly remove MountSync |
+| [`edit`](#12-edit) | `mosy edit <item> [options]` | Open managed dotfile in default editor with automatic pre-edit safety backup |
+| [`remove`](#13-remove) | `mosy remove <path>` | Stop syncing an item and revert symlink back to a standalone local file |
+| [`config`](#14-config) | `mosy config [set <k> <v>]` | View current settings or update configuration key-value pairs |
+| [`version`](#15-version) | `mosy version` | Display installed version and check GitHub for latest updates |
+| [`update`](#16-update) | `mosy update` | Update MountSync to the latest version |
+| [`uninstall`](#17-uninstall) | `mosy uninstall` | Interactive wizard to revert links and cleanly remove MountSync |
 
 ---
 
@@ -436,7 +437,32 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 12. `remove`
+### 12. `edit`
+
+* **Purpose**: Locates a managed dotfile (via exact path or case-insensitive substring search) and opens it directly in the user's configured editor (`$VISUAL`, `$EDITOR`, or fallback `nano`/`vim`/`vi`). Automatically creates a timestamped safety backup snapshot (`.bak_YYYYMMDD_HHMMSS`) before launching the editor, unless `--no-backup` is passed.
+* **Syntax**:
+  ```text
+  mosy [-p PROFILE] edit [QUERY] [--no-backup] [-t|--tag TAGS] [-g|--group GROUPS]
+  ```
+* **Arguments**:
+  * `QUERY`: (Optional) Path, filename, or substring identifying the managed dotfile (e.g. `aliases`, `nvim`, `~/.bashrc`). If omitted, prompts with an interactive selection menu.
+* **Options/Flags**:
+  * `--no-backup`: Skip automatic creation of pre-edit safety backup snapshot.
+  * `-t, --tag TAGS`: Filter items by tags when searching/selecting.
+  * `-g, --group GROUPS`: Filter items by groups when searching/selecting.
+* **Output Example**:
+  ```text
+  $ mosy edit aliases
+  Created safety backup before editing: .bash_aliases.bak_20260831_160000
+  Opening ~/.bash_aliases with nvim...
+  ```
+* **Exit Codes**:
+  * `0`: Success (or editor exit code).
+  * `1`: Failure (target not found or no managed dotfiles in profile).
+
+---
+
+### 13. `remove`
 
 * **Purpose**: Removes an item from MountSync management by restoring the target as a standalone local file/directory copied back from the cloud vault, removing its entry from `sync-map.conf`. The original cloud vault copy remains preserved.
 * **Syntax**:
@@ -459,7 +485,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 13. `config`
+### 14. `config`
 
 * **Purpose**: Views all MountSync configuration settings or updates a specific configuration key in `~/.config/mosy/config`.
 * **Syntax**:
@@ -506,7 +532,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 14. `version`
+### 15. `version`
 
 * **Purpose**: Displays the currently installed MountSync version, commit hash, and checks GitHub Releases for new updates.
 * **Syntax**:
@@ -520,7 +546,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 15. `update`
+### 16. `update`
 
 * **Purpose**: Fetches and applies the latest updates from the MountSync GitHub repository, updating the installed scripts and completion files.
 * **Syntax**:
@@ -541,7 +567,7 @@ Global flags must be specified before the subcommand.
 
 ---
 
-### 16. `uninstall`
+### 17. `uninstall`
 
 * **Purpose**: Interactive uninstallation wizard that prompts to revert managed items to local files, unmount the cloud drive, disable and remove the systemd user service, and delete binary and completion files.
 * **Syntax**:
