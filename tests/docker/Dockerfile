@@ -28,4 +28,4 @@ USER tester
 WORKDIR /home/tester/mountsync
 
 # Command to run tests
-CMD ["bash", "-c", "./tests/libs/bats-core/bin/bats tests/*.bats"]
+CMD ["bats", "tests/"]
