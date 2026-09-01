@@ -11,8 +11,13 @@ setup() {
 
     # Mock editor script that writes its arguments to a log file
     export MOCK_EDITOR_LOG="$HOME/mock_editor.log"
-    export EDITOR="bash -c 'echo \"EDITED: \$@\" >> \"$MOCK_EDITOR_LOG\"'"
-    export VISUAL="$EDITOR"
+    cat <<'EOF' > "$MOCK_BIN/mock_editor"
+#!/bin/bash
+echo "EDITED: $@" >> "$MOCK_EDITOR_LOG"
+EOF
+    chmod +x "$MOCK_BIN/mock_editor"
+    export EDITOR="mock_editor"
+    export VISUAL="mock_editor"
 }
 
 @test "Edit: Opens exact path in configured EDITOR" {

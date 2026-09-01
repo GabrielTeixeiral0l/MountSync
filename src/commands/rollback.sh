@@ -49,9 +49,9 @@ cmd_rollback() {
     fi
 
     local local_path=""
-    if [[ "$TARGET_ARG" == ~/* ]]; then
-        local_path="${HOME}/${TARGET_ARG#\~/}"
-    elif [[ "$TARGET_ARG" == /* ]]; then
+    if [ "${TARGET_ARG:0:2}" = "~/" ]; then
+        local_path="${HOME}/${TARGET_ARG:2}"
+    elif [ "${TARGET_ARG:0:1}" = "/" ]; then
         local_path="$TARGET_ARG"
     else
         local_path="${HOME}/${TARGET_ARG}"
