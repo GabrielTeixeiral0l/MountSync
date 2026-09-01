@@ -34,6 +34,7 @@ How-to guides provide step-by-step recipes to solve real-world problems and work
 * [Diagnostics & Auto-Remediation Guide](how-to/doctor-and-diagnostics.md): Inspect system health, mount point status, and auto-repair broken symlinks with `mosy doctor --fix`.
 * [Diff & Backups Inspection Guide](how-to/diff-and-backups.md): Compare local files against cloud replicas, timestamped `.bak_*` safety backups, and alternative profiles with `mosy diff`.
 * [Secret Leak Prevention Guide](how-to/secrets-prevention.md): Scan for unencrypted keys, tokens, and credentials before cloud vaulting with custom patterns in `secrets.conf`.
+* [Snapshots & Recovery Guide](how-to/snapshots-and-recovery.md): Create on-demand safety snapshots, inspect history, edit configs with safety backups, rollback revisions, and purge obsolete backups.
 * [Multi-Machine Synchronization Guide](how-to/multi-machine-sync.md): Replicate configurations across laptops, workstations, and remote servers using `mosy init` and `mosy pull`.
 
 ---
@@ -42,7 +43,7 @@ How-to guides provide step-by-step recipes to solve real-world problems and work
 
 Reference manuals provide exhaustive technical descriptions of commands, flags, and configuration options.
 
-* [CLI Reference](reference/cli.md): Exhaustive parameter reference, exit codes, and output examples for all 13 subcommands and global flags.
+* [CLI Reference](reference/cli.md): Exhaustive parameter reference, exit codes, and output examples for all 20 subcommands and global flags.
 * [Configuration Reference](reference/configuration.md): Precedence hierarchy, environment variables, `~/.config/mosy/config` settings, and `mosy config set` usage.
 
 ---
@@ -62,6 +63,7 @@ Explanation documents clarify architecture, mental models, and design decisions.
 | First time using MountSync | [Quickstart Tutorial](tutorials/quickstart.md) |
 | Looking up a command or flag | [CLI Reference](reference/cli.md) |
 | Fixing a broken link or mount | [Diagnostics & Auto-Remediation Guide](how-to/doctor-and-diagnostics.md) |
+| Managing snapshots and rollback | [Snapshots & Recovery Guide](how-to/snapshots-and-recovery.md) |
 | Checking differences or backups | [Diff & Backups Inspection Guide](how-to/diff-and-backups.md) |
 | Setting up a second machine | [Multi-Machine Sync Guide](how-to/multi-machine-sync.md) |
 | Preventing credential leaks | [Secret Leak Prevention Guide](how-to/secrets-prevention.md) |
