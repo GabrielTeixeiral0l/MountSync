@@ -48,8 +48,20 @@ cmd_rollback() {
         exit 1
     fi
 
-    local rel_path
-    rel_path=$(get_relative_home_path "$TARGET_ARG")
+    local rel_path=""
+    if [[ "$TARGET_ARG" == ~/* ]]; then
+        rel_path="${TARGET_ARG#\~/}"
+    elif [[ "$TARGET_ARG" == "$HOME/"* ]]; then
+        rel_path="${TARGET_ARG#$HOME/}"
+    elif [[ "$TARGET_ARG" == /* ]]; then
+        rel_path="${TARGET_ARG#$HOME/}"
+    else
+        if [ -e "$PWD/$TARGET_ARG" ] && [[ "$PWD" == "$HOME"* ]]; then
+            rel_path=$(get_relative_home_path "$PWD/$TARGET_ARG")
+        else
+            rel_path="$TARGET_ARG"
+        fi
+    fi
     local local_path="${HOME}/${rel_path}"
     local parent_dir
     parent_dir=$(dirname "$local_path")

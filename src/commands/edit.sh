@@ -297,5 +297,5 @@ cmd_edit() {
     fi
 
     echo "Opening ~/$selected_item with $editor_cmd..."
-    exec $editor_cmd "$target_path"
+    eval "$editor_cmd \"\$target_path\""
 }

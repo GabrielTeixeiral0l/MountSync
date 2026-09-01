@@ -151,7 +151,7 @@ setup() {
     printf '\x89PNG\r\n\x1a\n\x00\x00' > "$HOME/assets/logo.png"
     printf 'ID3\x03\x00\x00\x00\x00' > "$HOME/assets/track.mp3"
     printf 'SQLite format 3\x00' > "$HOME/assets/data.sqlite"
-    run mosy add "$HOME/assets"
+    run mosy add "$HOME/assets" --force
     assert_success
 
     # Searching for mp3 or png should fail to find editable text files
