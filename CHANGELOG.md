@@ -34,8 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dotfile inspector command (`mosy which`) checking whether local paths are managed, resolving active profile, vault target, symlink health status, tags, groups, snapshot count, and machine-readable `--json` format.
 - Backup housekeeping command (`mosy clean`) purging obsolete backup snapshots with duration filters (`--older-than`), simulation mode (`--dry-run`), and tag/group filtering.
 - Visual hierarchy tree command (`mosy tree`) rendering ASCII/Unicode directory tree with real-time symlink health badges, alternate grouping (`--by-group`), multi-profile support (`--all-profiles`), and JSON output (`--json`).
-- Shell completions for `history`, `rollback`, `backup`, `snapshot`, `edit`, `which`, `clean`, and `tree` in Bash and Zsh.
-- Comprehensive BATS test suite for snapshot recovery, on-demand backups, config editor, dotfile inspector, backup housekeeping, and hierarchy tree (`tests/history_rollback.bats`, `tests/backup.bats`, `tests/edit.bats`, `tests/which.bats`, `tests/clean.bats`, and `tests/tree.bats`).
+- Machine-readable status and bar integration (`mosy status --json` / `-j`) and quiet health check (`mosy status --quiet` / `-q`) returning semantic exit codes for Waybar, Polybar, tmux, and automation scripts.
+- Shell completions for `history`, `rollback`, `backup`, `snapshot`, `edit`, `which`, `clean`, and `tree` in Bash and Zsh, including flags for `status`.
+- Comprehensive BATS test suite for snapshot recovery, on-demand backups, config editor, dotfile inspector, backup housekeeping, hierarchy tree, and machine-readable status (`tests/history_rollback.bats`, `tests/backup.bats`, `tests/edit.bats`, `tests/which.bats`, `tests/clean.bats`, `tests/tree.bats`, and `tests/status_json.bats`).
 - Restructured documentation portal into full Diataxis framework (`docs/README.md`, tutorials, how-to guides, reference manuals, and architecture explanations).
 
 ## [1.2.0] - 2026-08-18

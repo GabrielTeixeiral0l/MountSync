@@ -161,31 +161,40 @@ Global flags must be specified before the subcommand.
 * **Purpose**: Evaluates and displays the status of the cloud mount point, the systemd user service (`mosy-mount.service`), and file integrity across all managed items.
 * **Syntax**:
   ```text
-  mosy [-p PROFILE] status [-t|--tag TAGS] [-g|--group GROUPS]
+  mosy [-p PROFILE] status [--json|-j] [--quiet|-q] [-t|--tag TAGS] [-g|--group GROUPS]
   ```
 * **Arguments**: None.
 * **Options/Flags**:
+  * `--json, -j`: Outputs system status and file integrity in structured JSON format (suitable for Waybar, Polybar, tmux, and custom scripts).
+  * `--quiet, -q`: Suppresses all output and returns exit code only (`0` for healthy system, `1` if issues detected).
   * `-t, --tag TAGS`: Filters integrity checks by tags.
   * `-g, --group GROUPS`: Filters integrity checks by groups.
 * **Output Example**:
-  ```text
-  $ mosy status
-  --- System Status ---
-  Mount Point (/home/user/GoogleDrive): MOUNTED
-  Systemd Service (mosy-mount): ACTIVE
+  * Standard text format:
+    ```text
+    $ mosy status
+    --- System Status ---
+    Mount Point (/home/user/GoogleDrive): MOUNTED
+    Systemd Service (mosy-mount): ACTIVE
 
-  --- File Integrity ---
-  [OK] .bashrc
-  [WARN] .config/nvim (Missing link: cloud source exists)
+    --- File Integrity ---
+    [OK] .bashrc
+    [WARN] .config/nvim (Missing link: cloud source exists)
 
-  --- Summary ---
-  Total: 2
-  OK: 1
-  Warnings: 1
-  Errors: 0
-  ```
+    --- Summary ---
+    Total: 2
+    OK: 1
+    Warnings: 1
+    Errors: 0
+    ```
+  * Machine-readable JSON format:
+    ```json
+    $ mosy status --json
+    {"profile":"default","system":{"mounted":true,"mount_point":"/home/user/GoogleDrive","service_active":true,"service_status":"active"},"files":{"total":2,"ok":1,"warn":1,"err":0},"healthy":false}
+    ```
 * **Exit Codes**:
-  * `0`: Success.
+  * `0`: Success (system healthy in `--quiet` / `--json` modes, or text output completed).
+  * `1`: Failure (mount inactive or file integrity errors/warnings detected in `--quiet` / `--json` modes).
 
 ---
 
