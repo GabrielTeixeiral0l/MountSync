@@ -52,6 +52,17 @@ _mosy() {
                         '--no-guard[Disable safety guard scanning for DBs and locks]' \
                         '1:file or directory:_files'
                     ;;
+                status)
+                    _arguments \
+                        '--json[Output status in JSON format]' \
+                        '-j[Output status in JSON format]' \
+                        '--quiet[Suppress all output and return exit code only]' \
+                        '-q[Suppress all output and return exit code only]' \
+                        '--tag[Filter by tags]:tags:' \
+                        '-t[Filter by tags]:tags:' \
+                        '--group[Filter by groups]:groups:' \
+                        '-g[Filter by groups]:groups:'
+                    ;;
                 doctor)
                     _arguments \
                         '--fix[Automatically fix detected issues where safe]' \

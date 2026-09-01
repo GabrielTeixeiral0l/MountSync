@@ -16,6 +16,11 @@ _mosy_completions() {
                 COMPREPLY=( $(compgen -W "--tag -t --group -g --force -f --scan-secrets --scan --no-scan --guard --no-guard" -- "$cur") )
             fi
             ;;
+        status)
+            if [[ "$cur" == -* ]]; then
+                COMPREPLY=( $(compgen -W "--json -j --quiet -q --tag -t --group -g" -- "$cur") )
+            fi
+            ;;
         doctor)
             if [ $COMP_CWORD -eq 2 ]; then
                 COMPREPLY=( $(compgen -W "--fix -f" -- "$cur") )
