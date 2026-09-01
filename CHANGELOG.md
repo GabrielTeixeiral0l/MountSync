@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-01
+
 ### Added
 - System diagnostics and health inspection command (`mosy doctor`) covering dependencies, mount status, systemd/launchd services, remote connectivity, vault permissions, and symlink integrity.
 - Automated self-healing and remediation mode (`mosy doctor --fix` / `-f`) for non-destructive link recreation, mount directory creation, and service restarts.
@@ -14,15 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Interactive safety prompts for single files (`[y/N]`) and directory additions (`[y]es / [s]kip (keep local) / [n]o`).
 - Configurable via `MOSY_SCAN_SECRETS` (defaults to `false`), on-demand scanning with `mosy add --scan-secrets` / `--scan`, `--no-scan` bypass, and `--force` / `-f` override.
 - User-extensible secret patterns file support (`~/.config/mosy/secrets.conf`).
-- Shell completions for `add` flags (`--scan-secrets`, `--scan`, `--no-scan`, `--force`, `-f`) and `doctor` `--fix` in Bash and Zsh.
-- Comprehensive BATS test suites for diagnostics (`tests/doctor.bats`) and secret leak prevention (`tests/secrets.bats`).
-- CLI Reference and documentation for `mosy doctor` and secret scanning in `docs/CLI_REFERENCE.md`, `docs/CONFIGURATION.md`, and `README.md`.
 - Environment overview dashboard command (`mosy info`) reporting system facts (OS, kernel, arch, hostname), configuration details, cloud mount health, and managed dotfile metrics.
 - Machine-readable JSON output format support via `mosy info --json` / `-j`.
-- Shell completions for `info` and `--json` / `-j` in Bash and Zsh.
 - Change inspection command (`mosy diff`) supporting colored visual diffs against local `.bak_*` safety backups, physical unlinked local files vs cloud vault copies, and cross-profile comparisons (`-c` / `--compare-profile`).
-- Shell completions for `diff` flags (`--backup`, `-b`, `--compare-profile`, `-c`, `--tag`, `-t`, `--group`, `-g`) in Bash and Zsh.
-- Comprehensive BATS test suite for change inspection (`tests/diff.bats`).
 - High-Churn, Database & Lockfile Safety Guard (`src/safety.sh`) protecting against FUSE lock contention and database corruption by detecting embedded databases (`*.sqlite`, `*.db`, `*.duckdb`, `*.kdbx`, `*.ldb`, `*.rdb`), runtime locks/sockets (`*.lock`, `*.sock`, `*.pid`, `*.ipc`), and volatile caches/logs.
 - Smart auto-ignore presets for SQLite WAL/journal files (`*.sqlite-wal`, `*.sqlite-shm`, `*.db-wal`, `*.db-shm`, `*.db-journal`) and lock/socket files in default ignore list.
 - Safety audit check and interactive remediation in `mosy doctor` and `mosy doctor --fix` detecting and safely unmanaging volatile databases mounted over FUSE.
@@ -35,9 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backup housekeeping command (`mosy clean`) purging obsolete backup snapshots with duration filters (`--older-than`), simulation mode (`--dry-run`), and tag/group filtering.
 - Visual hierarchy tree command (`mosy tree`) rendering ASCII/Unicode directory tree with real-time symlink health badges, alternate grouping (`--by-group`), multi-profile support (`--all-profiles`), and JSON output (`--json`).
 - Machine-readable status and bar integration (`mosy status --json` / `-j`) and quiet health check (`mosy status --quiet` / `-q`) returning semantic exit codes for Waybar, Polybar, tmux, and automation scripts.
-- Shell completions for `history`, `rollback`, `backup`, `snapshot`, `edit`, `which`, `clean`, and `tree` in Bash and Zsh, including flags for `status`.
-- Comprehensive BATS test suite for snapshot recovery, on-demand backups, config editor, dotfile inspector, backup housekeeping, hierarchy tree, and machine-readable status (`tests/history_rollback.bats`, `tests/backup.bats`, `tests/edit.bats`, `tests/which.bats`, `tests/clean.bats`, `tests/tree.bats`, and `tests/status_json.bats`).
+- Shell completions for `doctor`, `info`, `diff`, `history`, `rollback`, `backup`, `snapshot`, `edit`, `which`, `clean`, `tree`, and `status` in Bash and Zsh.
+- Comprehensive BATS test suites across all commands with local and Docker verification.
 - Restructured documentation portal into full Diataxis framework (`docs/README.md`, tutorials, how-to guides, reference manuals, and architecture explanations).
+
+### Fixed
+- Improved text file detection portability in `mosy edit` using POSIX null-byte count fallback and symlink traversal.
 
 ## [1.2.0] - 2026-08-18
 
