@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     sudo \
     fuse3 \
+    file \
     kcov \
     binutils-dev \
     libcurl4-openssl-dev \
@@ -27,4 +28,4 @@ USER tester
 WORKDIR /home/tester/mountsync
 
 # Command to run tests
-CMD ["bats", "tests/"]
+CMD ["./tests/libs/bats-core/bin/bats", "tests/"]

@@ -49,13 +49,13 @@ _is_editable_text_file() {
     # 2. Heuristic using 'file' utility if available
     if command -v file >/dev/null 2>&1; then
         local mime
-        mime=$(file -b --mime-type "$file" 2>/dev/null)
+        mime=$(file -b -L --mime-type "$file" 2>/dev/null || true)
         case "$mime" in
             text/*|application/json|application/xml|application/javascript|application/x-sh|application/x-shellscript|application/toml|application/yaml|application/x-yaml|inode/x-empty)
                 return 0
                 ;;
             *)
-                if file -b "$file" 2>/dev/null | grep -qi "text"; then
+                if file -b -L "$file" 2>/dev/null | grep -qi "text"; then
                     return 0
                 fi
                 return 1
@@ -64,7 +64,10 @@ _is_editable_text_file() {
     fi
 
     # 3. Fallback: check for null byte in first 512 bytes
-    if head -c 512 "$file" 2>/dev/null | grep -q $'\0'; then
+    local c_total c_no_null
+    c_total=$(head -c 512 "$file" 2>/dev/null | wc -c)
+    c_no_null=$(head -c 512 "$file" 2>/dev/null | tr -d '\000' | wc -c)
+    if [ "$c_total" -ne "$c_no_null" ]; then
         return 1
     fi
 
