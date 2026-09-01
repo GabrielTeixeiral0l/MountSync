@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cmd_version() {
-    local local_ver="v1.2.0"
+    local local_ver="v1.3.0"
     echo "MountSync $local_ver"
     
     # Query GitHub releases silently with timeout
