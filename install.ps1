@@ -1,6 +1,7 @@
 # MountSync Windows 1-Click Installer (PowerShell)
 param(
-    [string]$Branch = "test-windows"
+    [string]$Branch = "test-windows",
+    [switch]$NonInteractive
 )
 
 $ErrorActionPreference = "Continue"
@@ -58,6 +59,12 @@ if (!$hasRclone -and (Get-Command winget.exe -ErrorAction SilentlyContinue)) {
     winget install --id Rclone.Rclone -e --source winget --accept-package-agreements --accept-source-agreements
 }
 
+$hasWinfsp = (Test-Path "C:\Program Files\WinFsp") -or (Test-Path "C:\Program Files (x86)\WinFsp")
+if (!$hasWinfsp -and (Get-Command winget.exe -ErrorAction SilentlyContinue)) {
+    Write-Host "WinFsp is required for cloud mount. Installing automatically via winget..." -ForegroundColor Yellow
+    winget install --id WinFsp.WinFsp -e --source winget --accept-package-agreements --accept-source-agreements
+}
+
 # 3. Create CLI Shims in ~/.local/bin
 Write-Host "Creating CLI shims (mosy.cmd & mosy.ps1)..." -ForegroundColor Yellow
 
@@ -93,19 +100,53 @@ $rcloneCmd = Get-Command rclone.exe -ErrorAction SilentlyContinue
 $remoteList = @()
 if ($rcloneCmd) {
     try {
-        $rawRemotes = & $rcloneCmd listremotes 2>$null
+        $rawRemotes = & $rcloneCmd.Source listremotes 2>$null
         if ($rawRemotes) {
             $remoteList = $rawRemotes | ForEach-Object { $_.Trim().TrimEnd(':') } | Where-Object { $_ -ne "" }
         }
     } catch {}
 }
 
+if ($remoteList.Count -eq 0 -and !$NonInteractive -and $rcloneCmd) {
+    Write-Host "--- rclone Configuration ---" -ForegroundColor Cyan
+    Write-Host "No cloud remotes detected in rclone." -ForegroundColor Yellow
+    $ans = Read-Host "Would you like to configure one now? (y/N)"
+    if ($ans -match "^[Yy]") {
+        & $rcloneCmd.Source config
+        try {
+            $rawRemotes = & $rcloneCmd.Source listremotes 2>$null
+            if ($rawRemotes) {
+                $remoteList = $rawRemotes | ForEach-Object { $_.Trim().TrimEnd(':') } | Where-Object { $_ -ne "" }
+            }
+        } catch {}
+    }
+}
+
 $chosenRemote = "GoogleDrive"
 if ($remoteList.Count -gt 0) {
     $chosenRemote = $remoteList[0]
+    if (!$NonInteractive -and $remoteList.Count -gt 1) {
+        Write-Host "Detected rclone remotes:" -ForegroundColor Cyan
+        for ($i = 0; $i -lt $remoteList.Count; $i++) {
+            Write-Host "  $($i + 1)) $($remoteList[$i])"
+        }
+        $remoteChoice = Read-Host "Enter remote name or number [$chosenRemote]"
+        if ($remoteChoice -match "^\d+$" -and [int]$remoteChoice -ge 1 -and [int]$remoteChoice -le $remoteList.Count) {
+            $chosenRemote = $remoteList[[int]$remoteChoice - 1]
+        } elseif ($remoteChoice -and ($remoteList -contains $remoteChoice)) {
+            $chosenRemote = $remoteChoice
+        }
+    }
 }
 
 $defaultMount = "$env:USERPROFILE\GoogleDrive"
+if (!$NonInteractive) {
+    $mountChoice = Read-Host "Enter cloud mount point directory [$defaultMount]"
+    if ($mountChoice -and $mountChoice.Trim() -ne "") {
+        $defaultMount = $mountChoice.Trim()
+    }
+}
+
 if (!(Test-Path $defaultMount)) {
     Write-Host "Creating cloud mount directory at $defaultMount..." -ForegroundColor Yellow
     New-Item -ItemType Directory -Force -Path $defaultMount | Out-Null
