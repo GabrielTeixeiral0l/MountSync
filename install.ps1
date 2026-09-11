@@ -30,6 +30,10 @@ if ($localRepo -and (Test-Path "$localRepo\mosy") -and ($localRepo -ne $installD
         Remove-Item -Path "$installDir\src" -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item -Path "$localRepo\src" -Destination "$installDir\src" -Recurse -Force
     }
+    if (Test-Path "$localRepo\completions") {
+        Remove-Item -Path "$installDir\completions" -Recurse -Force -ErrorAction SilentlyContinue
+        Copy-Item -Path "$localRepo\completions" -Destination "$installDir\completions" -Recurse -Force
+    }
 } else {
     Write-Host "Downloading MountSync from GitHub ($Branch branch)..." -ForegroundColor Yellow
     $zipUrl = "https://github.com/GabrielTeixeiral0l/MountSync/archive/refs/heads/$Branch.zip"
@@ -42,6 +46,10 @@ if ($localRepo -and (Test-Path "$localRepo\mosy") -and ($localRepo -ne $installD
         Copy-Item -Path "$($extractedFolder.FullName)\mosy" -Destination "$installDir\mosy" -Force
         Remove-Item -Path "$installDir\src" -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item -Path "$($extractedFolder.FullName)\src" -Destination "$installDir\src" -Recurse -Force
+        if (Test-Path "$($extractedFolder.FullName)\completions") {
+            Remove-Item -Path "$installDir\completions" -Recurse -Force -ErrorAction SilentlyContinue
+            Copy-Item -Path "$($extractedFolder.FullName)\completions" -Destination "$installDir\completions" -Recurse -Force
+        }
     }
     Remove-Item -Recurse -Force $tempZip, $tempExtract -ErrorAction SilentlyContinue
 }
@@ -184,6 +192,29 @@ if ($remoteList.Count -gt 0) {
 } else {
     Write-Host "Notice: No cloud remotes found in rclone." -ForegroundColor Yellow
     Write-Host "Run 'rclone config' in CMD or PowerShell to connect your cloud drive." -ForegroundColor Yellow
+}
+
+# 7. Shell Autocomplete for PowerShell
+$completionSrc = "$installDir\completions\mosy.ps1"
+if (Test-Path $completionSrc) {
+    Write-Host "Installing PowerShell tab completions..." -ForegroundColor Yellow
+    $completionsDir = "$configDir\completions"
+    New-Item -ItemType Directory -Force -Path $completionsDir | Out-Null
+    Copy-Item -Path $completionSrc -Destination "$completionsDir\mosy.ps1" -Force
+
+    $profilePath = $PROFILE.CurrentUserAllHosts
+    if (!$profilePath) { $profilePath = $PROFILE }
+    if ($profilePath) {
+        $profileDir = Split-Path -Parent $profilePath
+        if (!(Test-Path $profileDir)) {
+            New-Item -ItemType Directory -Force -Path $profileDir | Out-Null
+        }
+        $importLine = "`r`n# MountSync Tab Completion`r`nif (Test-Path `"$completionsDir\mosy.ps1`") { . `"$completionsDir\mosy.ps1`" }`r`n"
+        $existingProfile = if (Test-Path $profilePath) { [System.IO.File]::ReadAllText($profilePath) } else { "" }
+        if ($existingProfile -notlike "*MountSync Tab Completion*") {
+            [System.IO.File]::AppendAllText($profilePath, $importLine, [System.Text.Encoding]::UTF8)
+        }
+    }
 }
 
 Write-Host "============================================================" -ForegroundColor Green
