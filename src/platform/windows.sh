@@ -49,6 +49,17 @@ platform_service_stop() {
 
 platform_service_enable() {
     local runner_vbs="${HOME}/.config/mosy/mount-runner.vbs"
+    local win_vbs="$runner_vbs"
+    if command -v cygpath >/dev/null 2>&1; then
+        win_vbs=$(cygpath -w "$runner_vbs")
+    fi
+
+    # 1. Prefer Windows Task Scheduler if available
+    if command -v schtasks.exe >/dev/null 2>&1; then
+        schtasks.exe /create /tn "MountSyncMount" /tr "wscript.exe \"$win_vbs\"" /sc onlogon /f >/dev/null 2>&1 || true
+    fi
+
+    # 2. Register in Startup directory as resilient fallback
     if [ -f "$runner_vbs" ] && command -v cmd.exe >/dev/null 2>&1; then
         local startup_dir
         startup_dir=$(cmd.exe /c "echo %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup" 2>/dev/null | tr -d '\r\n')
@@ -59,6 +70,12 @@ platform_service_enable() {
 }
 
 platform_service_disable() {
+    # 1. Remove from Task Scheduler
+    if command -v schtasks.exe >/dev/null 2>&1; then
+        schtasks.exe /delete /tn "MountSyncMount" /f >/dev/null 2>&1 || true
+    fi
+
+    # 2. Remove from Startup folder
     if command -v cmd.exe >/dev/null 2>&1; then
         local startup_dir
         startup_dir=$(cmd.exe /c "echo %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup" 2>/dev/null | tr -d '\r\n')
