@@ -146,10 +146,19 @@ cmd_status() {
         echo -e "Mount Point ($MOSY_MOUNT_POINT): ${RED}NOT MOUNTED${NC}"
     fi
 
+    local svc_label="Service (mosy-mount)"
+    if declare -F platform_service_type >/dev/null 2>&1; then
+        case "$(platform_service_type)" in
+            systemd) svc_label="Systemd Service (mosy-mount)" ;;
+            launchd) svc_label="Launchd Service (mosy-mount)" ;;
+            windows*) svc_label="Background Service (mosy-mount)" ;;
+        esac
+    fi
+
     if [ "$is_service_ok" = true ]; then
-        echo -e "Systemd Service (mosy-mount): ${GREEN}ACTIVE${NC}"
+        echo -e "${svc_label}: ${GREEN}ACTIVE${NC}"
     else
-        echo -e "Systemd Service (mosy-mount): ${YELLOW}INACTIVE ($service_status)${NC}"
+        echo -e "${svc_label}: ${YELLOW}INACTIVE ($service_status)${NC}"
     fi
 
     echo -e "\n--- File Integrity ---"
