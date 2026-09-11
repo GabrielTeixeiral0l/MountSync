@@ -7,10 +7,17 @@ cmd_remove() {
         exit 1
     fi
 
+    local target_arg="$1"
+    if command -v cygpath >/dev/null 2>&1; then
+        target_arg=$(cygpath -u "$target_arg" 2>/dev/null || echo "$target_arg")
+    fi
     local TARGET
-    TARGET=$(realpath -s "$1" 2>/dev/null || echo "$1")
+    TARGET=$(realpath -s "$target_arg" 2>/dev/null || echo "$target_arg")
+    if command -v cygpath >/dev/null 2>&1; then
+        TARGET=$(cygpath -u "$TARGET" 2>/dev/null || echo "$TARGET")
+    fi
     local REL_PATH
-    REL_PATH=$(get_relative_home_path "$1")
+    REL_PATH=$(get_relative_home_path "$target_arg")
 
     if [ -L "$TARGET" ]; then
         local SOURCE

@@ -41,12 +41,8 @@ _diff_item() {
     local backup_spec="$2"
     local compare_profile="$3"
 
-    local rel_path="$raw_target"
-    if [[ "$raw_target" == "$HOME/"* ]]; then
-        rel_path="${raw_target#$HOME/}"
-    elif [[ "$raw_target" == /* ]]; then
-        rel_path=$(get_relative_home_path "$raw_target")
-    fi
+    local rel_path
+    rel_path=$(get_relative_home_path "$raw_target")
     local local_path="${HOME}/${rel_path}"
     local cloud_path="${MOSY_PROFILE_DIR}/${rel_path}"
 

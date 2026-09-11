@@ -58,6 +58,10 @@ cmd_add() {
         exit 1
     fi
 
+    if command -v cygpath >/dev/null 2>&1; then
+        RAW_TARGET=$(cygpath -u "$RAW_TARGET" 2>/dev/null || echo "$RAW_TARGET")
+    fi
+
     if [ -L "$RAW_TARGET" ]; then
         echo "Warning: $RAW_TARGET is already a symbolic link."
         exit 0
@@ -69,6 +73,9 @@ cmd_add() {
     fi
 
     TARGET=$(realpath "$RAW_TARGET")
+    if command -v cygpath >/dev/null 2>&1; then
+        TARGET=$(cygpath -u "$TARGET" 2>/dev/null || echo "$TARGET")
+    fi
     if [[ "$TARGET" != "$HOME"* ]]; then
         echo "Error: Target must be within your home directory ($HOME)."
         exit 1

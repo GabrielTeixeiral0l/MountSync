@@ -227,8 +227,14 @@ log_debug() {
 
 get_relative_home_path() {
     local target="$1"
+    if command -v cygpath >/dev/null 2>&1; then
+        target=$(cygpath -u "$target" 2>/dev/null || echo "$target")
+    fi
     local abs_target
     abs_target=$(realpath -s "$target" 2>/dev/null || realpath "$target")
+    if command -v cygpath >/dev/null 2>&1; then
+        abs_target=$(cygpath -u "$abs_target" 2>/dev/null || echo "$abs_target")
+    fi
     echo "${abs_target#$HOME/}"
 }
 
