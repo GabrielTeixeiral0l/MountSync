@@ -26,6 +26,7 @@ if ($localRepo -and (Test-Path "$localRepo\mosy") -and ($localRepo -ne $installD
     Write-Host "Copying files from local repository..." -ForegroundColor Yellow
     Copy-Item -Path "$localRepo\mosy" -Destination "$installDir\mosy" -Force
     if (Test-Path "$localRepo\src") {
+        Remove-Item -Path "$installDir\src" -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item -Path "$localRepo\src" -Destination "$installDir\src" -Recurse -Force
     }
 } else {
@@ -38,6 +39,7 @@ if ($localRepo -and (Test-Path "$localRepo\mosy") -and ($localRepo -ne $installD
     $extractedFolder = Get-ChildItem -Path $tempExtract | Where-Object { $_.PSIsContainer } | Select-Object -First 1
     if ($extractedFolder) {
         Copy-Item -Path "$($extractedFolder.FullName)\mosy" -Destination "$installDir\mosy" -Force
+        Remove-Item -Path "$installDir\src" -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item -Path "$($extractedFolder.FullName)\src" -Destination "$installDir\src" -Recurse -Force
     }
     Remove-Item -Recurse -Force $tempZip, $tempExtract -ErrorAction SilentlyContinue
