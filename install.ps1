@@ -126,7 +126,7 @@ $runnerVbs = "$configDir\mount-runner.vbs"
 $mountPosix = $defaultMount.Replace('\', '/')
 $rcloneExePath = if ($rcloneCmd) { $rcloneCmd.Source } else { "rclone.exe" }
 
-$cmdText = "@echo off`r`n`"$rcloneExePath`" mount `"$chosenRemote:`" `"$mountPosix`" --vfs-cache-mode writes"
+$cmdText = "@echo off`r`n`"$rcloneExePath`" mount `"${chosenRemote}:`" `"$mountPosix`" --vfs-cache-mode writes"
 [System.IO.File]::WriteAllText($runnerCmd, $cmdText, [System.Text.Encoding]::ASCII)
 
 $vbsText = "Set WshShell = CreateObject(`"WScript.Shell`")`r`nWshShell.Run chr(34) & `"$runnerCmd`" & chr(34), 0`r`nSet WshShell = Nothing`r`n"
