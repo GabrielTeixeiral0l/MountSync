@@ -110,6 +110,25 @@ platform_uninstall_service() {
     platform_service_stop
     platform_service_disable
     rm -f "${HOME}/.config/mosy/mount-runner.cmd" "${HOME}/.config/mosy/mount-runner.vbs"
+
+    # Clean ~/.local/bin from Windows User PATH environment variable
+    if command -v powershell.exe >/dev/null 2>&1; then
+        powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '
+            $bin = "$env:USERPROFILE\.local\bin"
+            $p = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User)
+            if ($p -and $p -like "*$bin*") {
+                $parts = $p.Split(";") | Where-Object { $_ -and $_.Trim() -ne $bin }
+                [Environment]::SetEnvironmentVariable("Path", ($parts -join ";"), [EnvironmentVariableTarget]::User)
+            }
+            $prof = $PROFILE.CurrentUserAllHosts
+            if (!$prof) { $prof = $PROFILE }
+            if ($prof -and (Test-Path $prof)) {
+                $c = [System.IO.File]::ReadAllText($prof)
+                $c = $c -replace "(?ms)\r?\n# MountSync Tab Completion.*?\.ps1`"\s*}", ""
+                [System.IO.File]::WriteAllText($prof, $c)
+            }
+        ' 2>/dev/null || true
+    fi
 }
 
 platform_create_shims() {
