@@ -88,13 +88,61 @@ if ($userPath -notlike "*$localBin*") {
     $env:Path = "$env:Path;$localBin"
 }
 
-# 5. Create default config if missing
+# 5. Remote Configuration & Mount Point Setup
+$rcloneCmd = Get-Command rclone.exe -ErrorAction SilentlyContinue
+$remoteList = @()
+if ($rcloneCmd) {
+    try {
+        $rawRemotes = & $rcloneCmd listremotes 2>$null
+        if ($rawRemotes) {
+            $remoteList = $rawRemotes | ForEach-Object { $_.Trim().TrimEnd(':') } | Where-Object { $_ -ne "" }
+        }
+    } catch {}
+}
+
+$chosenRemote = "GoogleDrive"
+if ($remoteList.Count -gt 0) {
+    $chosenRemote = $remoteList[0]
+}
+
+$defaultMount = "$env:USERPROFILE\GoogleDrive"
+if (!(Test-Path $defaultMount)) {
+    Write-Host "Creating cloud mount directory at $defaultMount..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Force -Path $defaultMount | Out-Null
+}
+
 $configFile = "$configDir\config"
 if (!(Test-Path $configFile)) {
-    $mountVal = ($env:USERPROFILE + "/GoogleDrive").Replace('\', '/')
-    $cloudVal = ($env:USERPROFILE + "/GoogleDrive/mosy_vault").Replace('\', '/')
-    $cfgText = "MOSY_REMOTE_NAME=GoogleDrive`nMOSY_MOUNT_POINT=$mountVal`nMOSY_CLOUD_DIR=$cloudVal`n"
+    $mountVal = $defaultMount.Replace('\', '/')
+    $cloudVal = "$mountVal/mosy_vault"
+    $cfgText = "MOSY_REMOTE_NAME=$chosenRemote`nMOSY_MOUNT_POINT=$mountVal`nMOSY_CLOUD_DIR=$cloudVal`n"
     [System.IO.File]::WriteAllText($configFile, $cfgText, [System.Text.Encoding]::ASCII)
+}
+
+# 6. Setup Background Mount Service
+Write-Host "Setting up Windows background mount service..." -ForegroundColor Yellow
+$runnerCmd = "$configDir\mount-runner.cmd"
+$runnerVbs = "$configDir\mount-runner.vbs"
+$mountPosix = $defaultMount.Replace('\', '/')
+$rcloneExePath = if ($rcloneCmd) { $rcloneCmd.Source } else { "rclone.exe" }
+
+$cmdText = "@echo off`r`n`"$rcloneExePath`" mount `"$chosenRemote:`" `"$mountPosix`" --vfs-cache-mode writes"
+[System.IO.File]::WriteAllText($runnerCmd, $cmdText, [System.Text.Encoding]::ASCII)
+
+$vbsText = "Set WshShell = CreateObject(`"WScript.Shell`")`r`nWshShell.Run chr(34) & `"$runnerCmd`" & chr(34), 0`r`nSet WshShell = Nothing`r`n"
+[System.IO.File]::WriteAllText($runnerVbs, $vbsText, [System.Text.Encoding]::ASCII)
+
+$startupFolder = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
+if (Test-Path $startupFolder) {
+    Copy-Item -Path $runnerVbs -Destination "$startupFolder\mosy-mount.vbs" -Force
+}
+
+if ($remoteList.Count -gt 0) {
+    Write-Host "Starting background mount service..." -ForegroundColor Yellow
+    Start-Process -FilePath "wscript.exe" -ArgumentList "`"$runnerVbs`""
+} else {
+    Write-Host "Notice: No cloud remotes found in rclone." -ForegroundColor Yellow
+    Write-Host "Run 'rclone config' in CMD or PowerShell to connect your cloud drive." -ForegroundColor Yellow
 }
 
 Write-Host "============================================================" -ForegroundColor Green
