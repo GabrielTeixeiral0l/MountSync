@@ -30,12 +30,15 @@ platform_service_status() {
 }
 
 platform_service_start() {
-    local runner_file="${HOME}/.config/mosy/mount-runner.cmd"
-    if [ -f "$runner_file" ]; then
+    local runner_vbs="${HOME}/.config/mosy/mount-runner.vbs"
+    local runner_cmd="${HOME}/.config/mosy/mount-runner.cmd"
+    if [ -f "$runner_vbs" ] && command -v wscript.exe >/dev/null 2>&1; then
+        wscript.exe "$runner_vbs" >/dev/null 2>&1 || return 1
+    elif [ -f "$runner_cmd" ]; then
         if command -v cmd.exe >/dev/null 2>&1; then
-            cmd.exe /c start "" /min "$runner_file" >/dev/null 2>&1 || return 1
+            cmd.exe /c start "" /min "$runner_cmd" >/dev/null 2>&1 || return 1
         else
-            bash "$runner_file" &
+            bash "$runner_cmd" &
         fi
     fi
 }
@@ -45,11 +48,24 @@ platform_service_stop() {
 }
 
 platform_service_enable() {
-    true
+    local runner_vbs="${HOME}/.config/mosy/mount-runner.vbs"
+    if [ -f "$runner_vbs" ] && command -v cmd.exe >/dev/null 2>&1; then
+        local startup_dir
+        startup_dir=$(cmd.exe /c "echo %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup" 2>/dev/null | tr -d '\r\n')
+        if [ -n "$startup_dir" ] && [ -d "$startup_dir" ]; then
+            cp "$runner_vbs" "$startup_dir/mosy-mount.vbs" 2>/dev/null || true
+        fi
+    fi
 }
 
 platform_service_disable() {
-    true
+    if command -v cmd.exe >/dev/null 2>&1; then
+        local startup_dir
+        startup_dir=$(cmd.exe /c "echo %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup" 2>/dev/null | tr -d '\r\n')
+        if [ -n "$startup_dir" ] && [ -d "$startup_dir" ]; then
+            rm -f "$startup_dir/mosy-mount.vbs" 2>/dev/null || true
+        fi
+    fi
 }
 
 platform_service_reload() {
@@ -74,6 +90,7 @@ platform_create_service() {
     rclone_bin=$(command -v rclone 2>/dev/null || echo "rclone")
 
     mkdir -p "$config_dir" || return 1
+    mkdir -p "$mount_pt" 2>/dev/null || true
 
     cat <<EOF > "$runner_cmd" || return 1
 @echo off
@@ -91,6 +108,7 @@ EOF
 
 platform_uninstall_service() {
     platform_service_stop
+    platform_service_disable
     rm -f "${HOME}/.config/mosy/mount-runner.cmd" "${HOME}/.config/mosy/mount-runner.vbs"
 }
 
