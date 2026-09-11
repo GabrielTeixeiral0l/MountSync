@@ -30,14 +30,33 @@ _doctor_check_deps() {
         ((ERR++))
     fi
 
-    # 2. mountpoint
+    # 2. Mount Driver / Mountpoint
     ((TOTAL++))
-    if command -v mountpoint >/dev/null 2>&1; then
-        echo -e "${GREEN}[OK]${NC} mountpoint: found"
-        ((OK++))
+    local platform_type="${MOSY_OS:-linux}"
+    if [ "$platform_type" = "windows" ]; then
+        if [ -d "/c/Program Files/WinFsp" ] || [ -d "/c/Program Files (x86)/WinFsp" ] || [ -d "${PROGRAMFILES:-C:\Program Files}/WinFsp" ] || sc.exe query "WinFsp.Launcher" >/dev/null 2>&1; then
+            echo -e "${GREEN}[OK]${NC} WinFsp driver: found"
+            ((OK++))
+        else
+            echo -e "${RED}[ERR]${NC} WinFsp driver: not found (required for Windows mount, run: winget install WinFsp.WinFsp)"
+            ((ERR++))
+        fi
+    elif [ "$platform_type" = "darwin" ]; then
+        if command -v mount >/dev/null 2>&1; then
+            echo -e "${GREEN}[OK]${NC} mount (Darwin): found"
+            ((OK++))
+        else
+            echo -e "${RED}[ERR]${NC} mount: command not found"
+            ((ERR++))
+        fi
     else
-        echo -e "${RED}[ERR]${NC} mountpoint: command not found"
-        ((ERR++))
+        if command -v mountpoint >/dev/null 2>&1; then
+            echo -e "${GREEN}[OK]${NC} mountpoint: found"
+            ((OK++))
+        else
+            echo -e "${RED}[ERR]${NC} mountpoint: command not found"
+            ((ERR++))
+        fi
     fi
 
     # 3. Essential POSIX tools
