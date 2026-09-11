@@ -160,3 +160,59 @@ EOF
     assert_file_exists "$HOME/.local/bin/mosy.ps1"
     assert_output --partial "Setting up background mount service (Windows)..."
 }
+
+@test "Windows Doctor: Checks WinFsp driver status" {
+    export MOSY_OS_OVERRIDE="windows"
+    echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "test-remote:"; elif [[ "$1" == "about" ]]; then echo "Free: 50G"; fi' > "$MOCK_BIN/rclone"
+    chmod +x "$MOCK_BIN/rclone"
+
+    mkdir -p "$HOME/WinDrive/mosy_vault"
+    mkdir -p "$HOME/.config/mosy"
+    cat <<EOF > "$HOME/.config/mosy/config"
+MOSY_REMOTE_NAME=test-remote
+MOSY_MOUNT_POINT=$HOME/WinDrive
+MOSY_CLOUD_DIR=$HOME/WinDrive/mosy_vault
+EOF
+
+    # Without WinFsp installed
+    run ./mosy doctor
+    assert_output --partial "WinFsp driver: not found"
+
+    # With simulated WinFsp installed
+    export PROGRAMFILES="$HOME/ProgramFiles"
+    mkdir -p "$PROGRAMFILES/WinFsp"
+    run ./mosy doctor
+    assert_output --partial "WinFsp driver: found"
+}
+
+@test "Windows Edit: Falls back to notepad when terminal editor is unavailable" {
+    export MOSY_OS_OVERRIDE="windows"
+    unset VISUAL
+    unset EDITOR
+
+    # Mock notepad in MOCK_BIN
+    cat <<'EOF' > "$MOCK_BIN/notepad.exe"
+#!/bin/bash
+echo "Opened in Notepad: $@"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/notepad.exe"
+
+    mkdir -p "$HOME/WinDrive/mosy_vault"
+    mkdir -p "$HOME/.config/mosy"
+    cat <<EOF > "$HOME/.config/mosy/config"
+MOSY_REMOTE_NAME=test-remote
+MOSY_MOUNT_POINT=$HOME/WinDrive
+MOSY_CLOUD_DIR=$HOME/WinDrive/mosy_vault
+EOF
+    touch "$HOME/WinDrive/mosy_vault/.mountsync_keep"
+
+    echo "sample text" > "$HOME/.bashrc"
+    run ./mosy add "$HOME/.bashrc"
+    assert_success
+
+    run ./mosy edit .bashrc
+    assert_success
+    assert_output --partial "Opening ~/.bashrc with"
+}
+
