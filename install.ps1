@@ -28,7 +28,7 @@ if ($localRepo -and (Test-Path "$localRepo\mosy") -and ($localRepo -ne $installD
     if (Test-Path "$localRepo\src") {
         Copy-Item -Path "$localRepo\src" -Destination "$installDir\src" -Recurse -Force
     }
-} elseif (!(Test-Path "$installDir\mosy")) {
+} else {
     Write-Host "Downloading MountSync from GitHub ($Branch branch)..." -ForegroundColor Yellow
     $zipUrl = "https://github.com/GabrielTeixeiral0l/MountSync/archive/refs/heads/$Branch.zip"
     $tempZip = "$env:TEMP\mountsync-$Branch.zip"
