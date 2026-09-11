@@ -17,12 +17,8 @@ cmd_update() {
 
     local repo_dir="$HOME/.mountsync"
     if [ ! -d "$repo_dir" ]; then
-        if [ -d "$SCRIPT_DIR/.git" ]; then
-            repo_dir="$SCRIPT_DIR"
-        else
-            echo "Error: installation repository not found at $repo_dir"
-            exit 1
-        fi
+        echo "Error: installation repository not found at $repo_dir"
+        exit 1
     fi
     cd "$repo_dir"
     local current_commit
