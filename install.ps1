@@ -11,7 +11,7 @@ Write-Host "       MountSync Windows 1-Click Installer                  " -Foreg
 Write-Host "============================================================" -ForegroundColor Cyan
 
 # Configure PowerShell script execution policy automatically
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force -ErrorAction SilentlyContinue
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue 2>$null
 
 $localBin = "$env:USERPROFILE\.local\bin"
 $installDir = "$env:USERPROFILE\.local\share\mountsync"
