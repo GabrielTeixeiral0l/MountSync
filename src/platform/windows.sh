@@ -106,13 +106,18 @@ platform_create_service() {
     local rclone_bin
     rclone_bin=$(command -v rclone 2>/dev/null || echo "rclone")
 
+    local win_mount_pt="$mount_pt"
+    if command -v cygpath >/dev/null 2>&1; then
+        win_mount_pt=$(cygpath -w "$mount_pt")
+    fi
+
     mkdir -p "$config_dir" || return 1
     mkdir -p "$mount_pt" 2>/dev/null || true
 
     cat <<EOF > "$runner_cmd" || return 1
 @echo off
 REM MountSync Windows Background Mount Runner
-"$rclone_bin" mount "${remote}:" "${mount_pt}" --vfs-cache-mode writes
+"$rclone_bin" mount "${remote}:" "${win_mount_pt}" --vfs-cache-mode writes
 EOF
 
     # VBScript for invisible silent execution on Windows login/startup
