@@ -6,6 +6,14 @@ _find_editor_binary() {
         echo "$candidate"
         return 0
     fi
+    if [ "${MOSY_OS:-}" = "windows" ]; then
+        for win_fallback in notepad.exe notepad; do
+            if command -v "$win_fallback" >/dev/null 2>&1; then
+                echo "$win_fallback"
+                return 0
+            fi
+        done
+    fi
     for fallback in nano vim vi ed; do
         if command -v "$fallback" >/dev/null 2>&1; then
             echo "$fallback"
@@ -297,5 +305,9 @@ cmd_edit() {
     fi
 
     echo "Opening ~/$selected_item with $editor_cmd..."
-    eval "$editor_cmd \"\$target_path\""
+    local edit_target="$target_path"
+    if [[ "$editor_cmd" =~ notepad(\.exe)?$ ]] && command -v cygpath >/dev/null 2>&1; then
+        edit_target=$(cygpath -w "$target_path")
+    fi
+    eval "$editor_cmd \"\$edit_target\""
 }
