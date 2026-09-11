@@ -7,9 +7,15 @@ _tree_link_status() {
     if [ -L "$local_path" ]; then
         local resolved_target
         resolved_target=$(readlink -f "$local_path" 2>/dev/null || true)
-        if [ -z "$resolved_target" ] || [ ! -e "$resolved_target" ]; then
+        local norm_target="$resolved_target"
+        local norm_cloud="$cloud_dir"
+        if command -v cygpath >/dev/null 2>&1; then
+            norm_target=$(cygpath -u "$resolved_target" 2>/dev/null || echo "$resolved_target")
+            norm_cloud=$(cygpath -u "$cloud_dir" 2>/dev/null || echo "$cloud_dir")
+        fi
+        if [ -z "$norm_target" ] || [ ! -e "$norm_target" ]; then
             echo "BROKEN"
-        elif [[ "$resolved_target" == "$cloud_dir"* ]]; then
+        elif [[ "$norm_target" == "$norm_cloud"* ]]; then
             echo "OK"
         else
             echo "BROKEN"

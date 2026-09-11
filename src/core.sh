@@ -20,6 +20,11 @@ load_settings() {
     export MOSY_SAFETY_GUARD="${MOSY_SAFETY_GUARD:-true}"
     export MOSY_PROFILE="${MOSY_PROFILE:-default}"
 
+    if command -v cygpath >/dev/null 2>&1; then
+        MOSY_MOUNT_POINT=$(cygpath -u "$MOSY_MOUNT_POINT" 2>/dev/null || echo "$MOSY_MOUNT_POINT")
+        MOSY_CLOUD_DIR=$(cygpath -u "$MOSY_CLOUD_DIR" 2>/dev/null || echo "$MOSY_CLOUD_DIR")
+    fi
+
     if [ -z "$MOSY_REMOTE_NAME" ]; then
         echo "Error: MOSY_REMOTE_NAME is missing" >&2
         return 1

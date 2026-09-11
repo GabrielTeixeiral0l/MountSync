@@ -23,7 +23,13 @@ status_callback() {
     if [ -L "$local_path" ]; then
         local target
         target=$(readlink "$local_path")
-        if [ "$target" == "$cloud_path" ]; then
+        local norm_target="$target"
+        local norm_cloud="$cloud_path"
+        if command -v cygpath >/dev/null 2>&1; then
+            norm_target=$(cygpath -u "$target" 2>/dev/null || echo "$target")
+            norm_cloud=$(cygpath -u "$cloud_path" 2>/dev/null || echo "$cloud_path")
+        fi
+        if [ "$norm_target" == "$norm_cloud" ]; then
             if [ -e "$cloud_path" ]; then
                 [ "$QUIET" != true ] && [ "$JSON_OUTPUT" != true ] && echo -e "${GREEN}[OK]${NC} $local_rel"
                 ((OK++))
