@@ -22,7 +22,13 @@ Register-ArgumentCompleter -Native -CommandName mosy -ScriptBlock {
     $subcommand = if ($tokens.Count -gt 1) { $tokens[1] } else { "" }
     $options = switch ($subcommand) {
         'add'      { @('--tag', '-t', '--group', '-g', '--link', '--target', '--to', '--force', '-f', '--scan-secrets', '--scan', '--no-scan', '--guard', '--no-guard') }
-        'link'     { @('--tag', '-t', '--group', '-g', '--force', '-f') }
+        'link'     {
+            if ($tokens.Count -ge 2 -and ($tokens[-1] -eq '--app' -or $tokens[-1] -eq '-a')) {
+                @('vscode', 'nvim', 'starship', 'git', 'windows-terminal')
+            } else {
+                @('--app', '-a', '--tag', '-t', '--group', '-g', '--force', '-f')
+            }
+        }
         'status'   { @('--json', '-j', '--quiet', '-q', '--tag', '-t', '--group', '-g') }
         'doctor'   { @('--fix', '-f') }
         'info'     { @('--json', '-j') }

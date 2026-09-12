@@ -6,11 +6,13 @@ cmd_link() {
     check_mount
     local RAW_LOCAL=""
     local RAW_CLOUD=""
+    local APP_PRESET=""
     local FORCE=false
     parse_filter_flags "$@"
     local TAGS="$MOSY_FILTER_TAG"
     local ITEM_GROUPS="$MOSY_FILTER_GROUP"
 
+    local positional_args=()
     while [ $# -gt 0 ]; do
         case "$1" in
             --tag|-t|--group|-g)
@@ -20,20 +22,77 @@ cmd_link() {
                 FORCE=true
                 shift
                 ;;
+            --app|-a)
+                APP_PRESET="$2"
+                shift 2
+                ;;
             *)
-                if [ -z "$RAW_LOCAL" ]; then
-                    RAW_LOCAL="$1"
-                elif [ -z "$RAW_CLOUD" ]; then
-                    RAW_CLOUD="$1"
-                fi
+                positional_args+=("$1")
                 shift
                 ;;
         esac
     done
 
+    local default_cloud=""
+    if [ -n "$APP_PRESET" ]; then
+        case "$APP_PRESET" in
+            vscode)
+                case "${MOSY_OS:-linux}" in
+                    windows) RAW_LOCAL="AppData/Roaming/Code/User/settings.json" ;;
+                    darwin)  RAW_LOCAL="Library/Application Support/Code/User/settings.json" ;;
+                    *)       RAW_LOCAL=".config/Code/User/settings.json" ;;
+                esac
+                default_cloud=".config/Code/User/settings.json"
+                ;;
+            nvim)
+                case "${MOSY_OS:-linux}" in
+                    windows) RAW_LOCAL="AppData/Local/nvim" ;;
+                    *)       RAW_LOCAL=".config/nvim" ;;
+                esac
+                default_cloud=".config/nvim"
+                ;;
+            starship)
+                RAW_LOCAL=".config/starship.toml"
+                default_cloud=".config/starship.toml"
+                ;;
+            git)
+                RAW_LOCAL=".gitconfig"
+                default_cloud=".gitconfig"
+                ;;
+            windows-terminal)
+                case "${MOSY_OS:-linux}" in
+                    windows) RAW_LOCAL="AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json" ;;
+                    *)       RAW_LOCAL=".config/windows-terminal/settings.json" ;;
+                esac
+                default_cloud=".config/windows-terminal/settings.json"
+                ;;
+            *)
+                echo "Error: Unknown application preset '$APP_PRESET'." >&2
+                echo "Supported presets: vscode, nvim, starship, git, windows-terminal" >&2
+                exit 1
+                ;;
+        esac
+
+        if [ ${#positional_args[@]} -ge 1 ]; then
+            RAW_CLOUD="${positional_args[0]}"
+        elif [ -e "$MOSY_CLOUD_DIR/$default_cloud" ]; then
+            RAW_CLOUD="$default_cloud"
+        fi
+    else
+        if [ ${#positional_args[@]} -ge 1 ]; then
+            RAW_LOCAL="${positional_args[0]}"
+        fi
+        if [ ${#positional_args[@]} -ge 2 ]; then
+            RAW_CLOUD="${positional_args[1]}"
+        fi
+    fi
+
     if [ -z "$RAW_LOCAL" ]; then
         echo "Usage: mosy link <local_path> [cloud_vault_target] [--tag <tags>] [--group <groups>] [--force]"
+        echo "       mosy link --app <preset> [cloud_vault_target] [--tag <tags>] [--group <groups>] [--force]"
+        echo "Supported presets: vscode, nvim, starship, git, windows-terminal"
         echo "Example: mosy link ~/AppData/Roaming/Code/User/settings.json .config/Code/User/settings.json"
+        echo "Example: mosy link --app vscode"
         exit 1
     fi
 
@@ -66,8 +125,12 @@ cmd_link() {
         done < <(find "$MOSY_CLOUD_DIR" \( -type f -o -type d \) -name "$base_name" 2>/dev/null | sort)
 
         if [ ${#candidates[@]} -eq 0 ]; then
-            echo "Error: No matching item named '$base_name' found in cloud vault."
-            echo "Specify the target explicitly: mosy link $RAW_LOCAL <cloud_target>"
+            if [ -n "$default_cloud" ]; then
+                echo "Error: Cloud vault target '$default_cloud' does not exist in $MOSY_CLOUD_DIR."
+            else
+                echo "Error: No matching item named '$base_name' found in cloud vault."
+                echo "Specify the target explicitly: mosy link $RAW_LOCAL <cloud_target>"
+            fi
             exit 1
         elif [ ${#candidates[@]} -eq 1 ]; then
             cloud_rel="${candidates[0]}"

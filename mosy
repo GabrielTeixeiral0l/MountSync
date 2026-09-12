@@ -30,7 +30,7 @@ case "$1" in
         echo "Usage: mosy [-p|--profile <name>] <command> [args]"
         echo "Commands:"
         echo "  add <file_or_directory>  Add an item to the cloud vault"
-        echo "  link <local> [target]    Map local path to existing cloud vault item"
+        echo "  link <local> [target]    Map local path to existing cloud vault item (supports --app <preset>)"
         echo "  init                    Configure PC from sync map"
         echo "  pull                    Link missing items from cloud vault"
         echo "  list                    List all managed items"

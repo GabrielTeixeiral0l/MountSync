@@ -162,3 +162,29 @@ EOF
     [ ! -e "$HOME/.config/Code" ]
     [ ! -e "$HOME/Library" ]
 }
+
+@test "Link: mosy link --app vscode resolves OS-specific paths" {
+    mkdir -p "$MOSY_CLOUD_DIR/.config/Code/User"
+    echo '{"editor.tabSize": 2}' > "$MOSY_CLOUD_DIR/.config/Code/User/settings.json"
+
+    # 1. On Windows
+    export MOSY_OS_OVERRIDE="windows"
+    run mosy link --app vscode
+    assert_success
+    assert_output --partial "Success! Linked ~/AppData/Roaming/Code/User/settings.json -> vault/.config/Code/User/settings.json (tags: windows)."
+    [ -L "$HOME/AppData/Roaming/Code/User/settings.json" ]
+
+    # 2. On Linux in separate path
+    export MOSY_OS_OVERRIDE="linux"
+    run mosy link --app vscode --force
+    assert_success
+    assert_output --partial "Success! Linked ~/.config/Code/User/settings.json -> vault/.config/Code/User/settings.json (tags: linux)."
+    [ -L "$HOME/.config/Code/User/settings.json" ]
+}
+
+@test "Link: mosy link --app handles unknown preset with clear error" {
+    run mosy link --app nonexistent_app
+    assert_failure
+    assert_output --partial "Error: Unknown application preset 'nonexistent_app'."
+    assert_output --partial "Supported presets: vscode, nvim, starship, git, windows-terminal"
+}

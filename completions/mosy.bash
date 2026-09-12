@@ -17,8 +17,10 @@ _mosy_completions() {
             fi
             ;;
         link)
-            if [[ "$cur" == -* ]]; then
-                COMPREPLY=( $(compgen -W "--tag -t --group -g --force -f" -- "$cur") )
+            if [[ "$prev" == "--app" || "$prev" == "-a" ]]; then
+                COMPREPLY=( $(compgen -W "vscode nvim starship git windows-terminal" -- "$cur") )
+            elif [[ "$cur" == -* ]]; then
+                COMPREPLY=( $(compgen -W "--app -a --tag -t --group -g --force -f" -- "$cur") )
             fi
             ;;
         status)
