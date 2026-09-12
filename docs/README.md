@@ -35,8 +35,8 @@ How-to guides provide step-by-step recipes to solve real-world problems and work
 * [Diff & Backups Inspection Guide](how-to/diff-and-backups.md): Compare local files against cloud replicas, timestamped `.bak_*` safety backups, and alternative profiles with `mosy diff`.
 * [Secret Leak Prevention Guide](how-to/secrets-prevention.md): Scan for unencrypted keys, tokens, and credentials before cloud vaulting with custom patterns in `secrets.conf`.
 * [Snapshots & Recovery Guide](how-to/snapshots-and-recovery.md): Create on-demand safety snapshots, inspect history, edit configs with safety backups, rollback revisions, and purge obsolete backups.
-* [Multi-Machine Synchronization Guide](how-to/multi-machine-sync.md): Replicate configurations across laptops, workstations, and remote servers using `mosy init` and `mosy pull`.
 * [Cross-Platform Synchronization Guide](how-to/cross-platform-sync.md): Synchronize divergent dotfile paths across Linux, macOS, and Windows with `mosy link`.
+* [Windows Setup & Configuration Guide](how-to/windows-setup.md): Complete setup guide for native Windows 10/11, WinFsp, Developer Mode, presets, and background service management.
 
 ---
 
@@ -68,4 +68,5 @@ Explanation documents clarify architecture, mental models, and design decisions.
 | Checking differences or backups | [Diff & Backups Inspection Guide](how-to/diff-and-backups.md) |
 | Setting up a second machine | [Multi-Machine Sync Guide](how-to/multi-machine-sync.md) |
 | Preventing credential leaks | [Secret Leak Prevention Guide](how-to/secrets-prevention.md) |
+| Setting up on Windows 10/11 | [Windows Setup Guide](how-to/windows-setup.md) |
 | Understanding system architecture | [Architecture & Design](explanation/architecture.md) |
