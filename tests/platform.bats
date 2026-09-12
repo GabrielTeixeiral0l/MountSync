@@ -216,3 +216,75 @@ EOF
     assert_output --partial "Opening ~/.bashrc with"
 }
 
+@test "Windows Adapter: Detects service status via tasklist.exe fallback" {
+    export MOSY_OS_OVERRIDE="windows"
+    source "$PROJECT_ROOT/src/platform/init.sh"
+
+    # Mock tasklist.exe
+    cat <<'EOF' > "$MOCK_BIN/tasklist.exe"
+#!/bin/bash
+if [[ "$*" =~ rclone.exe ]]; then
+    echo "rclone.exe                    12344 Console                    1     45,210 K"
+    exit 0
+fi
+echo "INFO: No tasks are running which match the specified criteria."
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/tasklist.exe"
+
+    run platform_service_status
+    assert_output "active"
+}
+
+@test "Windows Adapter: Terminates rclone process via taskkill.exe fallback" {
+    export MOSY_OS_OVERRIDE="windows"
+    source "$PROJECT_ROOT/src/platform/init.sh"
+
+    local killed_log="$TEST_HOME/taskkill.log"
+    cat <<EOF > "$MOCK_BIN/taskkill.exe"
+#!/bin/bash
+echo "Killed \$@" >> "$killed_log"
+exit 0
+EOF
+    chmod +x "$MOCK_BIN/taskkill.exe"
+
+    run platform_service_stop
+    assert_file_exists "$killed_log"
+    run cat "$killed_log"
+    assert_output --partial "Killed /F /IM rclone.exe"
+}
+
+@test "Windows Adapter: Generates mount runner with directory collision prevention" {
+    export MOSY_OS_OVERRIDE="windows"
+    source "$PROJECT_ROOT/src/platform/init.sh"
+
+    run platform_create_service "TestRemote" "$HOME/CollisionDrive"
+    assert_success
+
+    local cmd_runner="$HOME/.config/mosy/mount-runner.cmd"
+    assert_file_exists "$cmd_runner"
+    run cat "$cmd_runner"
+    assert_output --partial 'rmdir'
+    assert_output --partial 'CollisionDrive'
+}
+
+@test "Windows Doctor: Reports symlink privilege status" {
+    export MOSY_OS_OVERRIDE="windows"
+    echo -e '#!/bin/bash\nif [[ "$1" == "listremotes" ]]; then echo "test-remote:"; elif [[ "$1" == "about" ]]; then echo "Free: 50G"; fi' > "$MOCK_BIN/rclone"
+    chmod +x "$MOCK_BIN/rclone"
+
+    mkdir -p "$HOME/WinDrive/mosy_vault"
+    mkdir -p "$HOME/.config/mosy"
+    cat <<EOF > "$HOME/.config/mosy/config"
+MOSY_REMOTE_NAME=test-remote
+MOSY_MOUNT_POINT=$HOME/WinDrive
+MOSY_CLOUD_DIR=$HOME/WinDrive/mosy_vault
+EOF
+    export PROGRAMFILES="$HOME/ProgramFiles"
+    mkdir -p "$PROGRAMFILES/WinFsp"
+
+    run ./mosy doctor
+    assert_output --partial "Windows symlink privilege: enabled (Developer Mode or Admin)"
+}
+
+

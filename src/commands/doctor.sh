@@ -93,6 +93,28 @@ _doctor_check_deps() {
         ((WARN++))
     fi
 
+    # 4b. Windows Symlink Privilege (Developer Mode or Admin)
+    if [ "$platform_type" = "windows" ]; then
+        ((TOTAL++))
+        local symlink_ok=false
+        local test_target="/tmp/mosy_symlink_target_$$"
+        local test_link="/tmp/mosy_symlink_test_$$"
+        touch "$test_target" 2>/dev/null || true
+        if ln -s "$test_target" "$test_link" 2>/dev/null; then
+            symlink_ok=true
+            rm -f "$test_link" 2>/dev/null || true
+        fi
+        rm -f "$test_target" 2>/dev/null || true
+
+        if [ "$symlink_ok" = true ]; then
+            echo -e "${GREEN}[OK]${NC} Windows symlink privilege: enabled (Developer Mode or Admin)"
+            ((OK++))
+        else
+            echo -e "${YELLOW}[WARN]${NC} Windows symlink privilege: restricted (enable Developer Mode in Settings > System > For developers)"
+            ((WARN++))
+        fi
+    fi
+
     # 5. Configuration directory & permissions
     ((TOTAL++))
     local config_dir="${HOME}/.config/mosy"
@@ -123,15 +145,21 @@ _doctor_check_mount_services() {
     echo -e "\n--- Mount Point & Services ---"
 
     # 1. Mount directory existence
-    if [ ! -d "$MOSY_MOUNT_POINT" ]; then
-        if [ "$FIX_MODE" = true ]; then
-            mkdir -p "$MOSY_MOUNT_POINT"
-            echo -e "${GREEN}[FIXED]${NC} Created missing mount directory ($MOSY_MOUNT_POINT)"
-            ((FIXED++))
-        else
-            ((TOTAL++))
-            echo -e "${RED}[ERR]${NC} Mount directory ($MOSY_MOUNT_POINT): directory missing"
-            ((ERR++))
+    if [ "${MOSY_OS:-linux}" = "windows" ]; then
+        if [ "$FIX_MODE" = true ] && [ -d "$MOSY_MOUNT_POINT" ] && ! is_mounted; then
+            rmdir "$MOSY_MOUNT_POINT" 2>/dev/null || true
+        fi
+    else
+        if [ ! -d "$MOSY_MOUNT_POINT" ]; then
+            if [ "$FIX_MODE" = true ]; then
+                mkdir -p "$MOSY_MOUNT_POINT"
+                echo -e "${GREEN}[FIXED]${NC} Created missing mount directory ($MOSY_MOUNT_POINT)"
+                ((FIXED++))
+            else
+                ((TOTAL++))
+                echo -e "${RED}[ERR]${NC} Mount directory ($MOSY_MOUNT_POINT): directory missing"
+                ((ERR++))
+            fi
         fi
     fi
 

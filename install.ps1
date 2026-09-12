@@ -155,11 +155,6 @@ if (!$NonInteractive) {
     }
 }
 
-if (!(Test-Path $defaultMount)) {
-    Write-Host "Creating cloud mount directory at $defaultMount..." -ForegroundColor Yellow
-    New-Item -ItemType Directory -Force -Path $defaultMount | Out-Null
-}
-
 $configFile = "$configDir\config"
 if (!(Test-Path $configFile)) {
     $mountVal = $defaultMount.Replace('\', '/')
@@ -172,10 +167,9 @@ if (!(Test-Path $configFile)) {
 Write-Host "Setting up Windows background mount service..." -ForegroundColor Yellow
 $runnerCmd = "$configDir\mount-runner.cmd"
 $runnerVbs = "$configDir\mount-runner.vbs"
-$mountPosix = $defaultMount.Replace('\', '/')
 $rcloneExePath = if ($rcloneCmd) { $rcloneCmd.Source } else { "rclone.exe" }
 
-$cmdText = "@echo off`r`n`"$rcloneExePath`" mount `"${chosenRemote}:`" `"$mountPosix`" --vfs-cache-mode writes"
+$cmdText = "@echo off`r`nif exist `"$defaultMount`" rmdir `"$defaultMount`" 2>nul`r`n`"$rcloneExePath`" mount `"${chosenRemote}:`" `"$defaultMount`" --vfs-cache-mode writes"
 [System.IO.File]::WriteAllText($runnerCmd, $cmdText, [System.Text.Encoding]::ASCII)
 
 $vbsText = "Set WshShell = CreateObject(`"WScript.Shell`")`r`nWshShell.Run chr(34) & `"$runnerCmd`" & chr(34), 0`r`nSet WshShell = Nothing`r`n"
@@ -194,12 +188,13 @@ if ($remoteList.Count -gt 0) {
     Write-Host "Run 'rclone config' in CMD or PowerShell to connect your cloud drive." -ForegroundColor Yellow
 }
 
-# 7. Shell Autocomplete for PowerShell
+# 7. Shell Autocomplete for PowerShell and Git Bash
+$completionsDir = "$configDir\completions"
+New-Item -ItemType Directory -Force -Path $completionsDir | Out-Null
+
 $completionSrc = "$installDir\completions\mosy.ps1"
 if (Test-Path $completionSrc) {
     Write-Host "Installing PowerShell tab completions..." -ForegroundColor Yellow
-    $completionsDir = "$configDir\completions"
-    New-Item -ItemType Directory -Force -Path $completionsDir | Out-Null
     Copy-Item -Path $completionSrc -Destination "$completionsDir\mosy.ps1" -Force
 
     $profilePath = $PROFILE.CurrentUserAllHosts
@@ -214,6 +209,18 @@ if (Test-Path $completionSrc) {
         if ($existingProfile -notlike "*MountSync Tab Completion*") {
             [System.IO.File]::AppendAllText($profilePath, $importLine, [System.Text.Encoding]::UTF8)
         }
+    }
+}
+
+$bashCompletionSrc = "$installDir\completions\mosy.bash"
+if (Test-Path $bashCompletionSrc) {
+    Copy-Item -Path $bashCompletionSrc -Destination "$completionsDir\mosy.bash" -Force
+    $bashrc = "$env:USERPROFILE\.bashrc"
+    $bashHook = "`n# MountSync Bash Completion`nif [ -f `"`$HOME/.config/mosy/completions/mosy.bash`" ]; then`n    . `"`$HOME/.config/mosy/completions/mosy.bash`"`nfi`n"
+    $existingBashrc = if (Test-Path $bashrc) { [System.IO.File]::ReadAllText($bashrc) } else { "" }
+    if ($existingBashrc -notlike "*MountSync Bash Completion*") {
+        Write-Host "Registering Git Bash tab completions in ~/.bashrc..." -ForegroundColor Yellow
+        [System.IO.File]::AppendAllText($bashrc, $bashHook, [System.Text.Encoding]::UTF8)
     }
 }
 

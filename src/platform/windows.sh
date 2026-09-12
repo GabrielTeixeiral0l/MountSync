@@ -10,6 +10,8 @@ platform_is_mounted() {
     if [ -d "$target" ]; then
         if pgrep -f "rclone.*mount.*${MOSY_REMOTE_NAME:-}" >/dev/null 2>&1; then
             return 0
+        elif command -v tasklist.exe >/dev/null 2>&1 && tasklist.exe /FI "IMAGENAME eq rclone.exe" 2>/dev/null | grep -qi "rclone.exe"; then
+            return 0
         elif [ -f "$target/.mountsync_keep" ] || [ -d "$target/mosy_vault" ]; then
             return 0
         fi
@@ -23,6 +25,8 @@ platform_service_type() {
 
 platform_service_status() {
     if pgrep -f "rclone.*mount" >/dev/null 2>&1; then
+        echo "active"
+    elif command -v tasklist.exe >/dev/null 2>&1 && tasklist.exe /FI "IMAGENAME eq rclone.exe" 2>/dev/null | grep -qi "rclone.exe"; then
         echo "active"
     else
         echo "inactive"
@@ -45,6 +49,9 @@ platform_service_start() {
 
 platform_service_stop() {
     pkill -f "rclone.*mount" >/dev/null 2>&1 || true
+    if command -v taskkill.exe >/dev/null 2>&1; then
+        taskkill.exe /F /IM rclone.exe >/dev/null 2>&1 || true
+    fi
 }
 
 platform_service_enable() {
@@ -117,6 +124,9 @@ platform_create_service() {
     cat <<EOF > "$runner_cmd" || return 1
 @echo off
 REM MountSync Windows Background Mount Runner
+if exist "${win_mount_pt}" (
+    rmdir "${win_mount_pt}" 2>nul
+)
 "$rclone_bin" mount "${remote}:" "${win_mount_pt}" --vfs-cache-mode writes
 EOF
 
@@ -133,7 +143,11 @@ platform_uninstall_service() {
     platform_service_disable
     rm -f "${HOME}/.config/mosy/mount-runner.cmd" "${HOME}/.config/mosy/mount-runner.vbs"
 
-    # Clean ~/.local/bin from Windows User PATH environment variable
+    # Clean ~/.local/bin from Windows User PATH environment variable and completions
+    if [ -f "${HOME}/.bashrc" ]; then
+        sed -i '/# MountSync Bash Completion/,+3d' "${HOME}/.bashrc" 2>/dev/null || true
+    fi
+
     if command -v powershell.exe >/dev/null 2>&1; then
         powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '
             $bin = "$env:USERPROFILE\.local\bin"
