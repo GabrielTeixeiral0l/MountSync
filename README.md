@@ -50,11 +50,13 @@ mosy status
 On a second machine with divergent file paths (like VS Code or Neovim):
 
 ```bash
-# On macOS:
+# On macOS (manual path or preset):
 mosy link ~/Library/Application\ Support/Code/User/settings.json .config/Code/User/settings.json
+mosy link --app vscode
 
 # On Windows (PowerShell / CMD):
 mosy link ~/AppData/Roaming/Code/User/settings.json .config/Code/User/settings.json
+mosy link --app vscode
 ```
 
 ---
@@ -66,7 +68,7 @@ Explore the detailed guides, tutorials, and technical references available in th
 | Category | Purpose | Document Links |
 | :--- | :--- | :--- |
 | **Tutorial** | Step-by-step introduction for beginners | [Quickstart Tutorial](docs/tutorials/quickstart.md) |
-| **How-to Guides** | Task-oriented recipes solving practical real-world problems | [Cross-Platform Sync Guide](docs/how-to/cross-platform-sync.md)<br>[Multiple Profiles Guide](docs/how-to/profiles.md)<br>[Tags & Groups Guide](docs/how-to/tags-and-groups.md)<br>[Ignore Patterns Guide](docs/how-to/mosyignore.md)<br>[Diagnostics & Auto-Remediation Guide](docs/how-to/doctor-and-diagnostics.md)<br>[Diff & Backups Inspection Guide](docs/how-to/diff-and-backups.md)<br>[Secret Leak Prevention Guide](docs/how-to/secrets-prevention.md)<br>[Snapshots & Recovery Guide](docs/how-to/snapshots-and-recovery.md)<br>[Multi-Machine Sync Guide](docs/how-to/multi-machine-sync.md) |
+| **How-to Guides** | Task-oriented recipes solving practical real-world problems | [Cross-Platform Sync Guide](docs/how-to/cross-platform-sync.md)<br>[Windows Setup & Configuration Guide](docs/how-to/windows-setup.md)<br>[Multiple Profiles Guide](docs/how-to/profiles.md)<br>[Tags & Groups Guide](docs/how-to/tags-and-groups.md)<br>[Ignore Patterns Guide](docs/how-to/mosyignore.md)<br>[Diagnostics & Auto-Remediation Guide](docs/how-to/doctor-and-diagnostics.md)<br>[Diff & Backups Inspection Guide](docs/how-to/diff-and-backups.md)<br>[Secret Leak Prevention Guide](docs/how-to/secrets-prevention.md)<br>[Snapshots & Recovery Guide](docs/how-to/snapshots-and-recovery.md)<br>[Multi-Machine Sync Guide](docs/how-to/multi-machine-sync.md) |
 | **Reference** | Exhaustive technical descriptions of CLI commands and configuration | [CLI Reference](docs/reference/cli.md)<br>[Configuration Reference](docs/reference/configuration.md) |
 | **Architecture** | System design, mental model, and data flow specifications | [Architecture & Design](docs/explanation/architecture.md) |
 
@@ -77,7 +79,7 @@ Explore the detailed guides, tutorials, and technical references available in th
 | Command | Example Syntax | Description | Reference Link |
 | :--- | :--- | :--- | :--- |
 | **`add`** | `mosy add ~/.bashrc -g dotfiles -t main` | Adds an item to the vault and replaces the local file with a symlink. | [Details](docs/reference/cli.md#1-add) |
-| **`link`** | `mosy link ~/AppData/... .config/...` | Maps local divergent OS paths to existing cloud vault files. | [Details](docs/reference/cli.md#1b-link) |
+| **`link`** | `mosy link --app vscode` | Maps local divergent OS paths to existing cloud vault files (supports `--app <preset>`). | [Details](docs/reference/cli.md#1b-link) |
 | **`init`** | `mosy init --tag work` | Rebuilds local symlinks based on the synchronization map. | [Details](docs/reference/cli.md#2-init) |
 | **`pull`** | `mosy pull -g config` | Non-destructively pulls missing items from the cloud vault. | [Details](docs/reference/cli.md#3-pull) |
 | **`list`** | `mosy list --tag dev` | Lists all managed files along with their tags and groups. | [Details](docs/reference/cli.md#4-list) |
