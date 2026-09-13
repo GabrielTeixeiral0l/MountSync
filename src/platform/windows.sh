@@ -10,7 +10,7 @@ platform_is_mounted() {
     if [ -d "$target" ]; then
         if pgrep -f "rclone.*mount.*${MOSY_REMOTE_NAME:-}" >/dev/null 2>&1; then
             return 0
-        elif command -v tasklist.exe >/dev/null 2>&1 && tasklist.exe /FI "IMAGENAME eq rclone.exe" 2>/dev/null | grep -qi "rclone.exe"; then
+        elif command -v tasklist.exe >/dev/null 2>&1 && MSYS2_ARG_CONV_EXCL="*" tasklist.exe /FI "IMAGENAME eq rclone.exe" 2>/dev/null | grep -qi "rclone.exe"; then
             return 0
         elif [ -f "$target/.mountsync_keep" ] || [ -d "$target/mosy_vault" ]; then
             return 0
@@ -26,7 +26,7 @@ platform_service_type() {
 platform_service_status() {
     if pgrep -f "rclone.*mount" >/dev/null 2>&1; then
         echo "active"
-    elif command -v tasklist.exe >/dev/null 2>&1 && tasklist.exe /FI "IMAGENAME eq rclone.exe" 2>/dev/null | grep -qi "rclone.exe"; then
+    elif command -v tasklist.exe >/dev/null 2>&1 && MSYS2_ARG_CONV_EXCL="*" tasklist.exe /FI "IMAGENAME eq rclone.exe" 2>/dev/null | grep -qi "rclone.exe"; then
         echo "active"
     else
         echo "inactive"
@@ -50,7 +50,7 @@ platform_service_start() {
 platform_service_stop() {
     pkill -f "rclone.*mount" >/dev/null 2>&1 || true
     if command -v taskkill.exe >/dev/null 2>&1; then
-        taskkill.exe /F /IM rclone.exe >/dev/null 2>&1 || true
+        MSYS2_ARG_CONV_EXCL="*" taskkill.exe /F /IM rclone.exe >/dev/null 2>&1 || true
     fi
 }
 
